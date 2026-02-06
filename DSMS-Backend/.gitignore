@@ -1,0 +1,26 @@
+# Build output
+bin/
+obj/
+
+# Runtime / local overrides (contains real credentials — never commit)
+**/runtime-settings.json
+**/appsettings.Local.json
+
+# Serilog log files
+**/Logs/
+
+# Student uploaded documents
+**/Uploads/student-docs/
+
+# Visual Studio
+*.user
+*.suo
+.vs/
+*.user.json
+
+# Rider
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
