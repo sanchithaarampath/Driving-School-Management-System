@@ -1,0 +1,226 @@
+// Training Schedule page styles
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+  background: var(--card-bg, #161b22);
+  border: 1px solid var(--border-color, #30363d);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 160px;
+
+  label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-secondary, #8b949e);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+}
+
+.filter-input {
+  height: 36px;
+  font-size: 0.875rem;
+  min-width: 160px;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+  padding-bottom: 0;
+}
+
+.loading-state {
+  text-align: center;
+  color: var(--text-secondary, #8b949e);
+  padding: 3rem 0;
+  font-size: 0.95rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 0;
+  color: var(--text-secondary, #8b949e);
+
+  i { font-size: 3rem; display: block; margin-bottom: 1rem; opacity: 0.4; }
+  p { margin-bottom: 1.5rem; font-size: 1rem; }
+}
+
+.sessions-count {
+  font-size: 0.8rem;
+  color: var(--text-secondary, #8b949e);
+  margin-bottom: 0.75rem;
+}
+
+// ── Table cells ────────────────────────────────────────────────────────────
+.date-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.date-main {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--text-primary, #e6edf3);
+}
+
+.date-time {
+  font-size: 0.78rem;
+  color: var(--accent-color, #e63946);
+  font-weight: 600;
+}
+
+.student-link {
+  color: var(--accent-color, #e63946);
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.875rem;
+  &:hover { text-decoration: underline; }
+}
+
+.sub-text {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #8b949e);
+  margin-top: 0.1rem;
+}
+
+.vehicle-badge {
+  background: rgba(88, 166, 255, 0.12);
+  color: #58a6ff;
+  border: 1px solid rgba(88, 166, 255, 0.25);
+  border-radius: 6px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.notes-text {
+  font-size: 0.8rem;
+  color: var(--text-secondary, #8b949e);
+  max-width: 160px;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// ── Status badges ───────────────────────────────────────────────────────────
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+
+  &.badge-scheduled {
+    background: rgba(88, 166, 255, 0.12);
+    color: #58a6ff;
+    border: 1px solid rgba(88, 166, 255, 0.3);
+  }
+  &.badge-completed {
+    background: rgba(35, 134, 54, 0.12);
+    color: #3fb950;
+    border: 1px solid rgba(35, 134, 54, 0.3);
+  }
+  &.badge-cancelled {
+    background: rgba(248, 81, 73, 0.12);
+    color: #f85149;
+    border: 1px solid rgba(248, 81, 73, 0.3);
+  }
+  &.badge-noshow {
+    background: rgba(240, 136, 62, 0.12);
+    color: #f0883e;
+    border: 1px solid rgba(240, 136, 62, 0.3);
+  }
+}
+
+// ── Action cell ─────────────────────────────────────────────────────────────
+.action-cell {
+  display: flex;
+  gap: 0.35rem;
+}
+
+// ── Cancel Modal overlay ────────────────────────────────────────────────────
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+}
+
+.modal-box {
+  background: var(--card-bg, #161b22);
+  border: 1px solid var(--border-color, #30363d);
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: 420px;
+  max-width: 95vw;
+}
+
+.modal-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+
+  h5 { margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-primary, #e6edf3); }
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary, #8b949e);
+  cursor: pointer;
+  font-size: 1rem;
+  &:hover { color: var(--text-primary, #e6edf3); }
+}
+
+.modal-footer-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.btn-danger {
+  background: #da3633;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  &:hover:not(:disabled) { background: #b91c1c; }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+.badge-overdue {
+  display: inline-block;
+  background: rgba(210, 107, 0, 0.15);
+  color: #f0883e;
+  border: 1px solid rgba(240, 136, 62, 0.4);
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 1px 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  vertical-align: middle;
+}

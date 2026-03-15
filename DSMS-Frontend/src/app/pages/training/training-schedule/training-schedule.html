@@ -1,0 +1,161 @@
+<div class="dsms-layout">
+  <app-sidebar></app-sidebar>
+  <div class="main-content">
+    <app-topbar></app-topbar>
+    <div class="page-content">
+
+      <div class="page-header">
+        <div>
+          <h2><i class="bi bi-calendar3 me-2"></i>Training Schedule</h2>
+          <p>Manage all booked driving training sessions</p>
+        </div>
+        <button *ngIf="isStaff" class="btn btn-primary" (click)="newBooking()">
+          <i class="bi bi-plus-lg me-2"></i>Book Session
+        </button>
+      </div>
+
+      <div *ngIf="errorMessage" class="alert-danger"><i class="bi bi-exclamation-circle me-2"></i>{{ errorMessage }}</div>
+
+      <!-- Filters -->
+      <div class="filter-bar">
+        <div class="filter-group">
+          <label>Date</label>
+          <input type="date" class="form-control filter-input" [(ngModel)]="filterDate">
+        </div>
+        <div class="filter-group">
+          <label>Instructor</label>
+          <select class="form-control filter-input" [(ngModel)]="filterInstructorId">
+            <option [value]="0">All Instructors</option>
+            <option *ngFor="let i of instructors" [value]="i.id">{{ i.instructorName }}</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Status</label>
+          <select class="form-control filter-input" [(ngModel)]="filterStatus">
+            <option value="">All</option>
+            <option value="Scheduled">Scheduled</option>
+            <option value="Completed">Completed</option>
+            <option value="Cancelled">Cancelled</option>
+            <option value="NoShow">No Show</option>
+          </select>
+        </div>
+        <div class="filter-actions">
+          <button class="btn btn-primary" (click)="applyFilters()"><i class="bi bi-search me-1"></i>Filter</button>
+          <button class="btn btn-cancel"  (click)="clearFilters()"><i class="bi bi-x-lg me-1"></i>Clear</button>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="isLoading" class="loading-state">
+        <span class="spinner-border spinner-border-sm me-2"></span>Loading sessions...
+      </div>
+
+      <!-- Empty -->
+      <div *ngIf="!isLoading && sessions.length === 0" class="empty-state">
+        <i class="bi bi-calendar-x"></i>
+        <p>No training sessions found.</p>
+        <button *ngIf="isStaff" class="btn btn-primary" (click)="newBooking()">
+          <i class="bi bi-plus-lg me-2"></i>Book First Session
+        </button>
+      </div>
+
+      <!-- Sessions Table -->
+      <div *ngIf="!isLoading && sessions.length > 0" class="table-card">
+        <div class="sessions-count">{{ sessions.length }} session(s)</div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date &amp; Time</th>
+                <th>Student</th>
+                <th>Instructor</th>
+                <th>Vehicle Class</th>
+                <th>Duration</th>
+                <th>Status</th>
+                <th>Notes</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of sessions">
+                <td>
+                  <div class="date-cell">
+                    <span class="date-main">{{ s.scheduledDate | date:'dd MMM yyyy' }}</span>
+                    <span class="date-time">{{ s.scheduledTime }}</span>
+                  </div>
+                </td>
+                <td>
+                  <a class="student-link" (click)="viewStudent(s.studentId)">{{ s.studentName }}</a>
+                  <div class="sub-text">{{ s.studentNic }}</div>
+                </td>
+                <td>{{ s.instructorName }}</td>
+                <td><span class="vehicle-badge">{{ s.vehicleClass }}</span></td>
+                <td>{{ s.durationHours }}h</td>
+                <td>
+                  <span class="status-badge" [ngClass]="statusClass(s.status)">{{ s.status }}</span>
+                  <span *ngIf="isOverdue(s)" class="badge-overdue ms-1" title="Session date has passed">Overdue</span>
+                  <div *ngIf="s.hoursLogged" class="sub-text">{{ s.hoursLogged }}h logged</div>
+                </td>
+                <td>
+                  <span class="notes-text">{{ s.sessionNotes || s.cancelReason || '—' }}</span>
+                </td>
+                <td>
+                  <div class="action-cell">
+                    <!-- Mark Complete (staff/admin, scheduled only) -->
+                    <button *ngIf="isStaff && s.status === 'Scheduled'"
+                            class="btn-action approve" title="Mark Complete"
+                            (click)="markComplete(s)">
+                      <i class="bi bi-check-lg"></i>
+                    </button>
+                    <!-- Cancel (staff/admin, scheduled only) -->
+                    <button *ngIf="isStaff && s.status === 'Scheduled'"
+                            class="btn-action edit" title="Cancel Session"
+                            data-bs-toggle="modal" data-bs-target="#cancelModal"
+                            (click)="openCancelModal(s)">
+                      <i class="bi bi-x-circle"></i>
+                    </button>
+                    <!-- Delete (admin only) -->
+                    <button *ngIf="isStaff && s.status !== 'Scheduled'"
+                            class="btn-action delete" title="Delete"
+                            (click)="deleteSession(s)">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Cancel Modal -->
+<div class="modal-overlay" *ngIf="cancelSessionId > 0" (click)="cancelSessionId=0">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header-row">
+      <h5><i class="bi bi-x-circle me-2"></i>Cancel Session</h5>
+      <button class="modal-close" (click)="cancelSessionId=0"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="form-group mt-2">
+      <label>Mark as</label>
+      <select class="form-control" [(ngModel)]="cancelStatus">
+        <option value="Cancelled">Cancelled</option>
+        <option value="NoShow">No Show</option>
+      </select>
+    </div>
+    <div class="form-group mt-2">
+      <label>Reason <span class="hint">(optional)</span></label>
+      <input type="text" class="form-control" [(ngModel)]="cancelReason" placeholder="e.g. Student called to reschedule">
+    </div>
+    <div class="modal-footer-row">
+      <button class="btn btn-cancel" (click)="cancelSessionId=0">Back</button>
+      <button class="btn btn-danger" (click)="confirmCancel()" [disabled]="isCancelling">
+        <span *ngIf="isCancelling" class="spinner-border spinner-border-sm me-1"></span>
+        Confirm
+      </button>
+    </div>
+  </div>
+</div>
