@@ -1,0 +1,140 @@
+<div class="dsms-layout">
+  <app-sidebar></app-sidebar>
+  <div class="main-content">
+    <app-topbar></app-topbar>
+    <div class="page-content">
+
+      <div class="page-header">
+        <div>
+          <h2><i class="bi bi-calendar-plus me-2"></i>Book Training Session</h2>
+          <p>Schedule a new driving session for a student</p>
+        </div>
+        <button class="btn btn-back" (click)="goBack()">
+          <i class="bi bi-arrow-left me-2"></i>Back
+        </button>
+      </div>
+
+      <div *ngIf="errorMessage" class="alert-danger"><i class="bi bi-exclamation-circle me-2"></i>{{ errorMessage }}</div>
+      <div *ngIf="successMsg"   class="alert-success"><i class="bi bi-check-circle me-2"></i>{{ successMsg }}</div>
+
+      <div class="form-row">
+
+        <!-- Left: Student -->
+        <div class="form-card">
+          <h6 class="section-title"><i class="bi bi-person-circle me-2"></i>Student</h6>
+
+          <div class="form-group">
+            <label>Select Student <span class="required">*</span></label>
+            <div class="student-search-wrap">
+              <div class="student-search-input-row">
+                <i class="bi bi-search search-icon"></i>
+                <input type="text" class="form-control search-input"
+                       [(ngModel)]="studentSearch"
+                       (input)="onStudentInput()"
+                       placeholder="Type name, NIC or phone..."
+                       autocomplete="off">
+                <button *ngIf="selectedStudent" class="clear-btn" (click)="clearStudent()">
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </div>
+              <div *ngIf="showStudentDropdown" class="student-dropdown">
+                <div class="student-option" *ngFor="let s of studentResults" (click)="selectStudent(s)">
+                  <div class="student-opt-avatar">{{ s.studentName?.charAt(0) }}</div>
+                  <div class="student-opt-info">
+                    <span class="student-opt-name">{{ s.studentName }}</span>
+                    <span class="student-opt-nic">{{ s.nic }} &nbsp;·&nbsp; {{ s.phoneNumber }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="selectedStudent" class="student-info-box">
+            <div class="info-row"><span>Name</span><strong>{{ selectedStudent.studentName }}</strong></div>
+            <div class="info-row"><span>NIC</span><strong>{{ selectedStudent.nic }}</strong></div>
+            <div class="info-row"><span>Phone</span><strong>{{ selectedStudent.phoneNumber }}</strong></div>
+          </div>
+
+          <!-- Session Notes -->
+          <div class="form-group mt-3">
+            <label>Notes <span class="hint">(optional)</span></label>
+            <textarea class="form-control" [(ngModel)]="notes" rows="3"
+                      placeholder="e.g. Focus on parking, highway session..."></textarea>
+          </div>
+        </div>
+
+        <!-- Right: Session Details -->
+        <div class="form-card">
+          <h6 class="section-title"><i class="bi bi-clock me-2"></i>Session Details</h6>
+
+          <div class="form-group">
+            <label>Instructor <span class="required">*</span></label>
+            <select class="form-control" [(ngModel)]="instructorId">
+              <option [value]="0" disabled>— Select Instructor —</option>
+              <option *ngFor="let i of instructors" [value]="i.id">{{ i.instructorName }}</option>
+            </select>
+            <small *ngIf="instructors.length === 0" class="hint text-warning">
+              No instructors found for this branch.
+            </small>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label>Date <span class="required">*</span></label>
+              <input type="date" class="form-control" [(ngModel)]="scheduledDate"
+                     [min]="'2020-01-01'">
+            </div>
+            <div class="form-group">
+              <label>Time <span class="required">*</span></label>
+              <input type="time" class="form-control" [(ngModel)]="scheduledTime">
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label>Duration (hours) <span class="required">*</span></label>
+              <select class="form-control" [(ngModel)]="durationHours">
+                <option [value]="0.5">0.5h</option>
+                <option [value]="1">1h</option>
+                <option [value]="1.5">1.5h</option>
+                <option [value]="2">2h</option>
+                <option [value]="2.5">2.5h</option>
+                <option [value]="3">3h</option>
+                <option [value]="4">4h</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Vehicle Class <span class="required">*</span></label>
+              <select class="form-control" [(ngModel)]="vehicleClass">
+                <option value="" disabled>— Select —</option>
+                <option *ngFor="let vc of vehicleClasses" [value]="vc">{{ vc }}</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Summary -->
+          <div *ngIf="selectedStudent && instructorId && scheduledDate" class="booking-summary">
+            <div class="bs-row"><span>Student</span><strong>{{ selectedStudent.studentName }}</strong></div>
+            <div class="bs-row"><span>Instructor</span>
+              <strong>{{ getInstructorName(instructorId) }}</strong>
+            </div>
+            <div class="bs-row"><span>Date &amp; Time</span><strong>{{ scheduledDate }} at {{ scheduledTime }}</strong></div>
+            <div class="bs-row"><span>Duration</span><strong>{{ durationHours }}h — {{ vehicleClass }}</strong></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Submit -->
+      <div class="form-actions">
+        <button class="btn btn-cancel" (click)="goBack()">Cancel</button>
+        <button class="btn btn-primary" (click)="onSubmit()" [disabled]="isSaving">
+          <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
+          <i *ngIf="!isSaving" class="bi bi-calendar-check me-2"></i>
+          {{ isSaving ? 'Booking...' : 'Book Session' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
