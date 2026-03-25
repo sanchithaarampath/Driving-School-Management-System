@@ -1,0 +1,205 @@
+<div class="dsms-layout">
+  <app-sidebar></app-sidebar>
+  <div class="main-content">
+    <app-topbar></app-topbar>
+    <div class="page-content">
+
+      <div class="page-header">
+        <div>
+          <h2>Instructor Dashboard</h2>
+          <p>Welcome, {{ user?.userFullName }}</p>
+        </div>
+        <button class="btn btn-primary" (click)="goToAttendance()">
+          <i class="bi bi-calendar-plus me-2"></i>Record Attendance
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon total"><i class="bi bi-people-fill"></i></div>
+          <div class="stat-info"><span class="stat-value">{{ totalStudents }}</span><span class="stat-label">My Students</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon income"><i class="bi bi-hourglass-split"></i></div>
+          <div class="stat-info"><span class="stat-value">{{ inProgressCount }}</span><span class="stat-label">In Training</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon paid"><i class="bi bi-check-circle"></i></div>
+          <div class="stat-info"><span class="stat-value">{{ completedCount }}</span><span class="stat-label">Training Complete</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon pending"><i class="bi bi-calendar3"></i></div>
+          <div class="stat-info"><span class="stat-value">{{ scheduledCount }}</span><span class="stat-label">Upcoming Sessions</span></div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="dash-tabs">
+        <button class="dash-tab" [class.active]="activeTab==='students'" (click)="switchTab('students')">
+          <i class="bi bi-people me-2"></i>My Students
+        </button>
+        <button class="dash-tab" [class.active]="activeTab==='schedule'" (click)="switchTab('schedule')">
+          <i class="bi bi-calendar3 me-2"></i>My Schedule
+          <span *ngIf="scheduledCount > 0" class="tab-badge">{{ scheduledCount }}</span>
+        </button>
+      </div>
+
+      <!-- ── MY STUDENTS TAB ─────────────────────────────────────── -->
+      <ng-container *ngIf="activeTab === 'students'">
+        <div class="search-bar">
+          <div class="search-input">
+            <i class="bi bi-search"></i>
+            <input type="text" placeholder="Search student by name or NIC..."
+              [(ngModel)]="searchTerm" (input)="search()">
+          </div>
+          <span class="result-count">{{ filteredStudents.length }} students</span>
+        </div>
+
+        <div class="table-card">
+          <div *ngIf="isLoading" class="loading-state">
+            <div class="spinner-border text-danger"></div><p>Loading students...</p>
+          </div>
+          <div *ngIf="!isLoading && filteredStudents.length === 0" class="empty-state">
+            <i class="bi bi-people"></i><p>No students found</p>
+          </div>
+          <table *ngIf="!isLoading && filteredStudents.length > 0" class="data-table">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>NIC</th>
+                <th>Branch</th>
+                <th>Package</th>
+                <th>Training Progress</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of filteredStudents">
+                <td>
+                  <div class="student-name">
+                    <div class="avatar">{{ s.studentName?.charAt(0) }}</div>
+                    {{ s.studentName }}
+                  </div>
+                </td>
+                <td>{{ s.nic }}</td>
+                <td>{{ s.branchName }}</td>
+                <td>{{ s.packageName }}</td>
+                <td>
+                  <div class="progress-cell">
+                    <div class="mini-bar">
+                      <div class="mini-fill"
+                           [style.width.%]="sessionPercent(s)"
+                           [class.mini-fill-complete]="s.attendanceDays > 0 && s.attendanceDays >= s.totalSessions"></div>
+                    </div>
+                    <span class="progress-label">
+                      <ng-container *ngIf="s.totalSessions > 0">
+                        {{ s.attendanceDays }}/{{ s.totalSessions }} sessions
+                      </ng-container>
+                      <ng-container *ngIf="s.totalSessions === 0">
+                        {{ s.attendanceDays }} days
+                      </ng-container>
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  <span *ngIf="s.isRecommendForTrial" class="badge badge-paid"><i class="bi bi-check me-1"></i>Practical Approved</span>
+                  <span *ngIf="!s.isRecommendForTrial && s.scheduledSessions > 0" class="badge badge-scheduled">
+                    <i class="bi bi-clock me-1"></i>{{ s.scheduledSessions }} upcoming
+                  </span>
+                  <span *ngIf="!s.isRecommendForTrial && s.scheduledSessions === 0 && s.attendanceDays === 0" class="badge badge-pending">Not Started</span>
+                  <span *ngIf="!s.isRecommendForTrial && s.scheduledSessions === 0 && s.attendanceDays > 0" class="badge badge-partial">In Training</span>
+                </td>
+                <td>
+                  <button *ngIf="s.sprId > 0" class="btn-action approve" title="Record Attendance" (click)="goToAttendanceFor(s.sprId)">
+                    <i class="bi bi-calendar-plus"></i>
+                  </button>
+                  <span *ngIf="s.sprId === 0" class="text-muted small">—</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+
+      <!-- ── MY SCHEDULE TAB ─────────────────────────────────────── -->
+      <ng-container *ngIf="activeTab === 'schedule'">
+        <div class="schedule-filter-bar">
+          <button class="sf-btn" [class.active]="scheduleFilter===''"          (click)="scheduleFilter='';  loadSchedule()">All</button>
+          <button class="sf-btn" [class.active]="scheduleFilter==='Scheduled'" (click)="scheduleFilter='Scheduled'; loadSchedule()">Upcoming</button>
+          <button class="sf-btn" [class.active]="scheduleFilter==='Completed'" (click)="scheduleFilter='Completed'; loadSchedule()">Completed</button>
+        </div>
+
+        <div *ngIf="scheduleLoading" class="loading-state">
+          <span class="spinner-border spinner-border-sm me-2"></span>Loading schedule...
+        </div>
+
+        <div *ngIf="!scheduleLoading && sessions.length === 0" class="empty-state">
+          <i class="bi bi-calendar-x"></i><p>No sessions found.</p>
+        </div>
+
+        <div *ngIf="!scheduleLoading && sessions.length > 0" class="sessions-list">
+          <div class="session-card" *ngFor="let s of sessions">
+            <div class="sc-left">
+              <div class="sc-date">{{ s.scheduledDate | date:'EEE, dd MMM' }}</div>
+              <div class="sc-time">{{ s.scheduledTime }}</div>
+              <div class="sc-dur">{{ s.durationHours }}h</div>
+            </div>
+            <div class="sc-body">
+              <div class="sc-student">{{ s.studentName }}</div>
+              <div class="sc-nic">{{ s.studentNic }} · {{ s.studentPhone }}</div>
+              <div class="sc-class"><span class="vehicle-badge">{{ s.vehicleClass }}</span></div>
+              <div *ngIf="s.sessionNotes || s.cancelReason" class="sc-notes">
+                {{ s.sessionNotes || s.cancelReason }}
+              </div>
+            </div>
+            <div class="sc-right">
+              <span class="status-badge" [ngClass]="statusClass(s.status)">{{ s.status }}</span>
+              <span *ngIf="isOverdue(s)" class="badge-overdue ms-1">Overdue</span>
+              <div *ngIf="s.hoursLogged" class="sc-logged">{{ s.hoursLogged }}h logged</div>
+
+              <!-- Complete / Cancel buttons -->
+              <ng-container *ngIf="s.status === 'Scheduled'">
+                <div *ngIf="completingId !== s.id && cancellingId !== s.id" class="sc-actions">
+                  <button class="btn btn-sm btn-success-sm" (click)="openComplete(s)">
+                    <i class="bi bi-check-lg me-1"></i>Complete
+                  </button>
+                  <button class="btn btn-sm btn-warn-sm" (click)="openCancel(s)">
+                    <i class="bi bi-x-circle me-1"></i>Cancel
+                  </button>
+                </div>
+
+                <!-- Complete inline form -->
+                <div *ngIf="completingId === s.id" class="sc-inline-form">
+                  <label>Hours logged</label>
+                  <input type="number" class="form-control form-control-sm" [(ngModel)]="hoursInput" min="0.5" step="0.5">
+                  <label class="mt-1">Notes</label>
+                  <input type="text" class="form-control form-control-sm" [(ngModel)]="notesInput" placeholder="optional">
+                  <div class="sc-inline-actions">
+                    <button class="btn btn-sm btn-cancel" (click)="completingId=0">Back</button>
+                    <button class="btn btn-sm btn-success-sm" (click)="submitComplete(s.id)">Save</button>
+                  </div>
+                </div>
+
+                <!-- Cancel inline form -->
+                <div *ngIf="cancellingId === s.id" class="sc-inline-form">
+                  <select class="form-control form-control-sm" [(ngModel)]="cancelStatus">
+                    <option value="Cancelled">Cancelled</option>
+                    <option value="NoShow">No Show</option>
+                  </select>
+                  <input type="text" class="form-control form-control-sm mt-1" [(ngModel)]="cancelReason" placeholder="Reason (optional)">
+                  <div class="sc-inline-actions">
+                    <button class="btn btn-sm btn-cancel" (click)="cancellingId=0">Back</button>
+                    <button class="btn btn-sm btn-danger-sm" (click)="submitCancel(s.id)">Confirm</button>
+                  </div>
+                </div>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+    </div>
+  </div>
+</div>

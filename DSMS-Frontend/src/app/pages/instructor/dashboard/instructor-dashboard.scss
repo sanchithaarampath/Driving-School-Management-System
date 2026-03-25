@@ -1,0 +1,289 @@
+// Instructor Dashboard — page-specific styles
+
+// ── Tabs ───────────────────────────────────────────────────────────────────
+.dash-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 2px solid var(--border-color, #30363d);
+  padding-bottom: 0;
+}
+
+.dash-tab {
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  padding: 0.6rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary, #8b949e);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: color 0.15s, border-color 0.15s;
+
+  &.active {
+    color: var(--accent-color, #e63946);
+    border-bottom-color: var(--accent-color, #e63946);
+  }
+  &:hover:not(.active) { color: var(--text-primary, #e6edf3); }
+}
+
+.tab-badge {
+  background: var(--accent-color, #e63946);
+  color: #fff;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.1rem 0.45rem;
+  min-width: 18px;
+  text-align: center;
+}
+
+// ── Schedule filter bar ────────────────────────────────────────────────────
+.schedule-filter-bar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.sf-btn {
+  background: var(--card-bg, #161b22);
+  border: 1px solid var(--border-color, #30363d);
+  border-radius: 20px;
+  color: var(--text-secondary, #8b949e);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.3rem 1rem;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &.active {
+    background: rgba(230, 57, 70, 0.12);
+    border-color: rgba(230, 57, 70, 0.4);
+    color: var(--accent-color, #e63946);
+  }
+  &:hover:not(.active) { border-color: var(--text-secondary, #8b949e); color: var(--text-primary, #e6edf3); }
+}
+
+// ── Session cards ──────────────────────────────────────────────────────────
+.sessions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.session-card {
+  display: flex;
+  gap: 1rem;
+  background: var(--card-bg, #161b22);
+  border: 1px solid var(--border-color, #30363d);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  transition: border-color 0.15s;
+
+  &:hover { border-color: rgba(230, 57, 70, 0.3); }
+}
+
+.sc-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 72px;
+  text-align: center;
+  border-right: 1px solid var(--border-color, #30363d);
+  padding-right: 1rem;
+}
+
+.sc-date {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-primary, #e6edf3);
+  white-space: nowrap;
+}
+
+.sc-time {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--accent-color, #e63946);
+  margin: 0.15rem 0;
+}
+
+.sc-dur {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #8b949e);
+}
+
+.sc-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.sc-student {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary, #e6edf3);
+}
+
+.sc-nic {
+  font-size: 0.78rem;
+  color: var(--text-secondary, #8b949e);
+}
+
+.sc-class { margin-top: 0.2rem; }
+
+.sc-notes {
+  font-size: 0.78rem;
+  color: var(--text-secondary, #8b949e);
+  font-style: italic;
+  margin-top: 0.2rem;
+}
+
+.sc-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  min-width: 130px;
+}
+
+.sc-logged {
+  font-size: 0.75rem;
+  color: #3fb950;
+  font-weight: 600;
+}
+
+.sc-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+}
+
+.sc-inline-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 140px;
+
+  label { font-size: 0.72rem; color: var(--text-secondary, #8b949e); margin: 0; }
+}
+
+.sc-inline-actions {
+  display: flex;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+}
+
+.btn-success-sm {
+  background: rgba(35, 134, 54, 0.15);
+  color: #3fb950;
+  border: 1px solid rgba(35, 134, 54, 0.35);
+  border-radius: 6px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  &:hover { background: rgba(35, 134, 54, 0.25); }
+}
+
+.btn-warn-sm {
+  background: rgba(240, 136, 62, 0.1);
+  color: #f0883e;
+  border: 1px solid rgba(240, 136, 62, 0.3);
+  border-radius: 6px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  &:hover { background: rgba(240, 136, 62, 0.2); }
+}
+
+.btn-danger-sm {
+  background: rgba(248, 81, 73, 0.12);
+  color: #f85149;
+  border: 1px solid rgba(248, 81, 73, 0.3);
+  border-radius: 6px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  &:hover { background: rgba(248, 81, 73, 0.22); }
+}
+
+// ── Status badges (same as training-schedule) ───────────────────────────────
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+
+  &.badge-scheduled { background: rgba(88,166,255,0.12); color: #58a6ff; border: 1px solid rgba(88,166,255,0.3); }
+  &.badge-completed  { background: rgba(35,134,54,0.12);  color: #3fb950; border: 1px solid rgba(35,134,54,0.3); }
+  &.badge-cancelled  { background: rgba(248,81,73,0.12);  color: #f85149; border: 1px solid rgba(248,81,73,0.3); }
+  &.badge-noshow     { background: rgba(240,136,62,0.12); color: #f0883e; border: 1px solid rgba(240,136,62,0.3); }
+}
+
+.badge-overdue {
+  display: inline-block;
+  background: rgba(210, 107, 0, 0.15);
+  color: #f0883e;
+  border: 1px solid rgba(240, 136, 62, 0.4);
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 1px 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  vertical-align: middle;
+}
+
+.vehicle-badge {
+  background: rgba(88,166,255,0.12);
+  color: #58a6ff;
+  border: 1px solid rgba(88,166,255,0.25);
+  border-radius: 6px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.progress-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.mini-bar {
+  flex: 1;
+  height: 8px;
+  background: #21262d;
+  border-radius: 999px;
+  overflow: hidden;
+  min-width: 80px;
+}
+
+.mini-fill {
+  height: 100%;
+  background: var(--primary, #e63946);
+  border-radius: 999px;
+  transition: width 0.3s;
+
+  &.mini-fill-complete { background: #3fb950; }
+}
+
+.progress-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary, #8b949e);
+  white-space: nowrap;
+}
