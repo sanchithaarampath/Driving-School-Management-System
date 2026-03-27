@@ -1,0 +1,206 @@
+// Attendance page — page-specific styles
+
+.attendance-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+
+  @media (max-width: 900px) { grid-template-columns: 1fr; }
+}
+
+// ── Student Picker ─────────────────────────────────────────────────────────────
+.student-picker {
+  background: var(--dark-card, #161b22);
+  border: 1px solid var(--dark-border, #30363d);
+  border-radius: 12px;
+  padding: 1rem;
+  position: sticky;
+  top: 1rem;
+}
+
+.picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h6 { margin: 0; color: var(--text-primary, #e6edf3); font-size: 0.9rem; font-weight: 600; }
+}
+
+.student-list {
+  max-height: 60vh;
+  overflow-y: auto;
+  margin-top: 0.5rem;
+}
+
+.student-list-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover { background: rgba(230,57,70,0.06); }
+  &.active { background: rgba(230,57,70,0.12); border-left: 3px solid var(--primary, #e63946); }
+}
+
+.sli-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--primary, #e63946);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+.sli-info {
+  flex: 1;
+  min-width: 0;
+}
+.sli-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary, #e6edf3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sli-nic {
+  font-size: 0.72rem;
+  color: var(--text-secondary, #8b949e);
+}
+
+.sli-days {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-secondary, #8b949e);
+  white-space: nowrap;
+
+  &.done { color: #3fb950; }
+}
+
+// ── Attendance Panel ───────────────────────────────────────────────────────────
+.attendance-panel {
+  background: var(--dark-card, #161b22);
+  border: 1px solid var(--dark-border, #30363d);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.selected-student-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--dark-border, #30363d);
+  margin-bottom: 1rem;
+}
+
+.ssb-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--primary, #e63946);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+.ssb-info { flex: 1; }
+.ssb-name { font-size: 1rem; font-weight: 700; color: var(--text-primary, #e6edf3); }
+.ssb-sub  { font-size: 0.8rem; color: var(--text-secondary, #8b949e); }
+
+// ── Training Progress Bar ──────────────────────────────────────────────────────
+.training-progress {
+  margin-bottom: 0.25rem;
+}
+
+.tp-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  color: var(--text-secondary, #8b949e);
+  margin-bottom: 0.4rem;
+
+  strong { color: var(--text-primary, #e6edf3); }
+}
+
+.tp-bar {
+  height: 10px;
+  background: #21262d;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.tp-fill {
+  height: 100%;
+  background: var(--primary, #e63946);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+
+  &.tp-complete { background: #3fb950; }
+}
+
+// ── delete btn ─────────────────────────────────────────────────────────────────
+.btn-action.delete {
+  background: rgba(230,57,70,0.12);
+  color: #e63946;
+  border: 1px solid rgba(230,57,70,0.3);
+  &:hover { background: rgba(230,57,70,0.25); }
+}
+
+// ── Inline delete confirm ──────────────────────────────────────────────────────
+.inline-del-confirm {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  animation: slideIn 0.15s ease;
+}
+
+.del-warn-sm {
+  font-size: 0.71rem;
+  font-weight: 600;
+  color: #e63946;
+  white-space: nowrap;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-4px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.enrol-prompt {
+  background: rgba(240, 136, 62, 0.08);
+  border: 1px solid rgba(240, 136, 62, 0.35);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  .enrol-info { font-size: 0.875rem; color: var(--text-primary, #e6edf3); line-height: 1.5; }
+}
+
+.btn-warning {
+  background: #e36209;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  &:hover:not(:disabled) { background: #c0500b; }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
