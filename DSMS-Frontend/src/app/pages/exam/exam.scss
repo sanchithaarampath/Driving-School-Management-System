@@ -1,0 +1,31 @@
+// Exam Results page — page-specific styles (shared layout lives in styles.scss)
+.exam-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+
+  @media (max-width: 900px) { grid-template-columns: 1fr; }
+}
+
+.result-options {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.result-option {
+  flex: 1;
+  border: 2px solid var(--dark-border, #30363d);
+  border-radius: 8px;
+  padding: 0.75rem;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+  color: var(--text-secondary, #8b949e);
+
+  &.pass:hover, &.pass.selected { border-color: #3fb950; background: rgba(35,134,54,0.1); color: #3fb950; }
+  &.fail:hover, &.fail.selected { border-color: #e63946; background: rgba(230,57,70,0.1); color: #e63946; }
+
+  i { display: block; font-size: 1.5rem; margin-bottom: 0.25rem; }
+  span { font-size: 0.85rem; font-weight: 600; }
+}
