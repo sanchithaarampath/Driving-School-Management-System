@@ -1,0 +1,210 @@
+<div class="dsms-layout">
+  <app-sidebar></app-sidebar>
+  <div class="main-content">
+    <app-topbar></app-topbar>
+    <div class="page-content">
+
+      <div class="page-header">
+        <div>
+          <h2><i class="bi bi-clipboard2-pulse me-2"></i>Practical Test Attempts</h2>
+          <p>Record and track each student's practical driving test attempts</p>
+        </div>
+      </div>
+
+      <div *ngIf="successMessage" class="alert-success"><i class="bi bi-check-circle me-2"></i>{{ successMessage }}</div>
+      <div *ngIf="errorMessage"   class="alert-danger"><i class="bi bi-exclamation-circle me-2"></i>{{ errorMessage }}</div>
+
+      <div class="pt-layout">
+
+        <!-- LEFT: Search & Record -->
+        <div>
+          <!-- Search -->
+          <div class="form-card">
+            <h6 class="section-title"><i class="bi bi-search me-2"></i>Find Student</h6>
+            <div class="search-bar">
+              <div class="search-input">
+                <i class="bi bi-search"></i>
+                <input type="text" placeholder="Name, NIC or phone..."
+                  [(ngModel)]="searchTerm" (keyup.enter)="searchStudents()">
+              </div>
+              <button class="btn btn-primary" (click)="searchStudents()" [disabled]="isSearching">
+                <span *ngIf="isSearching"  class="spinner-border spinner-border-sm"></span>
+                <span *ngIf="!isSearching">Search</span>
+              </button>
+            </div>
+
+            <div class="table-card" *ngIf="searchResult.length > 0" style="margin-top:1rem;">
+              <table class="data-table">
+                <thead><tr><th>Name</th><th>NIC</th><th>Branch</th><th></th></tr></thead>
+                <tbody>
+                  <tr *ngFor="let s of searchResult">
+                    <td><strong>{{ s.studentName }}</strong></td>
+                    <td>{{ s.nic }}</td>
+                    <td>{{ s.branchName }}</td>
+                    <td>
+                      <button class="btn-action approve" (click)="selectStudent(s)">
+                        <i class="bi bi-person-check"></i> Select
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Record Attempt Form -->
+          <div class="form-card" *ngIf="selectedStudent" style="margin-top:1rem;">
+            <div class="student-header-bar">
+              <div class="sha-avatar">{{ selectedStudent.studentName?.charAt(0) }}</div>
+              <div class="sha-info">
+                <div class="sha-name">{{ selectedStudent.studentName }}</div>
+                <div class="sha-sub">{{ selectedStudent.nic }} &bull; {{ selectedStudent.branchName }}</div>
+              </div>
+              <div class="sha-stats">
+                <span class="badge badge-paid" *ngIf="passCount > 0"><i class="bi bi-check-circle me-1"></i>{{ passCount }} Pass</span>
+                <span class="badge badge-pending" *ngIf="failCount > 0"><i class="bi bi-x-circle me-1"></i>{{ failCount }} Fail</span>
+                <span class="badge badge-partial" *ngIf="attempts.length === 0">No Attempts</span>
+              </div>
+            </div>
+
+            <h6 class="section-title mt-3"><i class="bi bi-plus-circle me-2"></i>Record Attempt {{ attempts.length + 1 }}</h6>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Test Date</label>
+                <input type="date" class="form-control" [(ngModel)]="form.testDate">
+              </div>
+              <div class="form-group">
+                <label>Result <span class="required">*</span></label>
+                <div class="result-options">
+                  <div class="result-option pass" [class.selected]="form.result==='Pass'" (click)="form.result='Pass'">
+                    <i class="bi bi-check-circle-fill"></i><span>Pass</span>
+                  </div>
+                  <div class="result-option fail" [class.selected]="form.result==='Fail'" (click)="form.result='Fail'">
+                    <i class="bi bi-x-circle-fill"></i><span>Fail</span>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group full-width">
+                <label>Remarks <span style="color:var(--text-secondary);font-weight:400;">(optional)</span></label>
+                <textarea class="form-control" [(ngModel)]="form.remarks" rows="2"
+                  placeholder="e.g. Failed at reverse parking, passed on second attempt..."></textarea>
+              </div>
+
+              <!-- License field shown only on Pass -->
+              <div class="form-group full-width" *ngIf="form.result === 'Pass'">
+                <label><i class="bi bi-credit-card me-1 text-success"></i>Issued License No. <span style="color:var(--text-secondary);font-weight:400;">(if available now)</span></label>
+                <input type="text" class="form-control" [(ngModel)]="form.licenseNumber"
+                  placeholder="e.g. B1234567">
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-primary" (click)="recordAttempt()" [disabled]="isSaving">
+                <span *ngIf="isSaving"  class="spinner-border spinner-border-sm me-2"></span>
+                <i *ngIf="!isSaving" class="bi bi-check-lg me-2"></i>
+                {{ isSaving ? 'Saving...' : 'Record Attempt' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- License Number Panel -->
+          <div class="form-card" *ngIf="selectedStudent" style="margin-top:1rem;">
+            <div class="license-header">
+              <div>
+                <h6 class="section-title mb-0"><i class="bi bi-credit-card me-2"></i>Issued License</h6>
+                <div *ngIf="selectedStudent.issuedLicenseNo" class="license-display">
+                  <span class="license-no">{{ selectedStudent.issuedLicenseNo }}</span>
+                  <span class="license-date">Issued: {{ selectedStudent.licenseIssuedDate | date:'dd MMM yyyy' }}</span>
+                </div>
+                <div *ngIf="!selectedStudent.issuedLicenseNo" style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.25rem;">
+                  No license recorded yet
+                </div>
+              </div>
+              <button class="btn-action edit" (click)="showLicenseForm = !showLicenseForm" title="Edit license">
+                <i class="bi bi-pencil"></i>
+              </button>
+            </div>
+
+            <div *ngIf="showLicenseForm" class="form-grid" style="margin-top:1rem;">
+              <div class="form-group">
+                <label>License Number</label>
+                <input type="text" class="form-control" [(ngModel)]="licenseForm.issuedLicenseNo" placeholder="e.g. B1234567">
+              </div>
+              <div class="form-group">
+                <label>Date Issued</label>
+                <input type="date" class="form-control" [(ngModel)]="licenseForm.licenseIssuedDate">
+              </div>
+              <div class="form-group full-width">
+                <div class="form-actions" style="margin-top:0;">
+                  <button class="btn btn-cancel" (click)="showLicenseForm=false">Cancel</button>
+                  <button class="btn btn-primary" (click)="saveLicense()" [disabled]="isSavingLicense">
+                    <span *ngIf="isSavingLicense" class="spinner-border spinner-border-sm me-2"></span>
+                    {{ isSavingLicense ? 'Saving...' : 'Save License' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Attempts History -->
+        <div class="table-card">
+          <div class="card-header">
+            <h6><i class="bi bi-list-check me-2"></i>
+              {{ selectedStudent ? selectedStudent.studentName + ' — Test History' : 'Test History' }}
+            </h6>
+          </div>
+
+          <div *ngIf="!selectedStudent" class="empty-state" style="padding:4rem 2rem;text-align:center;">
+            <i class="bi bi-person-bounding-box" style="font-size:2.5rem;color:var(--text-secondary);display:block;margin-bottom:0.75rem;"></i>
+            <p>Search and select a student to view their test history</p>
+          </div>
+
+          <div *ngIf="selectedStudent && isLoadingAttempts" class="loading-state" style="padding:2rem;">
+            <div class="spinner-border text-danger"></div>
+          </div>
+
+          <table class="data-table" *ngIf="selectedStudent && !isLoadingAttempts && attempts.length > 0">
+            <thead>
+              <tr><th>Attempt</th><th>Date</th><th>Result</th><th>Remarks</th><th></th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let a of attempts">
+                <td><span class="badge badge-partial">Attempt {{ a.attemptNumber }}</span></td>
+                <td>{{ a.testDate | date:'dd MMM yyyy' }}</td>
+                <td>
+                  <span class="badge" [class.badge-paid]="a.result==='Pass'" [class.badge-pending]="a.result==='Fail'">
+                    <i class="bi" [class.bi-check-circle]="a.result==='Pass'" [class.bi-x-circle]="a.result==='Fail'"></i>
+                    {{ a.result }}
+                  </span>
+                </td>
+                <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                  {{ a.remarks || '—' }}
+                </td>
+                <td>
+                  <div *ngIf="deleteConfirmId !== a.id">
+                    <button class="btn-action delete" (click)="requestDelete(a.id)" title="Remove">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                  <div *ngIf="deleteConfirmId === a.id" class="inline-del-confirm">
+                    <span style="font-size:0.72rem;font-weight:600;color:#e63946;">Delete?</span>
+                    <button class="btn-action approve" (click)="confirmDelete()"><i class="bi bi-check-lg"></i></button>
+                    <button class="btn-action edit"    (click)="cancelDelete()"><i class="bi bi-x-lg"></i></button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="empty-state" *ngIf="selectedStudent && !isLoadingAttempts && attempts.length === 0" style="padding:2.5rem;">
+            <i class="bi bi-clipboard-x"></i>
+            <p>No test attempts recorded yet for this student</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

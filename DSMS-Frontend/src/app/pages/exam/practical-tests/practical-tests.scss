@@ -1,0 +1,96 @@
+.pt-layout {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+  @media (max-width: 960px) { grid-template-columns: 1fr; }
+}
+
+.student-header-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--dark-border, #30363d);
+}
+
+.sha-avatar {
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  background: var(--primary, #e63946);
+  color: #fff; font-weight: 700; font-size: 1.2rem;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; text-transform: uppercase;
+}
+
+.sha-info { flex: 1; }
+.sha-name { font-size: 1rem; font-weight: 700; color: var(--text-primary, #e6edf3); }
+.sha-sub  { font-size: 0.78rem; color: var(--text-secondary, #8b949e); }
+.sha-stats { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+
+.result-options {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.result-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem;
+  border-radius: 8px;
+  border: 2px solid var(--dark-border, #30363d);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.15s;
+  color: var(--text-secondary, #8b949e);
+
+  &.pass {
+    &:hover, &.selected {
+      border-color: #3fb950;
+      background: rgba(63,185,80,0.12);
+      color: #3fb950;
+    }
+  }
+  &.fail {
+    &:hover, &.selected {
+      border-color: #e63946;
+      background: rgba(230,57,70,0.12);
+      color: #e63946;
+    }
+  }
+}
+
+.inline-del-confirm {
+  display: flex; align-items: center; gap: 0.3rem;
+}
+
+// License panel
+.license-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.license-display {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.license-no {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #3fb950;
+  letter-spacing: 0.05em;
+}
+
+.license-date {
+  font-size: 0.78rem;
+  color: var(--text-secondary, #8b949e);
+}
