@@ -32,23 +32,10 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
-  getToken(): string | null {
-    return localStorage.getItem('token');
-  }
-
-  getUser(): any {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
-  }
-
-  isLoggedIn(): boolean {
-    return !!this.getToken();
-  }
-
-  isAdmin(): boolean {
-    const user = this.getUser();
-    return user?.role === 'Admin';
-  }
+  getToken(): string | null { return localStorage.getItem('token'); }
+  getUser(): any { const u = localStorage.getItem('user'); return u ? JSON.parse(u) : null; }
+  isLoggedIn(): boolean { return !!this.getToken(); }
+  isAdmin(): boolean { return this.getUser()?.role === 'Admin'; }
 
   changePassword(userId: number, currentPassword: string, newPassword: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/change-password`, { userId, currentPassword, newPassword });

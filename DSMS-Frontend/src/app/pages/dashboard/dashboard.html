@@ -1,1 +1,124 @@
-<p>dashboard works!</p>
+<div class="dsms-layout">
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo"><i class="bi bi-car-front-fill"></i></div>
+      <div class="brand-text">
+        <span class="brand-name">Arampath</span>
+        <span class="brand-sub">Driving School</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item active" routerLink="/dashboard"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
+      <a class="nav-item" routerLink="/students"><i class="bi bi-people"></i><span>Students</span></a>
+      <a class="nav-item" routerLink="/billing"><i class="bi bi-receipt"></i><span>Billing</span></a>
+    </nav>
+    <div class="sidebar-footer"><span>DSMS v1</span></div>
+  </div>
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left"><h5>Driving School Management System</h5></div>
+      <div class="topbar-right">
+        <div class="user-info">
+          <div class="user-avatar"><i class="bi bi-person-fill"></i></div>
+          <div class="user-details">
+            <span class="user-name">{{ user?.userFullName }}</span>
+            <span class="user-role">{{ user?.role }}</span>
+          </div>
+        </div>
+        <button class="btn btn-logout" (click)="logout()"><i class="bi bi-box-arrow-right"></i> Logout</button>
+      </div>
+    </div>
+    <div class="page-content">
+      <div class="page-header">
+        <h2>Dashboard</h2>
+        <p>Quick access to main modules</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon students"><i class="bi bi-people-fill"></i></div>
+          <div class="stat-info">
+            <span class="stat-value">{{ stats.totalStudents }}</span>
+            <span class="stat-label">Total Students</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon income"><i class="bi bi-cash-coin"></i></div>
+          <div class="stat-info">
+            <span class="stat-value">Rs. {{ stats.totalIncome | number }}</span>
+            <span class="stat-label">Total Income</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon pending"><i class="bi bi-clock-history"></i></div>
+          <div class="stat-info">
+            <span class="stat-value">Rs. {{ stats.pendingAmount | number }}</span>
+            <span class="stat-label">Pending Payments</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon bills"><i class="bi bi-receipt"></i></div>
+          <div class="stat-info">
+            <span class="stat-value">{{ stats.totalBills }}</span>
+            <span class="stat-label">Total Bills</span>
+          </div>
+        </div>
+      </div>
+      <div class="quick-actions">
+        <div class="action-card" (click)="addStudent()">
+          <div class="action-icon add"><i class="bi bi-plus-lg"></i></div>
+          <h6>Add New Student</h6>
+          <p>Register a new student and create a profile.</p>
+          <button class="btn btn-primary">Add Student</button>
+        </div>
+        <div class="action-card" (click)="goToStudents()">
+          <div class="action-icon students"><i class="bi bi-people"></i></div>
+          <h6>Existing Students</h6>
+          <p>Search, view and update student details.</p>
+          <button class="btn btn-outline">View Students</button>
+        </div>
+        <div class="action-card" (click)="goToBilling()">
+          <div class="action-icon billing"><i class="bi bi-currency-rupee"></i></div>
+          <h6>Billing / Payments</h6>
+          <p>Create bills, record payments and view history.</p>
+          <button class="btn btn-outline">Go to Billing</button>
+        </div>
+      </div>
+      <div class="recent-grid">
+        <div class="recent-card">
+          <div class="recent-header">
+            <h6><i class="bi bi-people me-2"></i>Recent Students</h6>
+            <a routerLink="/students" class="view-all">View All</a>
+          </div>
+          <div class="recent-body">
+            <div *ngIf="recentStudents.length === 0" class="empty-state">No students yet</div>
+            <div *ngFor="let s of recentStudents" class="recent-item">
+              <div class="item-avatar"><i class="bi bi-person-circle"></i></div>
+              <div class="item-info">
+                <span class="item-name">{{ s.studentName }}</span>
+                <span class="item-sub">{{ s.nic }} | {{ s.branchName }}</span>
+              </div>
+              <span class="item-date">{{ s.registrationDate | date:"dd/MM/yy" }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="recent-card">
+          <div class="recent-header">
+            <h6><i class="bi bi-cash me-2"></i>Recent Payments</h6>
+            <a routerLink="/billing" class="view-all">View All</a>
+          </div>
+          <div class="recent-body">
+            <div *ngIf="recentPayments.length === 0" class="empty-state">No payments yet</div>
+            <div *ngFor="let p of recentPayments" class="recent-item">
+              <div class="item-avatar payment"><i class="bi bi-cash-coin"></i></div>
+              <div class="item-info">
+                <span class="item-name">{{ p.studentName }}</span>
+                <span class="item-sub">{{ p.paymentMethod }}</span>
+              </div>
+              <span class="item-amount">Rs. {{ p.amount | number }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
