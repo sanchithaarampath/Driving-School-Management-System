@@ -1,1 +1,45 @@
-<p>login works!</p>
+<div class="login-wrapper">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="logo-circle">
+        <i class="bi bi-car-front-fill"></i>
+      </div>
+      <h2>Arampath Driving School</h2>
+      <p>Driving School Management System</p>
+    </div>
+    <div class="login-form">
+      <h4>Welcome Back</h4>
+      <p class="subtitle">Sign in to your account</p>
+      <div *ngIf="errorMessage" class="alert alert-danger">
+        <i class="bi bi-exclamation-circle me-2"></i>{{ errorMessage }}
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Username</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-person"></i></span>
+          <input type="text" class="form-control" placeholder="Enter username"
+            [(ngModel)]="username" (keyup.enter)="onLogin()">
+        </div>
+      </div>
+      <div class="mb-4">
+        <label class="form-label">Password</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-lock"></i></span>
+          <input [type]="showPassword ? 'text' : 'password'" class="form-control"
+            placeholder="Enter password" [(ngModel)]="password" (keyup.enter)="onLogin()">
+          <button class="input-group-text btn-toggle" (click)="showPassword = !showPassword">
+            <i class="bi" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+          </button>
+        </div>
+      </div>
+      <button class="btn btn-primary w-100 btn-login" (click)="onLogin()" [disabled]="isLoading">
+        <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+        <i *ngIf="!isLoading" class="bi bi-box-arrow-in-right me-2"></i>
+        {{ isLoading ? 'Signing in...' : 'Sign In' }}
+      </button>
+    </div>
+    <div class="login-footer">
+      <p>DSMS v1 &copy; 2026 Arampath Driving School</p>
+    </div>
+  </div>
+</div>
