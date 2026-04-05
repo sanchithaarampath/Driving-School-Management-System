@@ -1,1 +1,97 @@
-<p>student-list works!</p>
+<div class="dsms-layout">
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo"><i class="bi bi-car-front-fill"></i></div>
+      <div class="brand-text">
+        <span class="brand-name">Arampath</span>
+        <span class="brand-sub">Driving School</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" routerLink="/dashboard"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
+      <a class="nav-item active" routerLink="/students"><i class="bi bi-people"></i><span>Students</span></a>
+      <a class="nav-item" routerLink="/billing"><i class="bi bi-receipt"></i><span>Billing</span></a>
+    </nav>
+    <div class="sidebar-footer"><span>DSMS v1</span></div>
+  </div>
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left"><h5>Driving School Management System</h5></div>
+      <div class="topbar-right">
+        <div class="user-info">
+          <div class="user-avatar"><i class="bi bi-person-fill"></i></div>
+          <div class="user-details">
+            <span class="user-name">{{ user?.userFullName }}</span>
+            <span class="user-role">{{ user?.role }}</span>
+          </div>
+        </div>
+        <button class="btn btn-logout" (click)="logout()"><i class="bi bi-box-arrow-right"></i> Logout</button>
+      </div>
+    </div>
+    <div class="page-content">
+      <div class="page-header">
+        <div>
+          <h2>Students</h2>
+          <p>Manage all registered students</p>
+        </div>
+        <button class="btn btn-primary" (click)="addStudent()">
+          <i class="bi bi-plus-lg me-2"></i>Add Student
+        </button>
+      </div>
+      <div class="search-bar">
+        <div class="search-input">
+          <i class="bi bi-search"></i>
+          <input type="text" placeholder="Search by name, NIC or phone..." 
+            [(ngModel)]="searchTerm" (input)="search()">
+        </div>
+        <span class="result-count">{{ filteredStudents.length }} students</span>
+      </div>
+      <div class="table-card">
+        <div *ngIf="isLoading" class="loading-state">
+          <div class="spinner-border text-danger"></div>
+          <p>Loading students...</p>
+        </div>
+        <div *ngIf="!isLoading && filteredStudents.length === 0" class="empty-state">
+          <i class="bi bi-people"></i>
+          <p>No students found</p>
+          <button class="btn btn-primary" (click)="addStudent()">Add First Student</button>
+        </div>
+        <table *ngIf="!isLoading && filteredStudents.length > 0" class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Student Name</th>
+              <th>NIC</th>
+              <th>Phone</th>
+              <th>Gender</th>
+              <th>Branch</th>
+              <th>Reg. Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of filteredStudents; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td>
+                <div class="student-name">
+                  <div class="avatar">{{ s.studentName?.charAt(0) }}</div>
+                  {{ s.studentName }}
+                </div>
+              </td>
+              <td>{{ s.nic }}</td>
+              <td>{{ s.phoneNumber }}</td>
+              <td>{{ s.gender || '-' }}</td>
+              <td>{{ s.branchName }}</td>
+              <td>{{ s.registrationDate | date:'dd/MM/yyyy' }}</td>
+              <td>
+                <button class="btn-action edit" (click)="editStudent(s.id)">
+                  <i class="bi bi-pencil"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

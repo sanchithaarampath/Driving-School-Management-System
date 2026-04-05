@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using DSMS.API.Data;
 using DSMS.API.Models;
+using DSMS.API.DTOs;
 
 namespace DSMS.API.Controllers
 {
@@ -54,50 +55,65 @@ namespace DSMS.API.Controllers
             return Ok(student);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Student student)
-        {
-            var existingNic = await _context.Students
-                .FirstOrDefaultAsync(s => s.Nic == student.Nic && s.Active == true);
-            if (existingNic != null)
-                return BadRequest(new { message = "A student with this NIC already exists" });
+      [HttpPost]
+public async Task<IActionResult> Create([FromBody] StudentCreateDto dto)
+{
+    var existingNic = await _context.Students
+        .FirstOrDefaultAsync(s => s.Nic == dto.Nic && s.Active == true);
+    if (existingNic != null)
+        return BadRequest(new { message = "A student with this NIC already exists" });
 
-            student.Active = true;
-            student.RegistrationDate = DateTime.Now;
-            student.CreatedDateTime = DateTime.Now;
-            student.CreatedBy = User.Identity?.Name ?? "system";
+    var student = new Student
+    {
+        BranchId = dto.BranchId,
+        StudentName = dto.StudentName,
+        Email = dto.Email,
+        PhoneNumber = dto.PhoneNumber,
+        WhatsAppNumber = dto.WhatsAppNumber,
+        Address = dto.Address,
+        Nic = dto.Nic,
+        Dob = DateTime.Parse(dto.Dob),
+        Gender = dto.Gender,
+        NearestPoliceStation = dto.NearestPoliceStation,
+        NearestDivisionalSecretariat = dto.NearestDivisionalSecretariat,
+        ExistingLicenseNo = dto.ExistingLicenseNo,
+        IsSpecialRequirements = dto.IsSpecialRequirements,
+        SpecialRequirementTypeId = dto.SpecialRequirementTypeId,
+        Active = true,
+        RegistrationDate = DateTime.Now,
+        CreatedDateTime = DateTime.Now,
+        CreatedBy = User.Identity?.Name ?? "system"
+    };
 
-            _context.Students.Add(student);
-            await _context.SaveChangesAsync();
+    _context.Students.Add(student);
+    await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Student registered successfully", id = student.Id });
-        }
+    return Ok(new { message = "Student registered successfully", id = student.Id });
+}
+    [HttpPut("{id}")]
+public async Task<IActionResult> Update(int id, [FromBody] StudentUpdateDto dto)
+{
+    var student = await _context.Students.FindAsync(id);
+    if (student == null)
+        return NotFound(new { message = "Student not found" });
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] Student updated)
-        {
-            var student = await _context.Students.FindAsync(id);
-            if (student == null)
-                return NotFound(new { message = "Student not found" });
+    student.StudentName = dto.StudentName;
+    student.Email = dto.Email;
+    student.PhoneNumber = dto.PhoneNumber;
+    student.WhatsAppNumber = dto.WhatsAppNumber;
+    student.Address = dto.Address;
+    student.Gender = dto.Gender;
+    student.NearestPoliceStation = dto.NearestPoliceStation;
+    student.NearestDivisionalSecretariat = dto.NearestDivisionalSecretariat;
+    student.ExistingLicenseNo = dto.ExistingLicenseNo;
+    student.IsSpecialRequirements = dto.IsSpecialRequirements;
+    student.SpecialRequirementTypeId = dto.SpecialRequirementTypeId;
+    student.LastModifiedBy = User.Identity?.Name ?? "system";
+    student.LastModifiedDateTime = DateTime.Now;
 
-            student.StudentName = updated.StudentName;
-            student.Email = updated.Email;
-            student.PhoneNumber = updated.PhoneNumber;
-            student.WhatsAppNumber = updated.WhatsAppNumber;
-            student.Address = updated.Address;
-            student.Gender = updated.Gender;
-            student.NearestPoliceStation = updated.NearestPoliceStation;
-            student.NearestDivisionalSecretariat = updated.NearestDivisionalSecretariat;
-            student.ExistingLicenseNo = updated.ExistingLicenseNo;
-            student.IsSpecialRequirements = updated.IsSpecialRequirements;
-            student.SpecialRequirementTypeId = updated.SpecialRequirementTypeId;
-            student.LastModifiedBy = User.Identity?.Name ?? "system";
-            student.LastModifiedDateTime = DateTime.Now;
-
-            await _context.SaveChangesAsync();
-            return Ok(new { message = "Student updated successfully" });
-        }
-
+    await _context.SaveChangesAsync();
+    return Ok(new { message = "Student updated successfully" });
+}
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
