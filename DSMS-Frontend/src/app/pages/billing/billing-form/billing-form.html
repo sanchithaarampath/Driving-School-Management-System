@@ -1,1 +1,127 @@
 <p>billing-form works!</p>
+<div class="dsms-layout">
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo"><i class="bi bi-car-front-fill"></i></div>
+      <div class="brand-text">
+        <span class="brand-name">Arampath</span>
+        <span class="brand-sub">Driving School</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" routerLink="/dashboard"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
+      <a class="nav-item" routerLink="/students"><i class="bi bi-people"></i><span>Students</span></a>
+      <a class="nav-item active" routerLink="/billing"><i class="bi bi-receipt"></i><span>Billing</span></a>
+    </nav>
+    <div class="sidebar-footer"><span>DSMS v1</span></div>
+  </div>
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left"><h5>Driving School Management System</h5></div>
+      <div class="topbar-right">
+        <div class="user-info">
+          <div class="user-avatar"><i class="bi bi-person-fill"></i></div>
+          <div class="user-details">
+            <span class="user-name">{{ user?.userFullName }}</span>
+            <span class="user-role">{{ user?.role }}</span>
+          </div>
+        </div>
+        <button class="btn btn-logout" (click)="logout()"><i class="bi bi-box-arrow-right"></i> Logout</button>
+      </div>
+    </div>
+    <div class="page-content">
+      <div class="page-header">
+        <div>
+          <h2>Create New Bill</h2>
+          <p>Generate a bill and record payment</p>
+        </div>
+        <button class="btn btn-back" (click)="goBack()">
+          <i class="bi bi-arrow-left me-2"></i>Back
+        </button>
+      </div>
+
+      <div *ngIf="successMessage" class="alert alert-success">
+        <i class="bi bi-check-circle me-2"></i>{{ successMessage }}
+      </div>
+      <div *ngIf="errorMessage" class="alert alert-danger">
+        <i class="bi bi-exclamation-circle me-2"></i>{{ errorMessage }}
+      </div>
+
+      <div class="form-row">
+        <div class="form-card">
+          <h6 class="section-title"><i class="bi bi-receipt me-2"></i>Bill Information</h6>
+          <div class="form-group">
+            <label>Select Student <span class="required">*</span></label>
+            <select class="form-control" [(ngModel)]="bill.studentId" (change)="onStudentChange()">
+              <option [value]="null">-- Select Student --</option>
+              <option *ngFor="let s of students" [value]="s.id">{{ s.studentName }} - {{ s.nic }}</option>
+            </select>
+          </div>
+          <div *ngIf="selectedStudent" class="student-info-box">
+            <div class="info-row"><span>Name:</span><strong>{{ selectedStudent.studentName }}</strong></div>
+            <div class="info-row"><span>NIC:</span><strong>{{ selectedStudent.nic }}</strong></div>
+            <div class="info-row"><span>Phone:</span><strong>{{ selectedStudent.phoneNumber }}</strong></div>
+          </div>
+          <div class="form-group mt-3">
+            <label>Total Amount (Rs.) <span class="required">*</span></label>
+            <input type="number" class="form-control" [(ngModel)]="bill.totalAmount" (input)="calculateNet()" placeholder="0.00">
+          </div>
+          <div class="form-group">
+            <label>Discount Amount (Rs.)</label>
+            <input type="number" class="form-control" [(ngModel)]="bill.discountAmount" (input)="calculateNet()" placeholder="0.00">
+          </div>
+          <div class="form-group">
+            <label>Net Amount (Rs.)</label>
+            <input type="number" class="form-control net-amount" [value]="bill.netAmount" readonly>
+          </div>
+          <div class="form-group">
+            <label>Remarks</label>
+            <textarea class="form-control" [(ngModel)]="bill.remarks" rows="2" placeholder="Optional remarks"></textarea>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h6 class="section-title"><i class="bi bi-cash me-2"></i>Payment Details</h6>
+          <div class="form-group">
+            <label>Payment Amount (Rs.)</label>
+            <input type="number" class="form-control" [(ngModel)]="payment.amount" placeholder="0.00">
+            <small class="hint">Leave 0 if no payment now</small>
+          </div>
+          <div class="form-group">
+            <label>Payment Method</label>
+            <select class="form-control" [(ngModel)]="payment.paymentMethod">
+              <option value="Cash">Cash</option>
+              <option value="Bank Transfer">Bank Transfer</option>
+              <option value="Cheque">Cheque</option>
+              <option value="Online">Online</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Reference No.</label>
+            <input type="text" class="form-control" [(ngModel)]="payment.referenceNo" placeholder="Optional">
+          </div>
+          <div class="form-group">
+            <label>Payment Remarks</label>
+            <textarea class="form-control" [(ngModel)]="payment.remarks" rows="2" placeholder="Optional"></textarea>
+          </div>
+          <div class="bill-summary">
+            <div class="summary-row"><span>Total Amount</span><strong>Rs. {{ bill.totalAmount | number }}</strong></div>
+            <div class="summary-row"><span>Discount</span><strong>- Rs. {{ bill.discountAmount | number }}</strong></div>
+            <div class="summary-row"><span>Net Amount</span><strong>Rs. {{ bill.netAmount | number }}</strong></div>
+            <div class="summary-row"><span>Payment Now</span><strong class="text-green">Rs. {{ payment.amount | number }}</strong></div>
+            <div class="summary-row total"><span>Balance</span><strong class="text-red">Rs. {{ (bill.netAmount - payment.amount) | number }}</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-cancel" (click)="goBack()">Cancel</button>
+        <button class="btn btn-primary" (click)="onSubmit()" [disabled]="isSaving">
+          <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
+          <i *ngIf="!isSaving" class="bi bi-check-lg me-2"></i>
+          {{ isSaving ? 'Creating...' : 'Create Bill' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
