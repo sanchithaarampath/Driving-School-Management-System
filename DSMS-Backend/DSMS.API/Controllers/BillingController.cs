@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using DSMS.API.Data;
 using DSMS.API.Models;
+using DSMS.API.DTOs;
 
 namespace DSMS.API.Controllers
 {
@@ -24,6 +25,7 @@ namespace DSMS.API.Controllers
             var bills = await _context.Bills
                 .Include(b => b.Student)
                 .Where(b => b.Active == true)
+                .OrderByDescending(b => b.BillDate)
                 .Select(b => new {
                     b.Id,
                     b.BillNumber,
@@ -53,7 +55,29 @@ namespace DSMS.API.Controllers
             if (bill == null)
                 return NotFound(new { message = "Bill not found" });
 
-            return Ok(bill);
+            return Ok(new {
+                bill.Id,
+                bill.BillNumber,
+                bill.BillDate,
+                bill.TotalAmount,
+                bill.DiscountAmount,
+                bill.NetAmount,
+                bill.PaidAmount,
+                bill.BalanceAmount,
+                bill.Status,
+                bill.Remarks,
+                bill.StudentId,
+                StudentName = bill.Student.StudentName,
+                StudentNic = bill.Student.Nic,
+                Payments = bill.Payments.Select(p => new {
+                    p.Id,
+                    p.Amount,
+                    p.PaymentDate,
+                    p.PaymentMethod,
+                    p.ReferenceNo,
+                    p.Remarks
+                })
+            });
         }
 
         [HttpGet("student/{studentId}")]
@@ -62,25 +86,65 @@ namespace DSMS.API.Controllers
             var bills = await _context.Bills
                 .Include(b => b.Payments)
                 .Where(b => b.StudentId == studentId && b.Active == true)
+                .OrderByDescending(b => b.BillDate)
                 .ToListAsync();
             return Ok(bills);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Bill bill)
+        public async Task<IActionResult> Create([FromBody] BillCreateDto dto)
         {
-            var lastBill = await _context.Bills
-                .OrderByDescending(b => b.Id)
-                .FirstOrDefaultAsync();
+            // Auto-create package registration if none exists
+            var registration = await _context.StudentPackageRegistrations
+                .FirstOrDefaultAsync(r => r.StudentId == dto.StudentId && r.Active == true);
 
+            if (registration == null)
+            {
+                // Get first available package
+                var package = await _context.Packages.FirstOrDefaultAsync(p => p.Active == true);
+                int packageId = package?.Id ?? 1;
+
+                registration = new StudentPackageRegistration
+                {
+                    StudentId = dto.StudentId,
+                    PackageHeaderId = packageId,
+                    TotalAmount = dto.TotalAmount,
+                    DiscountAmount = dto.DiscountAmount,
+                    BalanceAmount = dto.NetAmount,
+                    TotalTrainingHours = 0,
+                    CompletedTrainingHours = 0,
+                    TotalLectureHours = 0,
+                    CompletedLectureHours = 0,
+                    ExamAttempts = 0,
+                    Active = true,
+                    CreatedBy = User.Identity?.Name ?? "system",
+                    CreatedDateTime = DateTime.Now
+                };
+                _context.StudentPackageRegistrations.Add(registration);
+                await _context.SaveChangesAsync();
+            }
+
+            var lastBill = await _context.Bills.OrderByDescending(b => b.Id).FirstOrDefaultAsync();
             int nextNumber = (lastBill == null) ? 1 : lastBill.Id + 1;
-            bill.BillNumber = "BILL-" + nextNumber.ToString("D5");
-            bill.BillDate = DateTime.Now;
-            bill.BalanceAmount = bill.NetAmount - bill.PaidAmount;
-            bill.Status = bill.BalanceAmount <= 0 ? "Paid" : "Pending";
-            bill.Active = true;
-            bill.CreatedBy = User.Identity?.Name ?? "system";
-            bill.CreatedDateTime = DateTime.Now;
+
+            var bill = new Bill
+            {
+                BillNumber = "BILL-" + nextNumber.ToString("D5"),
+                StudentId = dto.StudentId,
+                StudentPackageRegistrationId = registration.Id,
+                BillDate = DateTime.Now,
+                TotalAmount = dto.TotalAmount,
+                DiscountAmount = dto.DiscountAmount,
+                NetAmount = dto.NetAmount,
+                PaidAmount = dto.PaidAmount,
+                BalanceAmount = dto.NetAmount - dto.PaidAmount,
+                Status = (dto.NetAmount - dto.PaidAmount) <= 0 ? "Paid" :
+                         dto.PaidAmount > 0 ? "Partial" : "Pending",
+                Remarks = dto.Remarks,
+                Active = true,
+                CreatedBy = User.Identity?.Name ?? "system",
+                CreatedDateTime = DateTime.Now
+            };
 
             _context.Bills.Add(bill);
             await _context.SaveChangesAsync();
@@ -89,30 +153,37 @@ namespace DSMS.API.Controllers
         }
 
         [HttpPost("{id}/payment")]
-        public async Task<IActionResult> AddPayment(int id, [FromBody] Payment payment)
+        public async Task<IActionResult> AddPayment(int id, [FromBody] PaymentCreateDto dto)
         {
             var bill = await _context.Bills.FindAsync(id);
             if (bill == null)
                 return NotFound(new { message = "Bill not found" });
 
-            if (payment.Amount > bill.BalanceAmount)
+            if (dto.Amount > bill.BalanceAmount)
                 return BadRequest(new { message = "Payment amount exceeds balance" });
 
-            payment.BillId = id;
-            payment.PaymentDate = DateTime.Now;
-            payment.CreatedBy = User.Identity?.Name ?? "system";
-            payment.CreatedDateTime = DateTime.Now;
+            var payment = new Payment
+            {
+                BillId = id,
+                StudentId = bill.StudentId,
+                PaymentDate = DateTime.Now,
+                Amount = dto.Amount,
+                PaymentMethod = dto.PaymentMethod,
+                ReferenceNo = dto.ReferenceNo,
+                Remarks = dto.Remarks,
+                CreatedBy = User.Identity?.Name ?? "system",
+                CreatedDateTime = DateTime.Now
+            };
 
             _context.Payments.Add(payment);
 
-            bill.PaidAmount += payment.Amount;
-            bill.BalanceAmount -= payment.Amount;
+            bill.PaidAmount += dto.Amount;
+            bill.BalanceAmount -= dto.Amount;
             bill.Status = bill.BalanceAmount <= 0 ? "Paid" : "Partial";
             bill.LastModifiedBy = User.Identity?.Name ?? "system";
             bill.LastModifiedDateTime = DateTime.Now;
 
             await _context.SaveChangesAsync();
-
             return Ok(new { message = "Payment recorded successfully" });
         }
 
@@ -122,6 +193,7 @@ namespace DSMS.API.Controllers
             var bills = await _context.Bills
                 .Include(b => b.Student)
                 .Where(b => b.Active == true && b.BalanceAmount > 0)
+                .OrderByDescending(b => b.BillDate)
                 .Select(b => new {
                     b.Id,
                     b.BillNumber,
@@ -141,12 +213,14 @@ namespace DSMS.API.Controllers
         [HttpGet("summary")]
         public async Task<IActionResult> GetSummary()
         {
-            var total = await _context.Bills.Where(b => b.Active == true).SumAsync(b => b.NetAmount);
-            var paid = await _context.Bills.Where(b => b.Active == true).SumAsync(b => b.PaidAmount);
-            var pending = await _context.Bills.Where(b => b.Active == true).SumAsync(b => b.BalanceAmount);
-            var count = await _context.Bills.CountAsync(b => b.Active == true);
+            var bills = await _context.Bills.Where(b => b.Active == true).ToListAsync();
 
-            return Ok(new { totalAmount = total, paidAmount = paid, pendingAmount = pending, totalBills = count });
+            return Ok(new {
+                totalAmount = bills.Sum(b => b.NetAmount),
+                paidAmount = bills.Sum(b => b.PaidAmount),
+                pendingAmount = bills.Sum(b => b.BalanceAmount),
+                totalBills = bills.Count
+            });
         }
     }
 }

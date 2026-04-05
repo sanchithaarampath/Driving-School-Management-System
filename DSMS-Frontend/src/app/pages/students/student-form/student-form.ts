@@ -37,7 +37,7 @@ export class StudentForm implements OnInit {
     nearestDivisionalSecretariat: '',
     existingLicenseNo: '',
     isSpecialRequirements: false,
-    specialRequirementTypeId: null
+    specialRequirementTypeId: null as number | null
   };
 
   constructor(
@@ -99,6 +99,11 @@ export class StudentForm implements OnInit {
       this.errorMessage = 'Please fill all required fields';
       return;
     }
+    if (!this.isEditMode && !this.student.dob) {
+      this.errorMessage = 'Please enter date of birth';
+      return;
+    }
+
     this.isSaving = true;
     this.errorMessage = '';
 
@@ -114,7 +119,7 @@ export class StudentForm implements OnInit {
       },
       error: (err) => {
         this.isSaving = false;
-        this.errorMessage = err.error?.message || 'An error occurred';
+        this.errorMessage = err.error?.message || 'An error occurred. Please try again.';
       }
     });
   }

@@ -1,1 +1,120 @@
-<p>billing-list works!</p>
+<div class="dsms-layout">
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo"><i class="bi bi-car-front-fill"></i></div>
+      <div class="brand-text">
+        <span class="brand-name">Arampath</span>
+        <span class="brand-sub">Driving School</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" routerLink="/dashboard"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
+      <a class="nav-item" routerLink="/students"><i class="bi bi-people"></i><span>Students</span></a>
+      <a class="nav-item active" routerLink="/billing"><i class="bi bi-receipt"></i><span>Billing</span></a>
+    </nav>
+    <div class="sidebar-footer"><span>DSMS v1</span></div>
+  </div>
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left"><h5>Driving School Management System</h5></div>
+      <div class="topbar-right">
+        <div class="user-info">
+          <div class="user-avatar"><i class="bi bi-person-fill"></i></div>
+          <div class="user-details">
+            <span class="user-name">{{ user?.userFullName }}</span>
+            <span class="user-role">{{ user?.role }}</span>
+          </div>
+        </div>
+        <button class="btn btn-logout" (click)="logout()"><i class="bi bi-box-arrow-right"></i> Logout</button>
+      </div>
+    </div>
+    <div class="page-content">
+      <div class="page-header">
+        <div>
+          <h2>Billing & Payments</h2>
+          <p>Manage all bills and payment records</p>
+        </div>
+        <button class="btn btn-primary" (click)="addBill()">
+          <i class="bi bi-plus-lg me-2"></i>Create Bill
+        </button>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon total"><i class="bi bi-receipt"></i></div>
+          <div class="stat-info">
+            <span class="stat-value">{{ summary.totalBills }}</span>
+            <span class="stat-label">Total Bills</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon income"><i class="bi bi-cash-coin"></i></div>
+          <div class="stat-info">
+            <span class="stat-value">Rs. {{ summary.totalAmount | number }}</span>
+            <span class="stat-label">Total Amount</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon paid"><i class="bi bi-check-circle"></i></div>
+          <div class="stat-info">
+            <span class="stat-value">Rs. {{ summary.paidAmount | number }}</span>
+            <span class="stat-label">Collected</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon pending"><i class="bi bi-clock-history"></i></div>
+          <div class="stat-info">
+            <span class="stat-value">Rs. {{ summary.pendingAmount | number }}</span>
+            <span class="stat-label">Pending</span>
+          </div>
+        </div>
+      </div>
+      <div class="search-bar">
+        <div class="search-input">
+          <i class="bi bi-search"></i>
+          <input type="text" placeholder="Search by student name, NIC or bill number..."
+            [(ngModel)]="searchTerm" (input)="search()">
+        </div>
+        <span class="result-count">{{ filteredBills.length }} bills</span>
+      </div>
+      <div class="table-card">
+        <div *ngIf="isLoading" class="loading-state">
+          <div class="spinner-border text-danger"></div>
+          <p>Loading bills...</p>
+        </div>
+        <div *ngIf="!isLoading && filteredBills.length === 0" class="empty-state">
+          <i class="bi bi-receipt"></i>
+          <p>No bills found</p>
+          <button class="btn btn-primary" (click)="addBill()">Create First Bill</button>
+        </div>
+        <table *ngIf="!isLoading && filteredBills.length > 0" class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Bill No.</th>
+              <th>Student</th>
+              <th>NIC</th>
+              <th>Bill Date</th>
+              <th>Total</th>
+              <th>Paid</th>
+              <th>Balance</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let b of filteredBills; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td><span class="bill-number">{{ b.billNumber }}</span></td>
+              <td>{{ b.studentName }}</td>
+              <td>{{ b.studentNic }}</td>
+              <td>{{ b.billDate | date:'dd/MM/yyyy' }}</td>
+              <td>Rs. {{ b.netAmount | number }}</td>
+              <td class="text-success">Rs. {{ b.paidAmount | number }}</td>
+              <td class="text-warning">Rs. {{ b.balanceAmount | number }}</td>
+              <td><span class="badge" [ngClass]="getStatusClass(b.status)">{{ b.status }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
