@@ -16,7 +16,13 @@ public partial class DsmsDbContext : DbContext
 
     public virtual DbSet<Branch> Branches { get; set; }
 
+    public virtual DbSet<Employee> Employees { get; set; }
+
     public virtual DbSet<Instructor> Instructors { get; set; }
+
+    public virtual DbSet<StudentVehicleClass> StudentVehicleClasses { get; set; }
+
+    public virtual DbSet<TrainingAttendance> TrainingAttendances { get; set; }
 
     public virtual DbSet<Package> Packages { get; set; }
 
@@ -88,6 +94,29 @@ public partial class DsmsDbContext : DbContext
             entity.Property(e => e.Code).HasMaxLength(50);
             entity.Property(e => e.Name).HasMaxLength(200);
             entity.Property(e => e.Phone).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<Employee>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Employee__3214EC07");
+
+            entity.ToTable("Employee");
+
+            entity.Property(e => e.EmployeeName).HasMaxLength(200);
+            entity.Property(e => e.Nic).HasMaxLength(20).HasColumnName("NIC");
+            entity.Property(e => e.Phone).HasMaxLength(50);
+            entity.Property(e => e.Email).HasMaxLength(200);
+            entity.Property(e => e.Designation).HasMaxLength(100);
+            entity.Property(e => e.Department).HasMaxLength(100);
+            entity.Property(e => e.Address).HasMaxLength(500);
+            entity.Property(e => e.EmergencyContact).HasMaxLength(100);
+            entity.Property(e => e.CreatedBy).HasMaxLength(100);
+            entity.Property(e => e.LastModifiedBy).HasMaxLength(100);
+
+            entity.HasOne(d => d.Branch).WithMany()
+                .HasForeignKey(d => d.BranchId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Employee_Branch");
         });
 
         modelBuilder.Entity<Instructor>(entity =>
@@ -232,11 +261,42 @@ public partial class DsmsDbContext : DbContext
             entity.Property(e => e.PhoneNumber).HasMaxLength(50);
             entity.Property(e => e.StudentName).HasMaxLength(200);
             entity.Property(e => e.WhatsAppNumber).HasMaxLength(50);
+            entity.Property(e => e.PostalCode).HasMaxLength(20);
+            entity.Property(e => e.PackageType).HasMaxLength(50);
 
             entity.HasOne(d => d.Branch).WithMany(p => p.Students)
                 .HasForeignKey(d => d.BranchId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Student_Branch");
+        });
+
+        modelBuilder.Entity<StudentVehicleClass>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.ToTable("StudentVehicleClass");
+            entity.Property(e => e.VehicleClassCode).HasMaxLength(20);
+
+            entity.HasOne(d => d.Student).WithMany()
+                .HasForeignKey(d => d.StudentId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_SVC_Student");
+        });
+
+        modelBuilder.Entity<TrainingAttendance>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.ToTable("TrainingAttendance");
+            entity.Property(e => e.Notes).HasMaxLength(500);
+            entity.Property(e => e.CreatedBy).HasMaxLength(100);
+
+            entity.HasOne(d => d.StudentPackageRegistration).WithMany()
+                .HasForeignKey(d => d.StudentPackageRegistrationId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TA_SPR");
+
+            entity.HasOne(d => d.Instructor).WithMany()
+                .HasForeignKey(d => d.InstructorId)
+                .HasConstraintName("FK_TA_Instructor");
         });
 
         modelBuilder.Entity<StudentClassProgress>(entity =>
@@ -359,6 +419,11 @@ public partial class DsmsDbContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.UserSecurities)
                 .HasForeignKey(d => d.UserId)
                 .HasConstraintName("FK_UserSecurity_User");
+
+            entity.HasOne<Branch>()
+                .WithMany()
+                .HasForeignKey(d => d.BranchId)
+                .HasConstraintName("FK_UserSecurity_Branch");
         });
 
         modelBuilder.Entity<VehicleClass>(entity =>

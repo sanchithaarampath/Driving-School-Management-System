@@ -15,6 +15,7 @@
         public string Role { get; set; } = string.Empty;
         public int UserId { get; set; }
         public int RoleId { get; set; }
+        public int? BranchId { get; set; }
         public bool FirstTimeLogin { get; set; }
     }
 
@@ -57,6 +58,98 @@
         public string? ExistingLicenseNo { get; set; }
         public bool? IsSpecialRequirements { get; set; }
         public int? SpecialRequirementTypeId { get; set; }
+    }
+
+    // ==================== EMPLOYEE ====================
+    public class EmployeeCreateDto
+    {
+        public int BranchId { get; set; }
+        public int? UserId { get; set; }
+        public string EmployeeName { get; set; } = string.Empty;
+        public string Nic { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
+        public string? Email { get; set; }
+        public string? Designation { get; set; }
+        public string? Department { get; set; }
+        public string? JoinDate { get; set; }
+        public string? Address { get; set; }
+        public string? EmergencyContact { get; set; }
+    }
+
+    public class EmployeeUpdateDto
+    {
+        public int BranchId { get; set; }
+        public int? UserId { get; set; }
+        public string EmployeeName { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
+        public string? Email { get; set; }
+        public string? Designation { get; set; }
+        public string? Department { get; set; }
+        public string? JoinDate { get; set; }
+        public string? Address { get; set; }
+        public string? EmergencyContact { get; set; }
+    }
+
+    // ==================== USER MANAGEMENT ====================
+    public class CreateUserDto
+    {
+        public string UserName { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string UserFullName { get; set; } = string.Empty;
+        public int RoleId { get; set; }
+        public int? BranchId { get; set; }
+    }
+
+    public class UpdateUserDto
+    {
+        public string UserFullName { get; set; } = string.Empty;
+        public int RoleId { get; set; }
+        public int? BranchId { get; set; }
+        public bool Active { get; set; }
+    }
+
+    // ==================== STUDENT (EXTENDED) ====================
+    public class StudentCreateExtDto
+    {
+        public int BranchId { get; set; }
+        public string StudentName { get; set; } = string.Empty;
+        public string? Email { get; set; }
+        public string PhoneNumber { get; set; } = string.Empty;
+        public string? WhatsAppNumber { get; set; }
+        public string Address { get; set; } = string.Empty;
+        public string Nic { get; set; } = string.Empty;
+        public string Dob { get; set; } = string.Empty;
+        public string? Gender { get; set; }
+        public string? NearestPoliceStation { get; set; }
+        public string? NearestDivisionalSecretariat { get; set; }
+        public string? PostalCode { get; set; }
+        public string? ExistingLicenseNo { get; set; }
+        public string? PackageType { get; set; }
+        public bool? IsSpecialRequirements { get; set; }
+        public int? SpecialRequirementTypeId { get; set; }
+        public bool? HasBirthCertificate { get; set; }
+        public bool? HasNtmiMedical { get; set; }
+        public bool? HasNicCopy { get; set; }
+        public List<string> VehicleClasses { get; set; } = new();
+    }
+
+    // ==================== TRAINING ATTENDANCE ====================
+    public class TrainingAttendanceCreateDto
+    {
+        public int StudentPackageRegistrationId { get; set; }
+        public int? InstructorId { get; set; }
+        public string AttendanceDate { get; set; } = string.Empty;
+        public int DayNumber { get; set; }
+        public string? Notes { get; set; }
+        public bool IsReadyForPracticalTest { get; set; }
+    }
+
+    // ==================== EXAM RESULT ====================
+    public class ExamResultUpdateDto
+    {
+        public int StudentPackageRegistrationId { get; set; }
+        public string ExamStatus { get; set; } = string.Empty; // "Pass" | "Fail"
+        public string? ExamDate { get; set; }
     }
 
     // ==================== BILLING ====================

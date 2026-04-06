@@ -20,6 +20,7 @@ export class AuthService {
           userName: response.userName,
           role: response.role,
           roleId: response.roleId,
+          branchId: response.branchId,
           firstTimeLogin: response.firstTimeLogin
         }));
       })
@@ -35,7 +36,13 @@ export class AuthService {
   getToken(): string | null { return localStorage.getItem('token'); }
   getUser(): any { const u = localStorage.getItem('user'); return u ? JSON.parse(u) : null; }
   isLoggedIn(): boolean { return !!this.getToken(); }
-  isAdmin(): boolean { return this.getUser()?.role === 'Admin'; }
+  getRole(): string { return this.getUser()?.role ?? ''; }
+  getBranchId(): number | null { return this.getUser()?.branchId ?? null; }
+  isCompanyAdmin(): boolean { return this.getRole() === 'Company Admin' || this.getRole() === 'Admin'; }
+  isBranchAdmin(): boolean { return this.getRole() === 'Branch Admin'; }
+  isStaff(): boolean { return this.getRole() === 'Staff'; }
+  isInstructor(): boolean { return this.getRole() === 'Instructor'; }
+  isAdmin(): boolean { return this.isCompanyAdmin(); }
 
   changePassword(userId: number, currentPassword: string, newPassword: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/change-password`, { userId, currentPassword, newPassword });

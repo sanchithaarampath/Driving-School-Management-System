@@ -1,33 +1,7 @@
 <div class="dsms-layout">
-  <div class="sidebar">
-    <div class="sidebar-brand">
-      <div class="brand-logo"><i class="bi bi-car-front-fill"></i></div>
-      <div class="brand-text">
-        <span class="brand-name">Arampath</span>
-        <span class="brand-sub">Driving School</span>
-      </div>
-    </div>
-    <nav class="sidebar-nav">
-      <a class="nav-item" routerLink="/dashboard"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
-      <a class="nav-item active" routerLink="/students"><i class="bi bi-people"></i><span>Students</span></a>
-      <a class="nav-item" routerLink="/billing"><i class="bi bi-receipt"></i><span>Billing</span></a>
-    </nav>
-    <div class="sidebar-footer"><span>DSMS v1</span></div>
-  </div>
+  <app-sidebar></app-sidebar>
   <div class="main-content">
-    <div class="topbar">
-      <div class="topbar-left"><h5>Driving School Management System</h5></div>
-      <div class="topbar-right">
-        <div class="user-info">
-          <div class="user-avatar"><i class="bi bi-person-fill"></i></div>
-          <div class="user-details">
-            <span class="user-name">{{ user?.userFullName }}</span>
-            <span class="user-role">{{ user?.role }}</span>
-          </div>
-        </div>
-        <button class="btn btn-logout" (click)="logout()"><i class="bi bi-box-arrow-right"></i> Logout</button>
-      </div>
-    </div>
+    <app-topbar></app-topbar>
     <div class="page-content">
       <div class="page-header">
         <div>
@@ -41,7 +15,7 @@
       <div class="search-bar">
         <div class="search-input">
           <i class="bi bi-search"></i>
-          <input type="text" placeholder="Search by name, NIC or phone..." 
+          <input type="text" placeholder="Search by name, NIC or phone..."
             [(ngModel)]="searchTerm" (input)="search()">
         </div>
         <span class="result-count">{{ filteredStudents.length }} students</span>
@@ -63,7 +37,7 @@
               <th>Student Name</th>
               <th>NIC</th>
               <th>Phone</th>
-              <th>Gender</th>
+              <th>Package</th>
               <th>Branch</th>
               <th>Reg. Date</th>
               <th>Actions</th>
@@ -80,7 +54,7 @@
               </td>
               <td>{{ s.nic }}</td>
               <td>{{ s.phoneNumber }}</td>
-              <td>{{ s.gender || '-' }}</td>
+              <td><span class="badge bg-info text-dark" *ngIf="s.packageType">{{ s.packageType }}</span><span *ngIf="!s.packageType">-</span></td>
               <td>{{ s.branchName }}</td>
               <td>{{ s.registrationDate | date:'dd/MM/yyyy' }}</td>
               <td>
