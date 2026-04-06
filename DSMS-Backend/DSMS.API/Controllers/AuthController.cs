@@ -51,6 +51,7 @@ namespace DSMS.API.Controllers
                 Role = role?.RoleName ?? "",
                 UserId = user.UserId ?? 0,
                 RoleId = user.RoleId,
+                BranchId = user.BranchId,
                 FirstTimeLogin = user.FirstTimeLogin ?? false
             });
         }
@@ -110,7 +111,9 @@ namespace DSMS.API.Controllers
                 new Claim(ClaimTypes.Name, user.UserName ?? ""),
                 new Claim(ClaimTypes.Role, roleName),
                 new Claim("FullName", user.UserFullName ?? ""),
-                new Claim("RoleId", user.RoleId.ToString())
+                new Claim("RoleId", user.RoleId.ToString()),
+                new Claim("BranchId", user.BranchId?.ToString() ?? ""),
+                new Claim("UserSecurityId", user.Id.ToString())
             };
 
             var token = new JwtSecurityToken(

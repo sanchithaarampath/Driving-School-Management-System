@@ -1,0 +1,13 @@
+// Employee List — page-specific styles (shared layout lives in styles.scss)
+.linked-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  &.linked { background: rgba(35,134,54,0.15); color: #3fb950; }
+  &.no-account { background: rgba(210,153,34,0.15); color: #d29922; }
+}

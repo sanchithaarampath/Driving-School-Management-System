@@ -35,6 +35,17 @@ public partial class Student
 
     public int? SpecialRequirementTypeId { get; set; }
 
+    public string? PostalCode { get; set; }
+
+    public string? PackageType { get; set; } // "FullCoursework" | "SemiCoursework"
+
+    // Document checklist
+    public bool? HasBirthCertificate { get; set; }
+
+    public bool? HasNtmiMedical { get; set; }
+
+    public bool? HasNicCopy { get; set; }
+
     public DateTime? RegistrationDate { get; set; }
 
     public bool? Active { get; set; }

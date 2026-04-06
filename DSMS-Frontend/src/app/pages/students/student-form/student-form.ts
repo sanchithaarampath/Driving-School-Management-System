@@ -4,11 +4,28 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../../../services/auth';
+import { SidebarComponent } from '../../../shared/layout/sidebar';
+import { TopbarComponent } from '../../../shared/layout/topbar';
+
+const VEHICLE_CLASSES = [
+  { code: 'A1', label: 'A1 - Light Bicycle' },
+  { code: 'A', label: 'A - Bicycle' },
+  { code: 'B1', label: 'B1 - Three Wheeler' },
+  { code: 'B_Auto', label: 'B (Auto) - Dual Purpose Auto Gear' },
+  { code: 'B_Manual', label: 'B (Manual) - Dual Purpose Manual' },
+  { code: 'C1', label: 'C1 - Light Lorry' },
+  { code: 'C', label: 'C - Lorry' },
+  { code: 'CE', label: 'CE - Prime Mover' },
+  { code: 'D1', label: 'D1 - Light Bus' },
+  { code: 'D', label: 'D - Bus' },
+  { code: 'G', label: 'G - Tractor with Trailer' },
+  { code: 'J', label: 'J - Special Vehicles' },
+];
 
 @Component({
   selector: 'app-student-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, SidebarComponent, TopbarComponent],
   templateUrl: './student-form.html',
   styleUrl: './student-form.scss'
 })
@@ -21,6 +38,7 @@ export class StudentForm implements OnInit {
   errorMessage = '';
   user: any;
   branches: any[] = [];
+  vehicleClassOptions = VEHICLE_CLASSES;
   private apiUrl = 'http://localhost:5062/api';
 
   student = {
@@ -35,9 +53,15 @@ export class StudentForm implements OnInit {
     gender: '',
     nearestPoliceStation: '',
     nearestDivisionalSecretariat: '',
+    postalCode: '',
     existingLicenseNo: '',
+    packageType: '',
     isSpecialRequirements: false,
-    specialRequirementTypeId: null as number | null
+    specialRequirementTypeId: null as number | null,
+    hasBirthCertificate: false,
+    hasNtmiMedical: false,
+    hasNicCopy: false,
+    vehicleClasses: [] as string[]
   };
 
   constructor(
@@ -84,14 +108,30 @@ export class StudentForm implements OnInit {
           gender: data.gender || '',
           nearestPoliceStation: data.nearestPoliceStation || '',
           nearestDivisionalSecretariat: data.nearestDivisionalSecretariat || '',
+          postalCode: data.postalCode || '',
           existingLicenseNo: data.existingLicenseNo || '',
+          packageType: data.packageType || '',
           isSpecialRequirements: data.isSpecialRequirements || false,
-          specialRequirementTypeId: data.specialRequirementTypeId || null
+          specialRequirementTypeId: data.specialRequirementTypeId || null,
+          hasBirthCertificate: data.hasBirthCertificate || false,
+          hasNtmiMedical: data.hasNtmiMedical || false,
+          hasNicCopy: data.hasNicCopy || false,
+          vehicleClasses: data.vehicleClasses || []
         };
         this.isLoading = false;
       },
       error: () => { this.isLoading = false; }
     });
+  }
+
+  toggleVehicleClass(code: string) {
+    const idx = this.student.vehicleClasses.indexOf(code);
+    if (idx === -1) this.student.vehicleClasses.push(code);
+    else this.student.vehicleClasses.splice(idx, 1);
+  }
+
+  isClassSelected(code: string): boolean {
+    return this.student.vehicleClasses.includes(code);
   }
 
   onSubmit() {
@@ -103,7 +143,6 @@ export class StudentForm implements OnInit {
       this.errorMessage = 'Please enter date of birth';
       return;
     }
-
     this.isSaving = true;
     this.errorMessage = '';
 
@@ -125,5 +164,4 @@ export class StudentForm implements OnInit {
   }
 
   goBack() { this.router.navigate(['/students']); }
-  logout() { this.authService.logout(); }
 }

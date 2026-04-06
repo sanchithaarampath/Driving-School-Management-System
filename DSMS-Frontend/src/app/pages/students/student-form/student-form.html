@@ -1,62 +1,31 @@
 <div class="dsms-layout">
-  <div class="sidebar">
-    <div class="sidebar-brand">
-      <div class="brand-logo"><i class="bi bi-car-front-fill"></i></div>
-      <div class="brand-text">
-        <span class="brand-name">Arampath</span>
-        <span class="brand-sub">Driving School</span>
-      </div>
-    </div>
-    <nav class="sidebar-nav">
-      <a class="nav-item" routerLink="/dashboard"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
-      <a class="nav-item active" routerLink="/students"><i class="bi bi-people"></i><span>Students</span></a>
-      <a class="nav-item" routerLink="/billing"><i class="bi bi-receipt"></i><span>Billing</span></a>
-    </nav>
-    <div class="sidebar-footer"><span>DSMS v1</span></div>
-  </div>
+  <app-sidebar></app-sidebar>
   <div class="main-content">
-    <div class="topbar">
-      <div class="topbar-left"><h5>Driving School Management System</h5></div>
-      <div class="topbar-right">
-        <div class="user-info">
-          <div class="user-avatar"><i class="bi bi-person-fill"></i></div>
-          <div class="user-details">
-            <span class="user-name">{{ user?.userFullName }}</span>
-            <span class="user-role">{{ user?.role }}</span>
-          </div>
-        </div>
-        <button class="btn btn-logout" (click)="logout()"><i class="bi bi-box-arrow-right"></i> Logout</button>
-      </div>
-    </div>
+    <app-topbar></app-topbar>
     <div class="page-content">
       <div class="page-header">
         <div>
-          <h2>{{ isEditMode ? 'Edit Student' : 'Add New Student' }}</h2>
-          <p>{{ isEditMode ? 'Update student information' : 'Register a new student' }}</p>
+          <h2>{{ isEditMode ? 'Edit Student' : 'Register New Student' }}</h2>
+          <p>{{ isEditMode ? 'Update student information' : 'Complete all sections to register a new student' }}</p>
         </div>
-        <button class="btn btn-back" (click)="goBack()">
-          <i class="bi bi-arrow-left me-2"></i>Back
-        </button>
+        <button class="btn btn-back" (click)="goBack()"><i class="bi bi-arrow-left me-2"></i>Back</button>
       </div>
 
-      <div *ngIf="successMessage" class="alert alert-success">
-        <i class="bi bi-check-circle me-2"></i>{{ successMessage }}
-      </div>
-      <div *ngIf="errorMessage" class="alert alert-danger">
-        <i class="bi bi-exclamation-circle me-2"></i>{{ errorMessage }}
-      </div>
+      <div *ngIf="successMessage" class="alert alert-success"><i class="bi bi-check-circle me-2"></i>{{ successMessage }}</div>
+      <div *ngIf="errorMessage" class="alert alert-danger"><i class="bi bi-exclamation-circle me-2"></i>{{ errorMessage }}</div>
 
       <div class="form-card">
+        <!-- PERSONAL INFO -->
         <div class="form-section">
           <h6 class="section-title"><i class="bi bi-person me-2"></i>Personal Information</h6>
           <div class="form-grid">
             <div class="form-group">
               <label>Full Name <span class="required">*</span></label>
-              <input type="text" class="form-control" [(ngModel)]="student.studentName" placeholder="Enter full name">
+              <input type="text" class="form-control" [(ngModel)]="student.studentName" placeholder="Full name as in NIC">
             </div>
             <div class="form-group">
               <label>NIC Number <span class="required">*</span></label>
-              <input type="text" class="form-control" [(ngModel)]="student.nic" placeholder="e.g. 199012345678">
+              <input type="text" class="form-control" [(ngModel)]="student.nic" placeholder="e.g. 199012345678" [disabled]="isEditMode">
             </div>
             <div class="form-group">
               <label>Date of Birth <span class="required">*</span></label>
@@ -71,7 +40,7 @@
               </select>
             </div>
             <div class="form-group">
-              <label>Phone Number <span class="required">*</span></label>
+              <label>Mobile Number <span class="required">*</span></label>
               <input type="text" class="form-control" [(ngModel)]="student.phoneNumber" placeholder="07XXXXXXXX">
             </div>
             <div class="form-group">
@@ -90,25 +59,94 @@
             </div>
             <div class="form-group full-width">
               <label>Address <span class="required">*</span></label>
-              <textarea class="form-control" [(ngModel)]="student.address" rows="2" placeholder="Enter full address"></textarea>
+              <textarea class="form-control" [(ngModel)]="student.address" rows="2" placeholder="Full address"></textarea>
             </div>
           </div>
         </div>
 
+        <!-- ADMINISTRATIVE -->
         <div class="form-section">
           <h6 class="section-title"><i class="bi bi-geo-alt me-2"></i>Administrative Details</h6>
           <div class="form-grid">
             <div class="form-group">
               <label>Nearest Police Station</label>
-              <input type="text" class="form-control" [(ngModel)]="student.nearestPoliceStation" placeholder="Police station name">
+              <input type="text" class="form-control" [(ngModel)]="student.nearestPoliceStation">
             </div>
             <div class="form-group">
               <label>Nearest Divisional Secretariat</label>
-              <input type="text" class="form-control" [(ngModel)]="student.nearestDivisionalSecretariat" placeholder="DS office name">
+              <input type="text" class="form-control" [(ngModel)]="student.nearestDivisionalSecretariat">
+            </div>
+            <div class="form-group">
+              <label>Postal Code</label>
+              <input type="text" class="form-control" [(ngModel)]="student.postalCode" placeholder="e.g. 10100">
             </div>
             <div class="form-group">
               <label>Existing License No.</label>
               <input type="text" class="form-control" [(ngModel)]="student.existingLicenseNo" placeholder="If applicable">
+            </div>
+          </div>
+        </div>
+
+        <!-- PACKAGE TYPE -->
+        <div class="form-section">
+          <h6 class="section-title"><i class="bi bi-box-seam me-2"></i>Package Type</h6>
+          <div class="d-flex gap-4">
+            <div class="form-check">
+              <input class="form-check-input" type="radio" [(ngModel)]="student.packageType" value="FullCoursework" id="fullCourse">
+              <label class="form-check-label" for="fullCourse"><strong>Full Coursework</strong></label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" [(ngModel)]="student.packageType" value="SemiCoursework" id="semiCourse">
+              <label class="form-check-label" for="semiCourse"><strong>Semi Coursework</strong></label>
+            </div>
+          </div>
+        </div>
+
+        <!-- VEHICLE CLASSES -->
+        <div class="form-section">
+          <h6 class="section-title"><i class="bi bi-car-front me-2"></i>Vehicle Classes Applied For</h6>
+          <p class="text-muted small mb-3"><i class="bi bi-info-circle me-1"></i>G1 is automatically added for all applicants.</p>
+          <div class="vehicle-class-grid">
+            <div *ngFor="let vc of vehicleClassOptions" class="vehicle-class-item">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox"
+                  [id]="'vc_' + vc.code"
+                  [checked]="isClassSelected(vc.code)"
+                  (change)="toggleVehicleClass(vc.code)">
+                <label class="form-check-label" [for]="'vc_' + vc.code">
+                  <span class="vc-code">{{ vc.code.replace('_', ' ') }}</span>
+                  <span class="vc-label">{{ vc.label.split(' - ')[1] }}</span>
+                </label>
+              </div>
+            </div>
+            <div class="vehicle-class-item disabled">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" checked disabled>
+                <label class="form-check-label">
+                  <span class="vc-code">G1</span>
+                  <span class="vc-label">Auto-added for all</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DOCUMENTS CHECKLIST -->
+        <div class="form-section">
+          <h6 class="section-title"><i class="bi bi-file-earmark-check me-2"></i>Documents Received</h6>
+          <p class="text-muted small mb-3">Mark which original documents the student has provided:</p>
+          <div class="d-flex flex-column gap-2">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="student.hasBirthCertificate" id="birthCert">
+              <label class="form-check-label" for="birthCert">Original Birth Certificate</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="student.hasNtmiMedical" id="ntmiMedical">
+              <label class="form-check-label" for="ntmiMedical">NTMI Medical Certificate</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="student.hasNicCopy" id="nicCopy">
+              <label class="form-check-label" for="nicCopy">NIC Copy</label>
             </div>
           </div>
         </div>

@@ -4,11 +4,13 @@ import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../../../services/auth';
+import { SidebarComponent } from '../../../shared/layout/sidebar';
+import { TopbarComponent } from '../../../shared/layout/topbar';
 
 @Component({
   selector: 'app-student-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, SidebarComponent, TopbarComponent],
   templateUrl: './student-list.html',
   styleUrl: './student-list.scss'
 })

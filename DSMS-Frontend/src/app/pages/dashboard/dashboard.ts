@@ -3,19 +3,23 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../../services/auth';
+import { SidebarComponent } from '../../shared/layout/sidebar';
+import { TopbarComponent } from '../../shared/layout/topbar';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, SidebarComponent, TopbarComponent],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'
 })
 export class Dashboard implements OnInit {
   user: any;
-  stats = { totalStudents: 0, totalBills: 0, totalIncome: 0, pendingAmount: 0, pendingBills: 0 };
+  stats: any = {};
   recentStudents: any[] = [];
   recentPayments: any[] = [];
+  branches: any[] = [];
+  pendingPractical: any[] = [];
   private apiUrl = 'http://localhost:5062/api';
 
   constructor(private authService: AuthService, private router: Router, private http: HttpClient) {}
@@ -23,7 +27,13 @@ export class Dashboard implements OnInit {
   ngOnInit() {
     this.user = this.authService.getUser();
     this.loadDashboard();
+    if (this.authService.isCompanyAdmin()) this.loadBranches();
+    if (!this.authService.isStaff()) this.loadPendingPractical();
   }
+
+  get isCompanyAdmin() { return this.authService.isCompanyAdmin(); }
+  get isBranchAdmin() { return this.authService.isBranchAdmin(); }
+  get isStaff() { return this.authService.isStaff(); }
 
   getHeaders() {
     return new HttpHeaders({ Authorization: `Bearer ${this.authService.getToken()}` });
@@ -31,8 +41,7 @@ export class Dashboard implements OnInit {
 
   loadDashboard() {
     this.http.get(`${this.apiUrl}/dashboard/stats`, { headers: this.getHeaders() }).subscribe({
-      next: (data: any) => { this.stats = data; },
-      error: () => {}
+      next: (data: any) => { this.stats = data; }, error: () => {}
     });
     this.http.get(`${this.apiUrl}/dashboard/recent-students`, { headers: this.getHeaders() }).subscribe({
       next: (data: any) => { this.recentStudents = data; }
@@ -42,8 +51,22 @@ export class Dashboard implements OnInit {
     });
   }
 
-  logout() { this.authService.logout(); }
+  loadBranches() {
+    this.http.get(`${this.apiUrl}/branch`, { headers: this.getHeaders() }).subscribe({
+      next: (data: any) => { this.branches = data; }
+    });
+  }
+
+  loadPendingPractical() {
+    this.http.get(`${this.apiUrl}/exam/pending-practical`, { headers: this.getHeaders() }).subscribe({
+      next: (data: any) => { this.pendingPractical = data; }, error: () => {}
+    });
+  }
+
+  addStudent() { this.router.navigate(['/students/new']); }
   goToStudents() { this.router.navigate(['/students']); }
   goToBilling() { this.router.navigate(['/billing']); }
-  addStudent() { this.router.navigate(['/students/new']); }
+  goToExam() { this.router.navigate(['/exam']); }
+  goToBranches() { this.router.navigate(['/branches']); }
+  goToUsers() { this.router.navigate(['/users']); }
 }

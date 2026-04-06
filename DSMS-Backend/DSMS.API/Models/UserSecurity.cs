@@ -17,6 +17,8 @@ public partial class UserSecurity
 
     public int RoleId { get; set; }
 
+    public int? BranchId { get; set; } // null = Company Admin (all branches), set = scoped to branch
+
     public bool? Active { get; set; }
 
     public bool? FirstTimeLogin { get; set; }

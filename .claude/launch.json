@@ -1,0 +1,19 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "DSMS-Frontend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["start"],
+      "port": 4200,
+      "cwd": "DSMS-Frontend"
+    },
+    {
+      "name": "DSMS-API (HTTP)",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--launch-profile", "http"],
+      "port": 5062,
+      "cwd": "DSMS-Backend/DSMS.API"
+    }
+  ]
+}

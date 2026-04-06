@@ -1,0 +1,53 @@
+<div class="dsms-layout">
+  <app-sidebar></app-sidebar>
+  <div class="main-content">
+    <app-topbar></app-topbar>
+    <div class="page-content">
+      <div class="page-header">
+        <div><h2>Branch Management</h2><p>Manage all driving school branches</p></div>
+        <button class="btn btn-primary" (click)="openForm()"><i class="bi bi-plus-lg me-2"></i>Add Branch</button>
+      </div>
+
+      <div *ngIf="successMessage" class="alert alert-success"><i class="bi bi-check-circle me-2"></i>{{ successMessage }}</div>
+      <div *ngIf="errorMessage" class="alert alert-danger"><i class="bi bi-exclamation-circle me-2"></i>{{ errorMessage }}</div>
+
+      <div class="form-card" *ngIf="showForm">
+        <h6 class="section-title"><i class="bi bi-building me-2"></i>{{ editId ? 'Edit Branch' : 'New Branch' }}</h6>
+        <div class="form-grid">
+          <div class="form-group"><label>Branch Name <span class="required">*</span></label><input type="text" class="form-control" [(ngModel)]="form.name" placeholder="e.g. Colombo Branch"></div>
+          <div class="form-group"><label>Branch Code <span class="required">*</span></label><input type="text" class="form-control" [(ngModel)]="form.code" placeholder="e.g. COL01"></div>
+          <div class="form-group"><label>Phone</label><input type="text" class="form-control" [(ngModel)]="form.phone" placeholder="07XXXXXXXX"></div>
+          <div class="form-group full-width"><label>Address</label><textarea class="form-control" [(ngModel)]="form.address" rows="2"></textarea></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-cancel" (click)="cancel()">Cancel</button>
+          <button class="btn btn-primary" (click)="save()" [disabled]="isSaving">
+            <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
+            {{ isSaving ? 'Saving...' : (editId ? 'Update' : 'Create Branch') }}
+          </button>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <div *ngIf="isLoading" class="loading-state"><div class="spinner-border text-danger"></div></div>
+        <table class="data-table" *ngIf="!isLoading && branches.length > 0">
+          <thead><tr><th>#</th><th>Name</th><th>Code</th><th>Phone</th><th>Address</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let b of branches; let i = index">
+              <td>{{ i+1 }}</td>
+              <td><strong>{{ b.name }}</strong></td>
+              <td><span class="badge bg-primary">{{ b.code }}</span></td>
+              <td>{{ b.phone }}</td>
+              <td>{{ b.address }}</td>
+              <td><button class="btn-action edit" (click)="openForm(b)"><i class="bi bi-pencil"></i></button></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="empty-state" *ngIf="!isLoading && branches.length === 0">
+          <i class="bi bi-building"></i><p>No branches yet</p>
+          <button class="btn btn-primary" (click)="openForm()">Add First Branch</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
