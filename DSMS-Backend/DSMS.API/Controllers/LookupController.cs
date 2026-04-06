@@ -65,5 +65,28 @@ namespace DSMS.API.Controllers
             var docs = await _context.RequiredDocuments.Where(d => d.Active == true).ToListAsync();
             return Ok(docs);
         }
+
+        // Static vehicle class definitions used during student registration
+        [HttpGet("vehicle-class-options")]
+        public IActionResult GetVehicleClassOptions()
+        {
+            var options = new[]
+            {
+                new { Code = "A1", Label = "A1 - Light Bicycle" },
+                new { Code = "A",  Label = "A - Bicycle" },
+                new { Code = "B1", Label = "B1 - Three Wheeler" },
+                new { Code = "B_Auto",   Label = "B (Auto) - Dual Purpose Auto Gear" },
+                new { Code = "B_Manual", Label = "B (Manual) - Dual Purpose Manual" },
+                new { Code = "C1", Label = "C1 - Light Lorry" },
+                new { Code = "C",  Label = "C - Lorry" },
+                new { Code = "CE", Label = "CE - Prime Mover" },
+                new { Code = "D1", Label = "D1 - Light Bus" },
+                new { Code = "D",  Label = "D - Bus" },
+                new { Code = "G1", Label = "G1 - Auto-added for all applicants" },
+                new { Code = "G",  Label = "G - Tractor with Trailer" },
+                new { Code = "J",  Label = "J - Special Vehicles" }
+            };
+            return Ok(options);
+        }
     }
 }

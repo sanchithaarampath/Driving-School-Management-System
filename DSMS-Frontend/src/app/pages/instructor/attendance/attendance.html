@@ -1,0 +1,76 @@
+<div class="dsms-layout">
+  <app-sidebar></app-sidebar>
+  <div class="main-content">
+    <app-topbar></app-topbar>
+    <div class="page-content">
+      <div class="page-header">
+        <div><h2>Training Attendance</h2><p>Record daily training attendance for students</p></div>
+      </div>
+
+      <div *ngIf="successMessage" class="alert alert-success"><i class="bi bi-check-circle me-2"></i>{{ successMessage }}</div>
+      <div *ngIf="errorMessage" class="alert alert-danger"><i class="bi bi-exclamation-circle me-2"></i>{{ errorMessage }}</div>
+
+      <div class="form-card">
+        <div class="form-section">
+          <h6 class="section-title"><i class="bi bi-person me-2"></i>Select Student Registration</h6>
+          <div class="form-group">
+            <label>Student Package Registration ID</label>
+            <input type="number" class="form-control" [(ngModel)]="form.studentPackageRegistrationId"
+              placeholder="Enter SPR ID" (change)="selectStudent(form.studentPackageRegistrationId)">
+          </div>
+        </div>
+
+        <div class="form-section" *ngIf="selectedSprId">
+          <h6 class="section-title"><i class="bi bi-calendar me-2"></i>Attendance Entry</h6>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Date</label>
+              <input type="date" class="form-control" [(ngModel)]="form.attendanceDate">
+            </div>
+            <div class="form-group">
+              <label>Day Number (1-15)</label>
+              <input type="number" class="form-control" [(ngModel)]="form.dayNumber" min="1" max="15">
+            </div>
+            <div class="form-group full-width">
+              <label>Notes</label>
+              <textarea class="form-control" [(ngModel)]="form.notes" rows="2" placeholder="Optional notes"></textarea>
+            </div>
+            <div class="form-group full-width">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="form.isReadyForPracticalTest" id="practicalCheck">
+                <label class="form-check-label" for="practicalCheck">
+                  <strong>Mark student as Ready for Practical Test</strong>
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" (click)="save()" [disabled]="isSaving">
+              <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
+              <i *ngIf="!isSaving" class="bi bi-check-lg me-2"></i>
+              {{ isSaving ? 'Saving...' : 'Record Attendance' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Attendance history -->
+      <div class="table-card" *ngIf="attendanceRecords.length > 0">
+        <div class="card-header"><h6>Attendance History ({{ attendanceRecords.length }} / 15 days)</h6></div>
+        <table class="data-table">
+          <thead><tr><th>Day</th><th>Date</th><th>Notes</th><th>Practical Approved</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let r of attendanceRecords">
+              <td><span class="badge bg-primary">Day {{ r.dayNumber }}</span></td>
+              <td>{{ r.attendanceDate | date:'dd/MM/yyyy' }}</td>
+              <td>{{ r.notes || '-' }}</td>
+              <td><span class="badge" [class.bg-success]="r.isReadyForPracticalTest" [class.bg-secondary]="!r.isReadyForPracticalTest">
+                {{ r.isReadyForPracticalTest ? 'Approved' : '-' }}
+              </span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

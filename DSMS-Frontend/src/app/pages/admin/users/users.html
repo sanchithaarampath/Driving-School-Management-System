@@ -1,0 +1,77 @@
+<div class="dsms-layout">
+  <app-sidebar></app-sidebar>
+  <div class="main-content">
+    <app-topbar></app-topbar>
+    <div class="page-content">
+      <div class="page-header">
+        <div><h2>User Management</h2><p>Manage system users and their roles</p></div>
+        <button class="btn btn-primary" (click)="openForm()"><i class="bi bi-plus-lg me-2"></i>Create User</button>
+      </div>
+
+      <div *ngIf="successMessage" class="alert alert-success"><i class="bi bi-check-circle me-2"></i>{{ successMessage }}</div>
+      <div *ngIf="errorMessage" class="alert alert-danger"><i class="bi bi-exclamation-circle me-2"></i>{{ errorMessage }}</div>
+
+      <div class="form-card" *ngIf="showForm">
+        <h6 class="section-title"><i class="bi bi-person-plus me-2"></i>Create New User</h6>
+        <div class="form-grid">
+          <div class="form-group"><label>Full Name <span class="required">*</span></label><input type="text" class="form-control" [(ngModel)]="form.userFullName" placeholder="Full name"></div>
+          <div class="form-group"><label>Username <span class="required">*</span></label><input type="text" class="form-control" [(ngModel)]="form.userName" placeholder="Login username"></div>
+          <div class="form-group"><label>Password <span class="required">*</span></label><input type="password" class="form-control" [(ngModel)]="form.password" placeholder="Initial password"></div>
+          <div class="form-group">
+            <label>Role <span class="required">*</span></label>
+            <select class="form-control" [(ngModel)]="form.roleId">
+              <option value="0">Select Role</option>
+              <option *ngFor="let r of roles" [value]="r.id">{{ r.roleName }}</option>
+            </select>
+          </div>
+          <div class="form-group" *ngIf="isCompanyAdmin">
+            <label>Branch <span class="text-muted">(leave empty for Company Admin)</span></label>
+            <select class="form-control" [(ngModel)]="form.branchId">
+              <option [value]="null">-- No Branch (Company Admin) --</option>
+              <option *ngFor="let b of branches" [value]="b.id">{{ b.name }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-cancel" (click)="cancel()">Cancel</button>
+          <button class="btn btn-primary" (click)="save()" [disabled]="isSaving">
+            <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
+            {{ isSaving ? 'Creating...' : 'Create User' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <div *ngIf="isLoading" class="loading-state"><div class="spinner-border text-danger"></div></div>
+        <table class="data-table" *ngIf="!isLoading && users.length > 0">
+          <thead>
+            <tr><th>#</th><th>Full Name</th><th>Username</th><th>Role</th><th>Branch</th><th>Status</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let u of users; let i = index">
+              <td>{{ i+1 }}</td>
+              <td>
+                <div class="student-name">
+                  <div class="avatar">{{ u.userFullName?.charAt(0) }}</div>
+                  {{ u.userFullName }}
+                </div>
+              </td>
+              <td><code>{{ u.userName }}</code></td>
+              <td><span class="badge bg-primary">{{ u.roleName }}</span></td>
+              <td>{{ u.branchId ? ('Branch #' + u.branchId) : 'All Branches' }}</td>
+              <td><span class="badge" [class.bg-success]="u.active" [class.bg-secondary]="!u.active">{{ u.active ? 'Active' : 'Inactive' }}</span></td>
+              <td>
+                <button class="btn-action edit" (click)="resetPassword(u.id)" title="Reset Password">
+                  <i class="bi bi-key"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="empty-state" *ngIf="!isLoading && users.length === 0">
+          <i class="bi bi-people"></i><p>No users yet</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,14 @@
+// Users page — page-specific styles (shared layout lives in styles.scss)
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  &.company-admin { background: rgba(230,57,70,0.15); color: #e63946; }
+  &.branch-admin  { background: rgba(88,166,255,0.15); color: #58a6ff; }
+  &.staff         { background: rgba(35,134,54,0.15); color: #3fb950; }
+  &.instructor    { background: rgba(210,153,34,0.15); color: #d29922; }
+}
