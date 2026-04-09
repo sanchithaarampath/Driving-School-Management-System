@@ -1,0 +1,271 @@
+<div class="dsms-layout">
+  <app-sidebar></app-sidebar>
+  <div class="main-content">
+    <app-topbar></app-topbar>
+    <div class="page-content" id="report-print-area">
+
+      <div class="page-header no-print">
+        <div>
+          <h2><i class="bi bi-bar-chart-line me-2"></i>Reports & Analytics</h2>
+          <p>Financial summaries, student registrations, and exam statistics</p>
+        </div>
+        <button class="btn btn-primary" (click)="printReport()">
+          <i class="bi bi-printer me-2"></i>Print / Export
+        </button>
+      </div>
+
+      <!-- Date Range Bar -->
+      <div class="date-range-bar no-print">
+        <div class="preset-buttons">
+          <button class="preset-btn" (click)="setRange('today')">Today</button>
+          <button class="preset-btn" (click)="setRange('week')">This Week</button>
+          <button class="preset-btn" (click)="setRange('month')">This Month</button>
+          <button class="preset-btn" (click)="setRange('year')">This Year</button>
+        </div>
+        <div class="date-inputs">
+          <input type="date" class="form-control" [(ngModel)]="fromDate" style="width:160px;">
+          <span style="color:var(--text-secondary)">to</span>
+          <input type="date" class="form-control" [(ngModel)]="toDate" style="width:160px;">
+          <button class="btn btn-primary" (click)="applyDateRange()">Apply</button>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tab-bar no-print">
+        <button class="tab-btn" [class.active]="activeTab==='income'"   (click)="switchTab('income')">
+          <i class="bi bi-cash-stack me-1"></i>Income
+        </button>
+        <button class="tab-btn" [class.active]="activeTab==='students'" (click)="switchTab('students')">
+          <i class="bi bi-people me-1"></i>Registrations
+        </button>
+        <button class="tab-btn" [class.active]="activeTab==='exam'"     (click)="switchTab('exam')">
+          <i class="bi bi-clipboard-check me-1"></i>Exam Results
+        </button>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="isLoading" class="loading-state" style="padding:3rem;">
+        <div class="spinner-border text-danger"></div><p>Loading report...</p>
+      </div>
+
+      <div *ngIf="errorMessage" class="alert-danger">{{ errorMessage }}</div>
+
+      <!-- ══ INCOME TAB ═══════════════════════════════════════════════════════ -->
+      <div *ngIf="activeTab==='income' && incomeData && !isLoading">
+
+        <!-- KPI Cards -->
+        <div class="stats-grid" style="margin-bottom:1.5rem;">
+          <div class="stat-card">
+            <div class="stat-icon total"><i class="bi bi-receipt"></i></div>
+            <div class="stat-info">
+              <span class="stat-value">Rs. {{ incomeData.totalBilled | number:'1.0-0' }}</span>
+              <span class="stat-label">Total Billed</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon income"><i class="bi bi-cash-coin"></i></div>
+            <div class="stat-info">
+              <span class="stat-value">Rs. {{ incomeData.totalPaid | number:'1.0-0' }}</span>
+              <span class="stat-label">Total Collected</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon pending"><i class="bi bi-hourglass-split"></i></div>
+            <div class="stat-info">
+              <span class="stat-value">Rs. {{ incomeData.totalPending | number:'1.0-0' }}</span>
+              <span class="stat-label">Pending Balance</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon paid"><i class="bi bi-file-earmark-text"></i></div>
+            <div class="stat-info">
+              <span class="stat-value">{{ incomeData.totalBills }}</span>
+              <span class="stat-label">Total Bills</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bill Status -->
+        <div class="report-row">
+          <div class="report-card">
+            <div class="rc-title"><i class="bi bi-pie-chart me-2"></i>Bill Status Breakdown</div>
+            <div class="status-bars">
+              <div class="status-bar-item">
+                <div class="sb-label"><span class="badge badge-paid">Paid</span><span>{{ incomeData.paidCount }} bills</span></div>
+                <div class="sb-track"><div class="sb-fill paid" [style.width.%]="barWidth(incomeData.paidCount, incomeData.totalBills)"></div></div>
+              </div>
+              <div class="status-bar-item">
+                <div class="sb-label"><span class="badge badge-partial">Partial</span><span>{{ incomeData.partialCount }} bills</span></div>
+                <div class="sb-track"><div class="sb-fill partial" [style.width.%]="barWidth(incomeData.partialCount, incomeData.totalBills)"></div></div>
+              </div>
+              <div class="status-bar-item">
+                <div class="sb-label"><span class="badge badge-pending">Pending</span><span>{{ incomeData.pendingCount }} bills</span></div>
+                <div class="sb-track"><div class="sb-fill pending-f" [style.width.%]="barWidth(incomeData.pendingCount, incomeData.totalBills)"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Methods -->
+          <div class="report-card">
+            <div class="rc-title"><i class="bi bi-credit-card me-2"></i>Payment Methods</div>
+            <table class="data-table" *ngIf="incomeData.byMethod?.length > 0">
+              <thead><tr><th>Method</th><th>Count</th><th style="text-align:right">Amount</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let m of incomeData.byMethod">
+                  <td><strong>{{ m.method }}</strong></td>
+                  <td>{{ m.count }}</td>
+                  <td style="text-align:right;color:#3fb950;font-weight:600;">Rs. {{ m.total | number:'1.0-0' }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <div *ngIf="!incomeData.byMethod?.length" class="empty-state" style="padding:1rem;"><p>No payment data</p></div>
+          </div>
+        </div>
+
+        <!-- Branch Breakdown -->
+        <div class="report-card" *ngIf="incomeData.byBranch?.length > 1" style="margin-top:1rem;">
+          <div class="rc-title"><i class="bi bi-diagram-3 me-2"></i>By Branch</div>
+          <table class="data-table">
+            <thead><tr><th>Branch</th><th style="text-align:right">Billed</th><th style="text-align:right">Collected</th><th style="text-align:right">Pending</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let b of incomeData.byBranch">
+                <td><strong>{{ b.branch }}</strong></td>
+                <td style="text-align:right">Rs. {{ b.billed | number:'1.0-0' }}</td>
+                <td style="text-align:right;color:#3fb950;font-weight:600;">Rs. {{ b.paid | number:'1.0-0' }}</td>
+                <td style="text-align:right;color:#e63946;">Rs. {{ b.pending | number:'1.0-0' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Daily Chart -->
+        <div class="report-card" *ngIf="incomeData.daily?.length > 0" style="margin-top:1rem;">
+          <div class="rc-title"><i class="bi bi-bar-chart me-2"></i>Daily Income</div>
+          <div class="daily-chart">
+            <div class="dc-bar-wrap" *ngFor="let d of incomeData.daily">
+              <div class="dc-bar-col">
+                <div class="dc-amount">Rs. {{ d.totalPaid | number:'1.0-0' }}</div>
+                <div class="dc-bar" [style.height.px]="barWidth(d.totalPaid, maxDailyPaid) * 1.2 + 4"></div>
+              </div>
+              <div class="dc-label">{{ d.date | date:'dd/MM' }}</div>
+            </div>
+          </div>
+          <table class="data-table" style="margin-top:1rem;">
+            <thead><tr><th>Date</th><th style="text-align:right">Billed</th><th style="text-align:right">Collected</th><th style="text-align:right">Bills</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let d of incomeData.daily">
+                <td>{{ d.date | date:'dd MMM yyyy' }}</td>
+                <td style="text-align:right">Rs. {{ d.totalBilled | number:'1.0-0' }}</td>
+                <td style="text-align:right;color:#3fb950;font-weight:600;">Rs. {{ d.totalPaid | number:'1.0-0' }}</td>
+                <td style="text-align:right">{{ d.billCount }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div *ngIf="incomeData.totalBills === 0" class="empty-state" style="padding:3rem;">
+          <i class="bi bi-receipt"></i><p>No bills found for the selected date range</p>
+        </div>
+      </div>
+
+      <!-- ══ STUDENTS TAB ════════════════════════════════════════════════════ -->
+      <div *ngIf="activeTab==='students' && studentsData && !isLoading">
+        <div class="stats-grid" style="margin-bottom:1.5rem;">
+          <div class="stat-card">
+            <div class="stat-icon total"><i class="bi bi-people"></i></div>
+            <div class="stat-info">
+              <span class="stat-value">{{ studentsData.total }}</span>
+              <span class="stat-label">Students Registered</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="report-row">
+          <div class="report-card">
+            <div class="rc-title"><i class="bi bi-diagram-3 me-2"></i>By Branch</div>
+            <table class="data-table" *ngIf="studentsData.byBranch?.length">
+              <thead><tr><th>Branch</th><th style="text-align:right">Students</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let b of studentsData.byBranch">
+                  <td><strong>{{ b.branch }}</strong></td>
+                  <td style="text-align:right;font-weight:700;">{{ b.count }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="report-card">
+            <div class="rc-title"><i class="bi bi-gender-ambiguous me-2"></i>By Gender</div>
+            <table class="data-table" *ngIf="studentsData.byGender?.length">
+              <thead><tr><th>Gender</th><th style="text-align:right">Count</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let g of studentsData.byGender">
+                  <td>{{ g.gender }}</td>
+                  <td style="text-align:right;font-weight:700;">{{ g.count }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="report-card" *ngIf="studentsData.daily?.length" style="margin-top:1rem;">
+          <div class="rc-title"><i class="bi bi-calendar3 me-2"></i>Daily Registrations</div>
+          <table class="data-table">
+            <thead><tr><th>Date</th><th style="text-align:right">New Students</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let d of studentsData.daily">
+                <td>{{ d.date | date:'dd MMM yyyy' }}</td>
+                <td style="text-align:right;font-weight:700;">{{ d.count }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div *ngIf="studentsData.total === 0" class="empty-state" style="padding:3rem;">
+          <i class="bi bi-people"></i><p>No registrations in this date range</p>
+        </div>
+      </div>
+
+      <!-- ══ EXAM TAB ════════════════════════════════════════════════════════ -->
+      <div *ngIf="activeTab==='exam' && examData && !isLoading">
+        <div class="stats-grid" style="margin-bottom:1.5rem;">
+          <div class="stat-card">
+            <div class="stat-icon total"><i class="bi bi-clipboard-check"></i></div>
+            <div class="stat-info"><span class="stat-value">{{ examData.total }}</span><span class="stat-label">Approved for Practical</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon income"><i class="bi bi-check-circle"></i></div>
+            <div class="stat-info"><span class="stat-value">{{ examData.passed }}</span><span class="stat-label">Passed</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon pending"><i class="bi bi-x-circle"></i></div>
+            <div class="stat-info"><span class="stat-value">{{ examData.failed }}</span><span class="stat-label">Failed</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon paid"><i class="bi bi-percent"></i></div>
+            <div class="stat-info"><span class="stat-value">{{ examData.passRate }}%</span><span class="stat-label">Pass Rate</span></div>
+          </div>
+        </div>
+        <div class="report-card">
+          <div class="rc-title"><i class="bi bi-graph-up me-2"></i>Exam Overview</div>
+          <div class="status-bars">
+            <div class="status-bar-item">
+              <div class="sb-label"><span class="badge badge-paid">Passed</span><span>{{ examData.passed }}</span></div>
+              <div class="sb-track"><div class="sb-fill paid" [style.width.%]="barWidth(examData.passed, examData.total)"></div></div>
+            </div>
+            <div class="status-bar-item">
+              <div class="sb-label"><span class="badge badge-pending">Failed</span><span>{{ examData.failed }}</span></div>
+              <div class="sb-track"><div class="sb-fill pending-f" [style.width.%]="barWidth(examData.failed, examData.total)"></div></div>
+            </div>
+            <div class="status-bar-item">
+              <div class="sb-label"><span class="badge badge-partial">Pending</span><span>{{ examData.pending }}</span></div>
+              <div class="sb-track"><div class="sb-fill partial" [style.width.%]="barWidth(examData.pending, examData.total)"></div></div>
+            </div>
+          </div>
+          <div style="margin-top:1rem;font-size:0.875rem;color:var(--text-secondary);">
+            Average attempts per student: <strong style="color:var(--text-primary)">{{ examData.avgAttempts }}</strong>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
