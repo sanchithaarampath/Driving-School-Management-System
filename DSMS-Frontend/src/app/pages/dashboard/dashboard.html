@@ -1,0 +1,333 @@
+<div class="dsms-layout">
+  <app-sidebar></app-sidebar>
+  <div class="main-content">
+    <app-topbar></app-topbar>
+    <div class="page-content">
+
+      <!-- ── Header ─────────────────────────────────────────────────────── -->
+      <div class="db-header">
+        <div class="db-header-left">
+          <div class="db-greeting">
+            {{ greeting }}, {{ user?.userFullName || user?.userName || 'User' }}
+            <span class="db-wave">👋</span>
+          </div>
+          <div class="db-subtitle">
+            <span *ngIf="isCompanyAdmin">
+              Company Overview &nbsp;·&nbsp;
+              <span class="db-highlight">{{ selectedBranchName }}</span>
+            </span>
+            <span *ngIf="isBranchAdmin">Branch Dashboard</span>
+            <span *ngIf="isStaff">Staff Dashboard &nbsp;·&nbsp; Daily tasks</span>
+            &nbsp;·&nbsp;
+            <span class="db-highlight">{{ stats.newThisMonth || 0 }} new</span>
+            students this month
+          </div>
+        </div>
+        <div class="db-header-actions">
+
+          <!-- Branch filter — Company Admin only -->
+          <div *ngIf="isCompanyAdmin" class="branch-filter-wrap">
+            <i class="bi bi-building branch-filter-icon"></i>
+            <select class="branch-filter-select"
+                    [(ngModel)]="selectedBranchId"
+                    (ngModelChange)="onBranchFilterChange($event)">
+              <option [ngValue]="0">All Branches</option>
+              <option *ngFor="let b of branches" [ngValue]="b.id">{{ b.name }}</option>
+            </select>
+            <span *ngIf="isLoadingDashboard" class="branch-filter-spinner">
+              <span class="spinner-border spinner-border-sm"></span>
+            </span>
+          </div>
+
+          <button class="btn btn-primary btn-sm" (click)="addStudent()">
+            <i class="bi bi-person-plus me-2"></i>Register Student
+          </button>
+          <button *ngIf="isCompanyAdmin" class="btn btn-outline-secondary btn-sm" (click)="goToBranches()">
+            <i class="bi bi-building me-2"></i>Branches
+          </button>
+        </div>
+      </div>
+
+      <!-- ── KPI Cards ──────────────────────────────────────────────────── -->
+      <div class="kpi-row">
+
+        <!-- Students -->
+        <div class="kpi-card kpi-students" (click)="goToStudents()">
+          <div class="kpi-icon-wrap"><i class="bi bi-people-fill"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-value">{{ stats.totalStudents || 0 }}</div>
+            <div class="kpi-label">
+              {{ isCompanyAdmin ? (selectedBranchId > 0 ? 'Branch Students' : 'Total Students') : 'Branch Students' }}
+            </div>
+          </div>
+          <div class="kpi-badge kpi-badge-up">
+            <i class="bi bi-arrow-up-right me-1"></i>+{{ stats.newThisMonth || 0 }} this month
+          </div>
+        </div>
+
+        <!-- Revenue -->
+        <div class="kpi-card kpi-revenue" (click)="goToBilling()">
+          <div class="kpi-icon-wrap"><i class="bi bi-cash-stack"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-value">Rs. {{ (stats.totalIncome || 0) | number:'1.0-0' }}</div>
+            <div class="kpi-label">Total Revenue</div>
+          </div>
+          <div class="kpi-badge kpi-badge-up">
+            <i class="bi bi-sun me-1"></i>Today: Rs. {{ (stats.todayCollections || 0) | number:'1.0-0' }}
+          </div>
+        </div>
+
+        <!-- Pending -->
+        <div class="kpi-card kpi-pending" (click)="goToBilling()">
+          <div class="kpi-icon-wrap"><i class="bi bi-hourglass-split"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-value">Rs. {{ (stats.pendingAmount || 0) | number:'1.0-0' }}</div>
+            <div class="kpi-label">Pending Amount</div>
+          </div>
+          <div *ngIf="(stats.pendingBills || 0) > 0" class="kpi-badge kpi-badge-warn">
+            <i class="bi bi-exclamation-circle me-1"></i>{{ stats.pendingBills }} unpaid bills
+          </div>
+          <div *ngIf="(stats.pendingBills || 0) === 0" class="kpi-badge kpi-badge-ok">
+            <i class="bi bi-check-circle me-1"></i>All bills settled
+          </div>
+        </div>
+
+        <!-- Context card -->
+        <div class="kpi-card kpi-extra" (click)="kpiExtraClick()">
+          <div class="kpi-icon-wrap">
+            <i *ngIf="isCompanyAdmin" class="bi bi-building"></i>
+            <i *ngIf="isBranchAdmin"  class="bi bi-clipboard-check"></i>
+            <i *ngIf="isStaff"        class="bi bi-receipt"></i>
+          </div>
+          <div class="kpi-body">
+            <div class="kpi-value" *ngIf="isCompanyAdmin">{{ branches.length }}</div>
+            <div class="kpi-value" *ngIf="isBranchAdmin">{{ pendingPractical.length }}</div>
+            <div class="kpi-value" *ngIf="isStaff">{{ stats.pendingBills || 0 }}</div>
+            <div class="kpi-label" *ngIf="isCompanyAdmin">Active Branches</div>
+            <div class="kpi-label" *ngIf="isBranchAdmin">Ready for Practical</div>
+            <div class="kpi-label" *ngIf="isStaff">Pending Bills</div>
+          </div>
+          <div class="kpi-badge kpi-badge-neutral">
+            <i class="bi bi-arrow-right me-1"></i>View details
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Quick Actions ──────────────────────────────────────────────── -->
+      <div class="quick-strip">
+        <button class="qs-btn" (click)="addStudent()">
+          <i class="bi bi-person-plus"></i><span>Register Student</span>
+        </button>
+        <button class="qs-btn" (click)="goToBilling()">
+          <i class="bi bi-receipt"></i><span>New Bill</span>
+        </button>
+        <button class="qs-btn" (click)="goToStudents()">
+          <i class="bi bi-people"></i><span>Students</span>
+        </button>
+        <button class="qs-btn" *ngIf="!isStaff" (click)="goToExam()">
+          <i class="bi bi-clipboard-check"></i><span>Exam Results</span>
+        </button>
+        <button class="qs-btn" *ngIf="!isStaff" (click)="goToUsers()">
+          <i class="bi bi-shield-person"></i><span>Users</span>
+        </button>
+        <button class="qs-btn" *ngIf="isCompanyAdmin" (click)="goToBranches()">
+          <i class="bi bi-building"></i><span>Branches</span>
+        </button>
+      </div>
+
+      <!-- ── Middle Row: Chart + Package Breakdown ──────────────────────── -->
+      <div class="db-mid-row">
+
+        <!-- Revenue Bar Chart -->
+        <div class="db-card flex-2">
+          <div class="db-card-header">
+            <h6><i class="bi bi-bar-chart-fill me-2"></i>Monthly Revenue</h6>
+            <span class="db-card-sub">Last 6 months</span>
+          </div>
+
+          <div *ngIf="chartBars.length > 0" class="chart-wrap">
+            <div class="chart-area">
+              <div *ngFor="let bar of chartBars" class="chart-col">
+                <div class="chart-val-label">
+                  <span *ngIf="bar.revenue > 0">{{ (bar.revenue / 1000) | number:'1.0-0' }}k</span>
+                </div>
+                <div class="chart-bar-track">
+                  <div class="chart-bar" [style.height.%]="bar.heightPct">
+                    <div class="chart-bar-glow"></div>
+                  </div>
+                </div>
+                <div class="chart-month-label">{{ bar.month }}</div>
+                <div *ngIf="bar.students > 0" class="chart-students-label">
+                  <i class="bi bi-person-fill"></i> {{ bar.students }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="chartBars.length === 0" class="db-empty">
+            <i class="bi bi-bar-chart"></i><p>No revenue data yet</p>
+          </div>
+        </div>
+
+        <!-- Package Breakdown -->
+        <div class="db-card flex-1">
+          <div class="db-card-header">
+            <h6><i class="bi bi-box-seam me-2"></i>Package Breakdown</h6>
+            <span class="db-card-sub">By enrollment</span>
+          </div>
+
+          <div *ngIf="packageBreakdown.length > 0" class="pkg-breakdown-list">
+            <div *ngFor="let pkg of packageBreakdown; let i = index" class="pkg-row">
+              <div class="pkg-row-top">
+                <span class="pkg-dot" [style.background]="pkgColors[i % pkgColors.length]"></span>
+                <span class="pkg-row-name" [title]="pkg.packageName">{{ pkg.packageName }}</span>
+                <span class="pkg-row-count">{{ pkg.count }}</span>
+              </div>
+              <div class="pkg-track">
+                <div class="pkg-fill"
+                  [style.width.%]="pkgWidthPct(pkg.count)"
+                  [style.background]="pkgColors[i % pkgColors.length]">
+                </div>
+              </div>
+              <div class="pkg-row-meta">{{ pkgWidthPct(pkg.count) }}% &nbsp;·&nbsp; Rs. {{ pkg.price | number }}</div>
+            </div>
+          </div>
+
+          <div *ngIf="packageBreakdown.length === 0" class="db-empty">
+            <i class="bi bi-box-seam"></i><p>No package data yet</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Bottom Row: Recent Students + Payments ─────────────────────── -->
+      <div class="db-bottom-row">
+
+        <!-- Recent Students -->
+        <div class="db-card flex-2">
+          <div class="db-card-header">
+            <h6><i class="bi bi-people me-2"></i>Recently Registered</h6>
+            <button class="db-view-all-btn" (click)="goToStudents()">
+              View all <i class="bi bi-arrow-right ms-1"></i>
+            </button>
+          </div>
+
+          <div *ngIf="recentStudents.length > 0" class="db-table-wrap">
+            <table class="db-table">
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>NIC</th>
+                  <th *ngIf="isCompanyAdmin">Branch</th>
+                  <th>Package</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let s of recentStudents"
+                    class="db-row"
+                    [routerLink]="['/students', s.id]">
+                  <td>
+                    <div class="student-cell">
+                      <div class="student-avatar">{{ s.studentName?.charAt(0) | uppercase }}</div>
+                      <div>
+                        <div class="student-name">{{ s.studentName }}</div>
+                        <div class="student-phone">{{ s.phoneNumber }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="mono">{{ s.nic }}</td>
+                  <td *ngIf="isCompanyAdmin">
+                    <span class="pill pill-blue">{{ s.branchName }}</span>
+                  </td>
+                  <td>
+                    <span *ngIf="s.packageType" class="pill pill-purple">{{ s.packageType }}</span>
+                    <span *ngIf="!s.packageType" class="text-muted small">—</span>
+                  </td>
+                  <td class="date-cell">{{ s.registrationDate | date:'dd MMM yyyy' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div *ngIf="recentStudents.length === 0" class="db-empty">
+            <i class="bi bi-people"></i><p>No students registered yet</p>
+          </div>
+        </div>
+
+        <!-- Recent Payments -->
+        <div class="db-card flex-1">
+          <div class="db-card-header">
+            <h6><i class="bi bi-cash me-2"></i>Recent Payments</h6>
+            <button class="db-view-all-btn" (click)="goToBilling()">
+              View all <i class="bi bi-arrow-right ms-1"></i>
+            </button>
+          </div>
+
+          <div *ngIf="recentPayments.length > 0" class="pay-feed">
+            <div *ngFor="let p of recentPayments" class="pay-row">
+              <div class="pay-avatar"><i class="bi bi-person"></i></div>
+              <div class="pay-info">
+                <div class="pay-name">{{ p.studentName }}</div>
+                <div class="pay-meta">
+                  {{ p.billNumber }}
+                  &nbsp;·&nbsp;
+                  <span class="pill pill-blue" style="font-size:0.67rem;padding:0.05rem 0.35rem;">{{ p.paymentMethod }}</span>
+                </div>
+                <div class="pay-date">{{ p.paymentDate | date:'dd MMM, h:mm a' }}</div>
+              </div>
+              <div class="pay-amount">Rs. {{ p.amount | number }}</div>
+            </div>
+          </div>
+
+          <div *ngIf="recentPayments.length === 0" class="db-empty">
+            <i class="bi bi-cash"></i><p>No payments recorded yet</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Pending Practical (admin only) ─────────────────────────────── -->
+      <div *ngIf="!isStaff && pendingPractical.length > 0" class="db-card db-card-full">
+        <div class="db-card-header">
+          <h6>
+            <i class="bi bi-clipboard-check me-2"></i>Students Awaiting Practical Test
+            <span class="count-bubble">{{ pendingPractical.length }}</span>
+          </h6>
+          <button class="db-view-all-btn" (click)="goToExam()">
+            View all <i class="bi bi-arrow-right ms-1"></i>
+          </button>
+        </div>
+        <div class="db-table-wrap">
+          <table class="db-table">
+            <thead>
+              <tr>
+                <th>Student</th><th>NIC</th>
+                <th *ngIf="isCompanyAdmin">Branch</th>
+                <th>Status</th><th>Attempts</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of pendingPractical" class="db-row">
+                <td><strong>{{ s.studentName }}</strong></td>
+                <td class="mono">{{ s.nic }}</td>
+                <td *ngIf="isCompanyAdmin">{{ s.branchName }}</td>
+                <td>
+                  <span class="status-pill"
+                    [class.status-pass]="s.examStatus === 'Pass'"
+                    [class.status-fail]="s.examStatus === 'Fail'"
+                    [class.status-pending]="!s.examStatus">
+                    {{ s.examStatus || 'Pending' }}
+                  </span>
+                </td>
+                <td>{{ s.examAttempts || 0 }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- page-content -->
+  </div><!-- main-content -->
+</div><!-- dsms-layout -->
