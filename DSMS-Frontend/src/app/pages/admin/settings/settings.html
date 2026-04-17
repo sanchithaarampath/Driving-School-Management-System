@@ -1,0 +1,225 @@
+<div class="dsms-layout">
+  <app-sidebar></app-sidebar>
+  <div class="main-content">
+    <app-topbar></app-topbar>
+    <div class="page-content">
+
+      <div class="page-header">
+        <div>
+          <h2><i class="bi bi-gear-fill me-2"></i>System Settings</h2>
+          <p>Configure email, WhatsApp, school info, data cleanup and audit log</p>
+        </div>
+        <button class="btn btn-back" (click)="goBack()"><i class="bi bi-arrow-left me-2"></i>Back</button>
+      </div>
+
+      <div *ngIf="isLoading" class="loading-state"><div class="spinner-border text-danger"></div><p>Loading settings...</p></div>
+
+      <div *ngIf="!isLoading" class="settings-grid">
+
+        <!-- ═══ EMAIL ═══════════════════════════════════════════════════════ -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <i class="bi bi-envelope-fill"></i>
+            <h5>Email Configuration</h5>
+            <span class="config-badge" [class.badge-ok]="email.configured" [class.badge-warn]="!email.configured">
+              {{ email.configured ? '✓ Configured' : '✗ Not configured' }}
+            </span>
+          </div>
+
+          <div class="settings-guide" *ngIf="!email.configured">
+            <i class="bi bi-info-circle me-1"></i>
+            To enable email: use your Gmail address + create an
+            <a href="https://myaccount.google.com/apppasswords" target="_blank">App Password</a>
+            (requires 2-Step Verification on your Google account).
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>SMTP Host</label>
+              <input class="form-control" [(ngModel)]="email.smtpHost" placeholder="smtp.gmail.com">
+            </div>
+            <div class="form-group">
+              <label>SMTP Port</label>
+              <input class="form-control" [(ngModel)]="email.smtpPort" placeholder="587">
+            </div>
+            <div class="form-group">
+              <label>Sender Email <span class="required">*</span></label>
+              <input class="form-control" type="email" [(ngModel)]="email.senderEmail" placeholder="your-school@gmail.com">
+            </div>
+            <div class="form-group">
+              <label>Sender Name</label>
+              <input class="form-control" [(ngModel)]="email.senderName" placeholder="Arampath Driving School">
+            </div>
+            <div class="form-group full-width">
+              <label>Gmail App Password <span class="required">*</span></label>
+              <div class="pass-wrap">
+                <input class="form-control" [type]="showEmailPass ? 'text' : 'password'"
+                       [(ngModel)]="email.appPassword" placeholder="xxxx xxxx xxxx xxxx">
+                <button class="pass-toggle" (click)="showEmailPass = !showEmailPass">
+                  <i class="bi" [class.bi-eye]="!showEmailPass" [class.bi-eye-slash]="showEmailPass"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="test-row">
+            <input class="form-control" type="email" [(ngModel)]="testEmail" placeholder="Send test to: admin@email.com" style="flex:1;">
+            <button class="btn btn-outline-sm" (click)="sendTestEmail()" [disabled]="testEmailSending || !testEmail">
+              <span *ngIf="testEmailSending" class="spinner-border spinner-border-sm me-1"></span>
+              <i *ngIf="!testEmailSending" class="bi bi-send me-1"></i>
+              Test Email
+            </button>
+          </div>
+          <div *ngIf="testEmailMsg" class="alert-ok mt-2"><i class="bi bi-check-circle me-1"></i>{{ testEmailMsg }}</div>
+          <div *ngIf="testEmailErr" class="alert-err mt-2"><i class="bi bi-exclamation-triangle me-1"></i>{{ testEmailErr }}</div>
+        </div>
+
+        <!-- ═══ WHATSAPP / TWILIO ════════════════════════════════════════════ -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <i class="bi bi-whatsapp"></i>
+            <h5>WhatsApp / Twilio</h5>
+            <span class="config-badge" [class.badge-ok]="twilio.configured" [class.badge-warn]="!twilio.configured">
+              {{ twilio.configured ? '✓ Configured' : '✗ Not configured' }}
+            </span>
+          </div>
+
+          <div class="settings-guide" *ngIf="!twilio.configured">
+            <i class="bi bi-info-circle me-1"></i>
+            Sign up at <a href="https://www.twilio.com" target="_blank">twilio.com</a>.
+            Enable the WhatsApp Sandbox under Messaging → Try it Out → Send a WhatsApp Message.
+            Copy your Account SID + Auth Token from the Console Dashboard.
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label>Account SID <span class="required">*</span></label>
+              <input class="form-control" [(ngModel)]="twilio.accountSid" placeholder="ACxxxxxxxxxxxxxxxxxx">
+            </div>
+            <div class="form-group full-width">
+              <label>Auth Token <span class="required">*</span></label>
+              <div class="pass-wrap">
+                <input class="form-control" [type]="showTwilioToken ? 'text' : 'password'"
+                       [(ngModel)]="twilio.authToken" placeholder="Your Twilio Auth Token">
+                <button class="pass-toggle" (click)="showTwilioToken = !showTwilioToken">
+                  <i class="bi" [class.bi-eye]="!showTwilioToken" [class.bi-eye-slash]="showTwilioToken"></i>
+                </button>
+              </div>
+            </div>
+            <div class="form-group full-width">
+              <label>WhatsApp From Number</label>
+              <input class="form-control" [(ngModel)]="twilio.whatsAppFrom" placeholder="whatsapp:+14155238886">
+            </div>
+          </div>
+
+          <div class="test-row">
+            <input class="form-control" [(ngModel)]="testPhone" placeholder="Test to: +94 77 123 4567" style="flex:1;">
+            <button class="btn btn-outline-sm" (click)="sendTestWhatsApp()" [disabled]="testWaSending || !testPhone">
+              <span *ngIf="testWaSending" class="spinner-border spinner-border-sm me-1"></span>
+              <i *ngIf="!testWaSending" class="bi bi-whatsapp me-1"></i>
+              Test WhatsApp
+            </button>
+          </div>
+          <div *ngIf="testWaMsg" class="alert-ok mt-2"><i class="bi bi-check-circle me-1"></i>{{ testWaMsg }}</div>
+          <div *ngIf="testWaErr" class="alert-err mt-2"><i class="bi bi-exclamation-triangle me-1"></i>{{ testWaErr }}</div>
+        </div>
+
+        <!-- ═══ SCHOOL INFO ═══════════════════════════════════════════════════ -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <i class="bi bi-building-fill"></i>
+            <h5>School Information</h5>
+          </div>
+          <div class="form-grid">
+            <div class="form-group"><label>School Name</label><input class="form-control" [(ngModel)]="school.name"></div>
+            <div class="form-group"><label>Phone</label><input class="form-control" [(ngModel)]="school.phone"></div>
+            <div class="form-group full-width"><label>Address</label><input class="form-control" [(ngModel)]="school.address"></div>
+            <div class="form-group"><label>Email</label><input class="form-control" type="email" [(ngModel)]="school.email"></div>
+          </div>
+        </div>
+
+        <!-- Save button -->
+        <div class="settings-save-row">
+          <button class="btn btn-primary" (click)="saveSettings()" [disabled]="isSaving">
+            <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
+            <i *ngIf="!isSaving" class="bi bi-check-lg me-2"></i>
+            {{ isSaving ? 'Saving...' : 'Save All Settings' }}
+          </button>
+          <div *ngIf="saveMsg"   class="alert-ok"><i class="bi bi-check-circle me-1"></i>{{ saveMsg }}</div>
+          <div *ngIf="saveError" class="alert-err"><i class="bi bi-exclamation-triangle me-1"></i>{{ saveError }}</div>
+        </div>
+
+        <!-- ═══ DATA CLEANUP ══════════════════════════════════════════════════ -->
+        <div class="settings-card full-width-card">
+          <div class="settings-card-header">
+            <i class="bi bi-trash3-fill"></i>
+            <h5>Data Cleanup — Overpaid Bills</h5>
+          </div>
+          <p class="settings-desc">Students with Total Paid exceeding their package price — caused by pre-fix duplicate bills. Delete all bills for a student to let them start fresh.</p>
+
+          <div *ngIf="isOverpaidLoading" class="text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Scanning...</div>
+
+          <div *ngIf="!isOverpaidLoading && overpaid.length === 0" class="alert-ok">
+            <i class="bi bi-check-circle me-1"></i>No overpaid students found. Data is clean!
+          </div>
+
+          <div *ngIf="cleanupMsg" class="alert-ok mb-2"><i class="bi bi-check-circle me-1"></i>{{ cleanupMsg }}</div>
+
+          <div *ngIf="!isOverpaidLoading && overpaid.length > 0" class="cleanup-table-wrap">
+            <table class="cleanup-table">
+              <thead>
+                <tr><th>Student</th><th>Branch</th><th>Package</th><th>Total Paid</th><th>Overpaid By</th><th>Bills</th><th>Action</th></tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let s of overpaid">
+                  <td><strong>{{ s.studentName }}</strong><br><small class="text-muted">{{ s.nic }}</small></td>
+                  <td>{{ s.branchName }}</td>
+                  <td>Rs. {{ s.packagePrice | number }}</td>
+                  <td class="text-warning">Rs. {{ s.totalPaid | number }}</td>
+                  <td class="text-danger">Rs. {{ s.overpaidBy | number }}</td>
+                  <td>{{ s.billCount }}</td>
+                  <td>
+                    <button class="btn btn-danger btn-sm" (click)="cleanupStudent(s.studentId, s.studentName)">
+                      <i class="bi bi-trash me-1"></i>Clear Bills
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ═══ AUDIT LOG ════════════════════════════════════════════════════ -->
+        <div class="settings-card full-width-card">
+          <div class="settings-card-header">
+            <i class="bi bi-journal-text"></i>
+            <h5>Audit Log — Last 100 Bill Events</h5>
+          </div>
+          <div *ngIf="isAuditLoading" class="text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading...</div>
+          <div *ngIf="!isAuditLoading && auditLog.length === 0" class="text-muted" style="padding:1rem 0;">No audit entries found.</div>
+          <div *ngIf="!isAuditLoading && auditLog.length > 0" class="cleanup-table-wrap">
+            <table class="cleanup-table">
+              <thead><tr><th>Bill No.</th><th>Student</th><th>Action</th><th>Amount</th><th>Status</th><th>By</th><th>At</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let e of auditLog" [class.row-deleted]="e.isDeleted">
+                  <td class="mono">{{ e.billNumber }}</td>
+                  <td>{{ e.studentName }}</td>
+                  <td>
+                    <span class="audit-badge" [class.ab-created]="!e.isDeleted" [class.ab-deleted]="e.isDeleted">
+                      {{ e.action }}
+                    </span>
+                  </td>
+                  <td>Rs. {{ e.amount | number }}</td>
+                  <td>{{ e.status }}</td>
+                  <td>{{ e.performedBy }}</td>
+                  <td class="text-muted small">{{ e.performedAt | date:'dd MMM yy, HH:mm' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
