@@ -1,0 +1,194 @@
+<div class="dsms-layout">
+  <app-sidebar></app-sidebar>
+  <div class="main-content">
+    <app-topbar></app-topbar>
+    <div class="page-content">
+
+      <div class="page-header">
+        <div>
+          <h2><i class="bi bi-person-badge me-2"></i>Instructors</h2>
+          <p>Manage driving instructors for this branch</p>
+        </div>
+        <button class="btn btn-primary" (click)="openCreate()">
+          <i class="bi bi-plus-lg me-2"></i>Add Instructor
+        </button>
+      </div>
+
+      <!-- Search -->
+      <div class="search-bar">
+        <div class="search-input">
+          <i class="bi bi-search"></i>
+          <input type="text" placeholder="Search by name, NIC or phone..."
+                 [(ngModel)]="searchTerm" (input)="search()">
+        </div>
+        <span class="result-count">{{ filtered.length }} instructor(s)</span>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="isLoading" class="loading-state">
+        <div class="spinner-border text-danger"></div><p>Loading instructors...</p>
+      </div>
+
+      <!-- Empty -->
+      <div *ngIf="!isLoading && filtered.length === 0" class="empty-state">
+        <i class="bi bi-person-badge"></i>
+        <p>No instructors found. Add your first instructor.</p>
+        <button class="btn btn-primary" (click)="openCreate()">
+          <i class="bi bi-plus-lg me-2"></i>Add Instructor
+        </button>
+      </div>
+
+      <!-- Table -->
+      <div *ngIf="!isLoading && filtered.length > 0" class="table-card">
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>NIC</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>License No.</th>
+                <th *ngIf="isCompanyAdmin">Branch</th>
+                <th>Linked User</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let i of filtered">
+                <td>
+                  <div class="instructor-name-cell">
+                    <div class="inst-avatar">{{ i.instructorName?.charAt(0) }}</div>
+                    <span>{{ i.instructorName }}</span>
+                  </div>
+                </td>
+                <td>{{ i.nic }}</td>
+                <td>{{ i.phone }}</td>
+                <td>{{ i.email || '—' }}</td>
+                <td>{{ i.licenseNo || '—' }}</td>
+                <td *ngIf="isCompanyAdmin">{{ i.branchName }}</td>
+                <td>
+                  <span class="linked-user" *ngIf="i.userId">
+                    <i class="bi bi-person-check me-1"></i>{{ getUserName(i.userId) }}
+                  </span>
+                  <span class="text-muted" *ngIf="!i.userId">—</span>
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="i.active ? 'badge-paid' : 'badge-pending'">
+                    {{ i.active ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+                <td>
+                  <div style="display:flex;gap:0.35rem;">
+                    <button class="btn-action edit" title="Edit" (click)="openEdit(i)">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn-action delete" title="Deactivate" (click)="confirmDelete(i)">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===== Add / Edit Modal ===== -->
+<div *ngIf="showModal" class="modal-overlay" (click)="closeModal()">
+  <div class="modal-box modal-wide" (click)="$event.stopPropagation()">
+    <div class="modal-header-row">
+      <h5><i class="bi bi-person-badge me-2"></i>{{ isEditing ? 'Edit Instructor' : 'Add Instructor' }}</h5>
+      <button class="modal-close" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label>Full Name <span class="required">*</span></label>
+        <input type="text" class="form-control" [(ngModel)]="form.instructorName" placeholder="e.g. Kamal Perera">
+      </div>
+      <div class="form-group">
+        <label>NIC <span class="required">*</span></label>
+        <input type="text" class="form-control" [(ngModel)]="form.nic" placeholder="e.g. 199012345678" [disabled]="isEditing">
+      </div>
+      <div class="form-group">
+        <label>Phone <span class="required">*</span></label>
+        <input type="text" class="form-control" [(ngModel)]="form.phone" placeholder="07X XXXXXXX">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" class="form-control" [(ngModel)]="form.email" placeholder="optional">
+      </div>
+      <div class="form-group">
+        <label>License No.</label>
+        <input type="text" class="form-control" [(ngModel)]="form.licenseNo" placeholder="optional">
+      </div>
+
+      <!-- Branch (Company Admin only) -->
+      <div *ngIf="isCompanyAdmin && !isEditing" class="form-group">
+        <label>Branch <span class="required">*</span></label>
+        <select class="form-control" [(ngModel)]="form.branchId">
+          <option [value]="0" disabled>— Select Branch —</option>
+          <option *ngFor="let b of branches" [value]="b.id">{{ b.name }}</option>
+        </select>
+      </div>
+
+      <!-- Link to user account -->
+      <div class="form-group" [class.col-span-2]="!isCompanyAdmin || isEditing">
+        <label><i class="bi bi-link me-1"></i>Link to User Account <span class="hint">(optional)</span></label>
+        <select class="form-control" [(ngModel)]="form.userId">
+          <option [ngValue]="null">— Not linked —</option>
+          <option *ngFor="let u of instructorUsers" [ngValue]="u.id">{{ u.userFullName }} ({{ u.userName }})</option>
+        </select>
+        <small class="hint">Only users with Instructor role are shown.</small>
+      </div>
+
+      <!-- Active toggle (edit only) -->
+      <div *ngIf="isEditing" class="form-group">
+        <label>Status</label>
+        <select class="form-control" [(ngModel)]="form.active">
+          <option [ngValue]="true">Active</option>
+          <option [ngValue]="false">Inactive</option>
+        </select>
+      </div>
+    </div>
+
+    <div *ngIf="saveSuccess" class="alert-success mt-2">
+      <i class="bi bi-check-circle me-2"></i>{{ saveSuccess }}
+    </div>
+    <div *ngIf="saveError" class="alert-danger mt-2">
+      <i class="bi bi-exclamation-triangle me-2"></i>{{ saveError }}
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-cancel" (click)="closeModal()" [disabled]="isSaving">Cancel</button>
+      <button class="btn btn-primary" (click)="save()" [disabled]="isSaving">
+        <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
+        <i *ngIf="!isSaving" class="bi bi-check-lg me-2"></i>
+        {{ isSaving ? 'Saving...' : isEditing ? 'Update' : 'Add Instructor' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Delete Confirm ===== -->
+<div *ngIf="deletingId > 0" class="modal-overlay" (click)="cancelDelete()">
+  <div class="modal-box" style="max-width:420px" (click)="$event.stopPropagation()">
+    <h5><i class="bi bi-person-x text-danger me-2"></i>Deactivate Instructor</h5>
+    <p style="color:var(--text-secondary)">
+      Deactivate <strong style="color:var(--text-primary)">{{ deletingName }}</strong>?
+      They will no longer appear in the booking dropdown.
+    </p>
+    <div class="form-actions">
+      <button class="btn btn-cancel" (click)="cancelDelete()">Cancel</button>
+      <button class="btn btn-danger-outline" (click)="doDelete()">
+        <i class="bi bi-person-x me-2"></i>Deactivate
+      </button>
+    </div>
+  </div>
+</div>
