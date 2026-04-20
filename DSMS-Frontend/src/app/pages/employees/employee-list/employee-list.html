@@ -1,0 +1,90 @@
+<div class="dsms-layout">
+  <app-sidebar></app-sidebar>
+  <div class="main-content">
+    <app-topbar></app-topbar>
+    <div class="page-content">
+
+      <div class="page-header">
+        <div>
+          <h2>Employees</h2>
+          <p>Manage all staff and instructor records</p>
+        </div>
+        <button class="btn btn-primary" (click)="addEmployee()">
+          <i class="bi bi-plus-lg me-2"></i>Add Employee
+        </button>
+      </div>
+
+      <!-- Search -->
+      <div class="search-bar">
+        <div class="search-input">
+          <i class="bi bi-search"></i>
+          <input type="text" placeholder="Search by name, NIC, department or designation..."
+            [(ngModel)]="searchTerm" (input)="search()">
+        </div>
+        <span class="result-count">{{ filteredEmployees.length }} employees</span>
+      </div>
+
+      <!-- Table -->
+      <div class="table-card">
+        <div *ngIf="isLoading" class="loading-state">
+          <div class="spinner-border text-danger"></div>
+          <p>Loading employees...</p>
+        </div>
+
+        <div *ngIf="!isLoading && filteredEmployees.length === 0" class="empty-state">
+          <i class="bi bi-person-badge"></i>
+          <p>No employees found</p>
+          <button class="btn btn-primary" (click)="addEmployee()">Add First Employee</button>
+        </div>
+
+        <table *ngIf="!isLoading && filteredEmployees.length > 0" class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Employee</th>
+              <th>NIC</th>
+              <th>Phone</th>
+              <th>Designation</th>
+              <th>Department</th>
+              <th>Branch</th>
+              <th>System Access</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let e of filteredEmployees; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td>
+                <div class="student-name">
+                  <div class="avatar">{{ e.employeeName?.charAt(0) | uppercase }}</div>
+                  {{ e.employeeName }}
+                </div>
+              </td>
+              <td class="mono">{{ e.nic }}</td>
+              <td>{{ e.phone }}</td>
+              <td>{{ e.designation || '—' }}</td>
+              <td>{{ e.department || '—' }}</td>
+              <td>
+                <span class="emp-branch-pill">{{ e.branchName }}</span>
+              </td>
+              <td>
+                <span *ngIf="e.userId"  class="emp-status-pill emp-linked">
+                  <i class="bi bi-check-circle-fill me-1"></i>Linked
+                </span>
+                <span *ngIf="!e.userId" class="emp-status-pill emp-none">
+                  <i class="bi bi-dash-circle me-1"></i>No Account
+                </span>
+              </td>
+              <td>
+                <button class="btn-action edit" title="Edit" (click)="editEmployee(e.id)">
+                  <i class="bi bi-pencil"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</div>
