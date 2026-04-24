@@ -314,8 +314,14 @@ export class BillingForm implements OnInit, AfterViewChecked {
 
   previewReceipt() {
     if (!this.createdBillId) return;
-    const token = this.authService.getToken();
-    window.open(`${this.apiUrl}/billing/${this.createdBillId}/receipt?token=${token}`, '_blank');
+    this.http.get(`${this.apiUrl}/billing/${this.createdBillId}/receipt`, {
+      headers: this.getHeaders(), responseType: 'text'
+    }).subscribe({
+      next: (html) => {
+        const w = window.open('', '_blank');
+        if (w) { w.document.write(html); w.document.close(); }
+      }
+    });
   }
 
   finishAndGoBack() { this.router.navigate(['/billing']); }

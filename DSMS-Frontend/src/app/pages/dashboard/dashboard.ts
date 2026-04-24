@@ -26,14 +26,21 @@ export class Dashboard implements OnInit {
 
   ngOnInit() {
     this.user = this.authService.getUser();
+
+    // Redirect instructor to their own dashboard
+    if (this.authService.isInstructor()) {
+      this.router.navigate(['/instructor/dashboard']);
+      return;
+    }
+
     this.loadDashboard();
     if (this.authService.isCompanyAdmin()) this.loadBranches();
     if (!this.authService.isStaff()) this.loadPendingPractical();
   }
 
   get isCompanyAdmin() { return this.authService.isCompanyAdmin(); }
-  get isBranchAdmin() { return this.authService.isBranchAdmin(); }
-  get isStaff() { return this.authService.isStaff(); }
+  get isBranchAdmin()  { return this.authService.isBranchAdmin(); }
+  get isStaff()        { return this.authService.isStaff(); }
 
   getHeaders() {
     return new HttpHeaders({ Authorization: `Bearer ${this.authService.getToken()}` });
@@ -63,10 +70,10 @@ export class Dashboard implements OnInit {
     });
   }
 
-  addStudent() { this.router.navigate(['/students/new']); }
-  goToStudents() { this.router.navigate(['/students']); }
-  goToBilling() { this.router.navigate(['/billing']); }
-  goToExam() { this.router.navigate(['/exam']); }
-  goToBranches() { this.router.navigate(['/branches']); }
-  goToUsers() { this.router.navigate(['/users']); }
+  addStudent()    { this.router.navigate(['/students/new']); }
+  goToStudents()  { this.router.navigate(['/students']); }
+  goToBilling()   { this.router.navigate(['/billing']); }
+  goToExam()      { this.router.navigate(['/exam']); }
+  goToBranches()  { this.router.navigate(['/branches']); }
+  goToUsers()     { this.router.navigate(['/users']); }
 }

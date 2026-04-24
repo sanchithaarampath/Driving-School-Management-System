@@ -1,0 +1,107 @@
+<div class="dsms-layout">
+  <app-sidebar></app-sidebar>
+  <div class="main-content">
+    <app-topbar></app-topbar>
+    <div class="page-content">
+
+      <div class="page-header">
+        <div>
+          <h2>Instructor Dashboard</h2>
+          <p>Welcome, {{ user?.userFullName }}</p>
+        </div>
+        <button class="btn btn-primary" (click)="goToAttendance()">
+          <i class="bi bi-calendar-plus me-2"></i>Record Attendance
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon total"><i class="bi bi-people-fill"></i></div>
+          <div class="stat-info"><span class="stat-value">{{ totalStudents }}</span><span class="stat-label">My Students</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon income"><i class="bi bi-hourglass-split"></i></div>
+          <div class="stat-info"><span class="stat-value">{{ inProgressCount }}</span><span class="stat-label">In Training</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon paid"><i class="bi bi-check-circle"></i></div>
+          <div class="stat-info"><span class="stat-value">{{ completedCount }}</span><span class="stat-label">Training Complete</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon pending"><i class="bi bi-patch-check"></i></div>
+          <div class="stat-info"><span class="stat-value">{{ approvedCount }}</span><span class="stat-label">Approved for Practical</span></div>
+        </div>
+      </div>
+
+      <!-- Search -->
+      <div class="search-bar">
+        <div class="search-input">
+          <i class="bi bi-search"></i>
+          <input type="text" placeholder="Search student by name or NIC..."
+            [(ngModel)]="searchTerm" (input)="search()">
+        </div>
+        <span class="result-count">{{ filteredStudents.length }} students</span>
+      </div>
+
+      <!-- Student Progress Table -->
+      <div class="table-card">
+        <div *ngIf="isLoading" class="loading-state">
+          <div class="spinner-border text-danger"></div><p>Loading students...</p>
+        </div>
+
+        <div *ngIf="!isLoading && filteredStudents.length === 0" class="empty-state">
+          <i class="bi bi-people"></i><p>No students found</p>
+        </div>
+
+        <table *ngIf="!isLoading && filteredStudents.length > 0" class="data-table">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>NIC</th>
+              <th>Branch</th>
+              <th>Package</th>
+              <th>Training Progress</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of filteredStudents">
+              <td>
+                <div class="student-name">
+                  <div class="avatar">{{ s.studentName?.charAt(0) }}</div>
+                  {{ s.studentName }}
+                </div>
+              </td>
+              <td>{{ s.nic }}</td>
+              <td>{{ s.branchName }}</td>
+              <td>{{ s.packageName }}</td>
+              <td>
+                <div class="progress-cell">
+                  <div class="mini-bar">
+                    <div class="mini-fill"
+                         [style.width.%]="progressPercent(s.attendanceDays)"
+                         [class.mini-fill-complete]="s.attendanceDays >= 15"></div>
+                  </div>
+                  <span class="progress-label">{{ s.attendanceDays }}/15</span>
+                </div>
+              </td>
+              <td>
+                <span *ngIf="s.isRecommendForTrial" class="badge badge-paid"><i class="bi bi-check me-1"></i>Practical Approved</span>
+                <span *ngIf="!s.isRecommendForTrial && s.attendanceDays >= 15" class="badge badge-partial">Complete</span>
+                <span *ngIf="!s.isRecommendForTrial && s.attendanceDays < 15" class="badge badge-pending">In Training</span>
+              </td>
+              <td>
+                <button class="btn-action approve" title="Record Attendance" (click)="goToAttendanceFor(s.sprId)">
+                  <i class="bi bi-calendar-plus"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</div>

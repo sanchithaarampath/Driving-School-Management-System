@@ -93,5 +93,14 @@ export class StudentProfile implements OnInit {
 
   editStudent()   { this.router.navigate(['/students/edit', this.student.id]); }
   goBack()        { this.router.navigate(['/students']); }
-  previewReceipt(billId: number) { window.open(`${this.apiUrl}/billing/${billId}/receipt`, '_blank'); }
+  previewReceipt(billId: number) {
+    this.http.get(`${this.apiUrl}/billing/${billId}/receipt`, {
+      headers: this.getHeaders(), responseType: 'text'
+    }).subscribe({
+      next: (html) => {
+        const w = window.open('', '_blank');
+        if (w) { w.document.write(html); w.document.close(); }
+      }
+    });
+  }
 }

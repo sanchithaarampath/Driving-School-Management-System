@@ -3,89 +3,163 @@
   <div class="main-content">
     <app-topbar></app-topbar>
     <div class="page-content">
+
       <div class="page-header">
         <div><h2>Exam Results</h2><p>Update written exam results and practical test approvals</p></div>
       </div>
 
-      <div *ngIf="successMessage" class="alert alert-success"><i class="bi bi-check-circle me-2"></i>{{ successMessage }}</div>
-      <div *ngIf="errorMessage" class="alert alert-danger"><i class="bi bi-exclamation-circle me-2"></i>{{ errorMessage }}</div>
+      <!-- Alerts -->
+      <div *ngIf="successMessage" class="alert-success"><i class="bi bi-check-circle me-2"></i>{{ successMessage }}</div>
+      <div *ngIf="errorMessage"   class="alert-danger"><i class="bi bi-exclamation-circle me-2"></i>{{ errorMessage }}</div>
 
-      <div class="form-card">
-        <h6 class="section-title"><i class="bi bi-search me-2"></i>Search Student</h6>
-        <div class="search-bar">
-          <div class="search-input">
-            <i class="bi bi-search"></i>
-            <input type="text" placeholder="Search by NIC, Name or Student ID..." [(ngModel)]="searchTerm" (keyup.enter)="searchStudent()">
-          </div>
-          <button class="btn btn-primary" (click)="searchStudent()">Search</button>
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon total"><i class="bi bi-clipboard-check"></i></div>
+          <div class="stat-info"><span class="stat-value">{{ pendingPractical.length }}</span><span class="stat-label">Approved for Practical</span></div>
         </div>
-        <div class="table-card mt-3" *ngIf="searchResult && searchResult.length > 0">
-          <table class="data-table">
-            <thead><tr><th>ID</th><th>Name</th><th>NIC</th><th>Phone</th><th>Action</th></tr></thead>
-            <tbody>
-              <tr *ngFor="let s of searchResult">
-                <td>{{ s.id }}</td><td>{{ s.studentName }}</td><td>{{ s.nic }}</td><td>{{ s.phoneNumber }}</td>
-                <td><button class="btn-action edit" (click)="loadStudentExams(s.id)"><i class="bi bi-clipboard-check"></i> Select</button></td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="stat-card">
+          <div class="stat-icon income"><i class="bi bi-check-circle"></i></div>
+          <div class="stat-info"><span class="stat-value">{{ passCount }}</span><span class="stat-label">Exam Passed</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon pending"><i class="bi bi-x-circle"></i></div>
+          <div class="stat-info"><span class="stat-value">{{ failCount }}</span><span class="stat-label">Exam Failed</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon paid"><i class="bi bi-hourglass-split"></i></div>
+          <div class="stat-info"><span class="stat-value">{{ pendingCount }}</span><span class="stat-label">Awaiting Result</span></div>
         </div>
       </div>
 
-      <div class="form-card" *ngIf="examForm.studentPackageRegistrationId">
-        <h6 class="section-title"><i class="bi bi-pencil-square me-2"></i>Update Exam Result</h6>
-        <div class="form-grid">
-          <div class="form-group">
-            <label>Registration ID</label>
-            <input type="number" class="form-control" [(ngModel)]="examForm.studentPackageRegistrationId">
-          </div>
-          <div class="form-group">
-            <label>Exam Date</label>
-            <input type="date" class="form-control" [(ngModel)]="examForm.examDate">
-          </div>
-          <div class="form-group full-width">
-            <label>Result <span class="required">*</span></label>
-            <div class="d-flex gap-3">
-              <div class="form-check">
-                <input class="form-check-input" type="radio" [(ngModel)]="examForm.examStatus" value="Pass" id="pass">
-                <label class="form-check-label text-success fw-bold" for="pass"><i class="bi bi-check-circle me-1"></i>Pass</label>
+      <div class="exam-layout">
+
+        <!-- LEFT: Search & Update -->
+        <div>
+          <div class="form-card">
+            <h6 class="section-title"><i class="bi bi-search me-2"></i>Search Student to Update</h6>
+            <div class="search-bar">
+              <div class="search-input">
+                <i class="bi bi-search"></i>
+                <input type="text" placeholder="Search by name, NIC or phone..."
+                  [(ngModel)]="searchTerm" (keyup.enter)="searchStudent()">
               </div>
-              <div class="form-check">
-                <input class="form-check-input" type="radio" [(ngModel)]="examForm.examStatus" value="Fail" id="fail">
-                <label class="form-check-label text-danger fw-bold" for="fail"><i class="bi bi-x-circle me-1"></i>Fail</label>
+              <button class="btn btn-primary" (click)="searchStudent()" [disabled]="isSearching">
+                <span *ngIf="isSearching" class="spinner-border spinner-border-sm"></span>
+                <span *ngIf="!isSearching">Search</span>
+              </button>
+            </div>
+
+            <div class="table-card" *ngIf="searchResult.length > 0" style="margin-top:1rem;">
+              <table class="data-table">
+                <thead><tr><th>Name</th><th>NIC</th><th>Branch</th><th></th></tr></thead>
+                <tbody>
+                  <tr *ngFor="let s of searchResult">
+                    <td><strong>{{ s.studentName }}</strong></td>
+                    <td>{{ s.nic }}</td>
+                    <td>{{ s.branchName }}</td>
+                    <td>
+                      <button class="btn-action approve" (click)="selectStudentForExam(s)">
+                        <i class="bi bi-clipboard-plus"></i> Select
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Update Form -->
+          <div class="form-card" *ngIf="selectedStudent" style="margin-top:1rem;">
+            <h6 class="section-title"><i class="bi bi-pencil-square me-2"></i>Update: {{ selectedStudent.studentName }}</h6>
+
+            <div class="form-group" *ngIf="studentSprs.length > 1">
+              <label>Package Registration</label>
+              <select class="form-control" [(ngModel)]="examForm.studentPackageRegistrationId">
+                <option *ngFor="let spr of studentSprs" [value]="spr.id">
+                  {{ spr.packageName }} (ID: {{ spr.id }})
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Exam Date</label>
+              <input type="date" class="form-control" [(ngModel)]="examForm.examDate">
+            </div>
+
+            <div class="form-group">
+              <label>Result <span class="required">*</span></label>
+              <div class="result-options">
+                <div class="result-option pass" [class.selected]="examForm.examStatus==='Pass'" (click)="examForm.examStatus='Pass'">
+                  <i class="bi bi-check-circle-fill"></i><span>Pass</span>
+                </div>
+                <div class="result-option fail" [class.selected]="examForm.examStatus==='Fail'" (click)="examForm.examStatus='Fail'">
+                  <i class="bi bi-x-circle-fill"></i><span>Fail</span>
+                </div>
               </div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-cancel" (click)="selectedStudent=null">Cancel</button>
+              <button class="btn btn-primary" (click)="updateExamResult()" [disabled]="isSaving">
+                <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
+                <i *ngIf="!isSaving" class="bi bi-check-lg me-2"></i>
+                {{ isSaving ? 'Saving...' : 'Save Result' }}
+              </button>
             </div>
           </div>
         </div>
-        <div class="form-actions">
-          <button class="btn btn-primary" (click)="updateExamResult()" [disabled]="isSaving">
-            <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
-            <i *ngIf="!isSaving" class="bi bi-check-lg me-2"></i>
-            {{ isSaving ? 'Saving...' : 'Update Result' }}
-          </button>
+
+        <!-- RIGHT: Pending Practical Table -->
+        <div class="table-card">
+          <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+            <h6><i class="bi bi-people me-2"></i>Students Approved for Practical</h6>
+            <div class="search-input" style="width:200px;">
+              <i class="bi bi-search"></i>
+              <input type="text" placeholder="Filter..." [(ngModel)]="filterSearch" (input)="filterPending()">
+            </div>
+          </div>
+          <div *ngIf="isLoading" class="loading-state" style="padding:2rem;">
+            <div class="spinner-border text-danger"></div>
+          </div>
+          <table class="data-table" *ngIf="!isLoading && filteredPending.length > 0">
+            <thead>
+              <tr><th>Student</th><th>NIC</th><th>Branch</th><th>Status</th><th>Attempts</th><th>Quick Update</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of filteredPending">
+                <td><strong>{{ s.studentName }}</strong></td>
+                <td>{{ s.nic }}</td>
+                <td>{{ s.branchName }}</td>
+                <td>
+                  <span class="badge"
+                    [class.badge-paid]="s.examStatus==='Pass'"
+                    [class.badge-pending]="s.examStatus==='Fail'"
+                    [class.badge-partial]="!s.examStatus">
+                    {{ s.examStatus || 'Pending' }}
+                  </span>
+                </td>
+                <td>{{ s.examAttempts || 0 }}</td>
+                <td>
+                  <div style="display:flex;gap:0.4rem;">
+                    <button class="btn-action approve" title="Mark Pass" (click)="quickUpdate(s, 'Pass')">
+                      <i class="bi bi-check-lg"></i>
+                    </button>
+                    <button class="btn-action delete" title="Mark Fail" (click)="quickUpdate(s, 'Fail')">
+                      <i class="bi bi-x-lg"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="empty-state" *ngIf="!isLoading && filteredPending.length === 0" style="padding:2.5rem;">
+            <i class="bi bi-clipboard-check"></i>
+            <p>No students approved for practical test yet</p>
+          </div>
         </div>
       </div>
 
-      <div class="table-card">
-        <div class="card-header"><h6>Students Approved for Practical Test</h6></div>
-        <div *ngIf="isLoading" class="loading-state"><div class="spinner-border text-danger"></div></div>
-        <table class="data-table" *ngIf="!isLoading && pendingPractical.length > 0">
-          <thead><tr><th>Student</th><th>NIC</th><th>Branch</th><th>Exam Status</th><th>Attempts</th><th>Practical Approved</th></tr></thead>
-          <tbody>
-            <tr *ngFor="let s of pendingPractical">
-              <td>{{ s.studentName }}</td>
-              <td>{{ s.nic }}</td>
-              <td>{{ s.branchName }}</td>
-              <td><span class="badge" [class.bg-success]="s.examStatus==='Pass'" [class.bg-danger]="s.examStatus==='Fail'" [class.bg-secondary]="!s.examStatus">{{ s.examStatus || 'Pending' }}</span></td>
-              <td>{{ s.examAttempts || 0 }}</td>
-              <td><span class="badge bg-success"><i class="bi bi-check"></i> Instructor Approved</span></td>
-            </tr>
-          </tbody>
-        </table>
-        <div class="empty-state" *ngIf="!isLoading && pendingPractical.length === 0">
-          <i class="bi bi-clipboard-check"></i><p>No students approved yet</p>
-        </div>
-      </div>
     </div>
   </div>
 </div>

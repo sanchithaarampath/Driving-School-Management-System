@@ -113,7 +113,14 @@ export class BillingList implements OnInit {
   }
 
   previewReceipt(billId: number) {
-    window.open(`${this.apiUrl}/billing/${billId}/receipt`, '_blank');
+    this.http.get(`${this.apiUrl}/billing/${billId}/receipt`, {
+      headers: this.getHeaders(), responseType: 'text'
+    }).subscribe({
+      next: (html) => {
+        const w = window.open('', '_blank');
+        if (w) { w.document.write(html); w.document.close(); }
+      }
+    });
   }
 
   addBill() { this.router.navigate(['/billing/new']); }

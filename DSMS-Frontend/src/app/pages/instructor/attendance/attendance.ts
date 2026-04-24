@@ -16,14 +16,15 @@ import { TopbarComponent } from '../../../shared/layout/topbar';
 })
 export class AttendancePage implements OnInit {
   user: any;
-  students: any[] = [];
-  selectedSprId: number | null = null;
+
+  studentsProgress: any[] = [];
+  filteredProgress: any[] = [];
+  searchTerm = '';
+  isLoadingStudents = true;
+
+  selected: any = null;
   attendanceRecords: any[] = [];
-  isLoading = false;
-  isSaving = false;
-  successMessage = '';
-  errorMessage = '';
-  private apiUrl = 'http://localhost:5062/api';
+  isLoadingRecords = false;
 
   form = {
     studentPackageRegistrationId: 0,
@@ -34,49 +35,105 @@ export class AttendancePage implements OnInit {
     isReadyForPracticalTest: false
   };
 
+  isSaving = false;
+  successMessage = '';
+  errorMessage = '';
+
+  private apiUrl = 'http://localhost:5062/api';
+
   constructor(private auth: AuthService, private http: HttpClient, private route: ActivatedRoute) {}
 
   ngOnInit() {
     this.user = this.auth.getUser();
-    this.loadStudents();
-    const sprId = this.route.snapshot.queryParamMap.get('spr');
-    if (sprId) { this.selectedSprId = +sprId; this.loadAttendance(+sprId); }
+    this.loadStudentsProgress();
   }
 
   getHeaders() { return new HttpHeaders({ Authorization: `Bearer ${this.auth.getToken()}` }); }
 
-  loadStudents() {
-    this.http.get(`${this.apiUrl}/student`, { headers: this.getHeaders() }).subscribe({
-      next: (data: any) => { this.students = data; }
+  loadStudentsProgress() {
+    this.isLoadingStudents = true;
+    this.http.get<any[]>(`${this.apiUrl}/attendance/students-progress`, { headers: this.getHeaders() }).subscribe({
+      next: (data) => {
+        this.studentsProgress = data;
+        this.filteredProgress = data;
+        this.isLoadingStudents = false;
+        const sprId = this.route.snapshot.queryParamMap.get('spr');
+        if (sprId) {
+          const found = data.find(s => s.sprId === +sprId);
+          if (found) this.selectStudent(found);
+        }
+      },
+      error: () => { this.isLoadingStudents = false; }
     });
   }
 
-  selectStudent(sprId: number) {
-    this.selectedSprId = sprId;
-    this.form.studentPackageRegistrationId = sprId;
-    this.loadAttendance(sprId);
+  searchStudents() {
+    const term = this.searchTerm.toLowerCase();
+    if (!term) { this.filteredProgress = this.studentsProgress; return; }
+    this.filteredProgress = this.studentsProgress.filter(s =>
+      s.studentName?.toLowerCase().includes(term) ||
+      s.nic?.toLowerCase().includes(term) ||
+      s.phone?.toLowerCase().includes(term)
+    );
   }
 
-  loadAttendance(sprId: number) {
-    this.isLoading = true;
-    this.http.get(`${this.apiUrl}/attendance/${sprId}`, { headers: this.getHeaders() }).subscribe({
-      next: (data: any) => { this.attendanceRecords = data; this.form.dayNumber = data.length + 1; this.isLoading = false; },
-      error: () => { this.isLoading = false; }
+  selectStudent(s: any) {
+    this.selected = s;
+    this.form.studentPackageRegistrationId = s.sprId;
+    this.form.isReadyForPracticalTest = false;
+    this.successMessage = '';
+    this.errorMessage = '';
+    this.loadAttendanceRecords(s.sprId);
+  }
+
+  loadAttendanceRecords(sprId: number) {
+    this.isLoadingRecords = true;
+    this.http.get<any[]>(`${this.apiUrl}/attendance/${sprId}`, { headers: this.getHeaders() }).subscribe({
+      next: (data) => {
+        this.attendanceRecords = data;
+        this.form.dayNumber = data.length + 1;
+        this.isLoadingRecords = false;
+      },
+      error: () => { this.isLoadingRecords = false; }
     });
   }
 
   save() {
-    if (!this.form.studentPackageRegistrationId) { this.errorMessage = 'Please select a student'; return; }
+    if (!this.form.studentPackageRegistrationId) { this.errorMessage = 'Please select a student.'; return; }
     this.isSaving = true;
     this.errorMessage = '';
+
     this.http.post(`${this.apiUrl}/attendance`, this.form, { headers: this.getHeaders() }).subscribe({
       next: () => {
         this.isSaving = false;
-        this.successMessage = 'Attendance recorded!';
-        this.loadAttendance(this.form.studentPackageRegistrationId);
-        setTimeout(() => { this.successMessage = ''; }, 3000);
+        this.successMessage = `Day ${this.form.dayNumber} recorded!`;
+        this.loadAttendanceRecords(this.form.studentPackageRegistrationId);
+        this.loadStudentsProgress();
+        this.form.notes = '';
+        this.form.isReadyForPracticalTest = false;
+        setTimeout(() => { this.successMessage = ''; }, 4000);
       },
-      error: (err: any) => { this.isSaving = false; this.errorMessage = err.error?.message || 'Error saving'; }
+      error: (err: any) => {
+        this.isSaving = false;
+        this.errorMessage = err.error?.message || 'Failed to record attendance.';
+      }
     });
   }
+
+  deleteRecord(id: number) {
+    if (!confirm('Delete this attendance record?')) return;
+    this.http.delete(`${this.apiUrl}/attendance/${id}`, { headers: this.getHeaders() }).subscribe({
+      next: () => {
+        this.attendanceRecords = this.attendanceRecords.filter(r => r.id !== id);
+        this.form.dayNumber = this.attendanceRecords.length + 1;
+        this.loadStudentsProgress();
+      }
+    });
+  }
+
+  get progressPercent() {
+    if (!this.selected) return 0;
+    return Math.min(100, Math.round((this.attendanceRecords.length / 15) * 100));
+  }
+  get daysLeft() { return Math.max(0, 15 - this.attendanceRecords.length); }
 }

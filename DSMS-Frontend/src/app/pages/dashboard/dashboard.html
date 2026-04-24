@@ -7,73 +7,100 @@
       <!-- ===== COMPANY ADMIN DASHBOARD ===== -->
       <ng-container *ngIf="isCompanyAdmin">
         <div class="page-header">
-          <div><h2>Company Overview</h2><p>All branches at a glance</p></div>
-          <button class="btn btn-primary" (click)="goToBranches()"><i class="bi bi-plus-lg me-2"></i>Manage Branches</button>
+          <div><h2>Company Overview</h2><p>All branches · {{ stats.newThisMonth || 0 }} new students this month</p></div>
+          <button class="btn btn-primary" (click)="goToBranches()"><i class="bi bi-building me-2"></i>Manage Branches</button>
         </div>
         <div class="stats-grid">
-          <div class="stat-card primary">
-            <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
+          <div class="stat-card">
+            <div class="stat-icon total"><i class="bi bi-people-fill"></i></div>
             <div class="stat-info"><span class="stat-value">{{ stats.totalStudents || 0 }}</span><span class="stat-label">Total Students</span></div>
           </div>
-          <div class="stat-card success">
-            <div class="stat-icon"><i class="bi bi-cash-stack"></i></div>
+          <div class="stat-card">
+            <div class="stat-icon income"><i class="bi bi-cash-stack"></i></div>
             <div class="stat-info"><span class="stat-value">Rs. {{ (stats.totalIncome || 0) | number:'1.0-0' }}</span><span class="stat-label">Total Revenue</span></div>
           </div>
-          <div class="stat-card warning">
-            <div class="stat-icon"><i class="bi bi-exclamation-triangle"></i></div>
+          <div class="stat-card">
+            <div class="stat-icon pending"><i class="bi bi-exclamation-triangle"></i></div>
             <div class="stat-info"><span class="stat-value">Rs. {{ (stats.pendingAmount || 0) | number:'1.0-0' }}</span><span class="stat-label">Pending Payments</span></div>
           </div>
-          <div class="stat-card info">
-            <div class="stat-icon"><i class="bi bi-building"></i></div>
+          <div class="stat-card">
+            <div class="stat-icon paid"><i class="bi bi-building"></i></div>
             <div class="stat-info"><span class="stat-value">{{ branches.length }}</span><span class="stat-label">Active Branches</span></div>
           </div>
         </div>
+        <div class="quick-actions">
+          <button class="quick-btn" (click)="addStudent()"><i class="bi bi-person-plus"></i><span>Add Student</span></button>
+          <button class="quick-btn" (click)="goToBilling()"><i class="bi bi-receipt"></i><span>New Bill</span></button>
+          <button class="quick-btn" (click)="goToExam()"><i class="bi bi-clipboard-check"></i><span>Exam Results</span></button>
+          <button class="quick-btn" (click)="goToUsers()"><i class="bi bi-shield-person"></i><span>Manage Users</span></button>
+          <button class="quick-btn" (click)="goToBranches()"><i class="bi bi-building"></i><span>Branches</span></button>
+        </div>
         <div class="dashboard-row">
           <div class="table-card flex-2">
-            <div class="card-header"><h6>Recent Students</h6></div>
+            <div class="card-header"><h6><i class="bi bi-people me-2"></i>Recent Students</h6></div>
             <table class="data-table" *ngIf="recentStudents.length > 0">
-              <thead><tr><th>Name</th><th>NIC</th><th>Branch</th><th>Registered</th></tr></thead>
+              <thead><tr><th>Name</th><th>NIC</th><th>Branch</th><th>Package</th><th>Registered</th></tr></thead>
               <tbody>
                 <tr *ngFor="let s of recentStudents">
-                  <td>{{ s.studentName }}</td><td>{{ s.nic }}</td>
-                  <td>{{ s.branchName }}</td><td>{{ s.registrationDate | date:'dd/MM/yyyy' }}</td>
+                  <td><strong>{{ s.studentName }}</strong></td>
+                  <td>{{ s.nic }}</td>
+                  <td>{{ s.branchName }}</td>
+                  <td><span *ngIf="s.packageType" class="badge bg-info text-dark">{{ s.packageType }}</span><span *ngIf="!s.packageType">—</span></td>
+                  <td>{{ s.registrationDate | date:'dd/MM/yyyy' }}</td>
                 </tr>
               </tbody>
             </table>
-            <div class="empty-state" *ngIf="recentStudents.length === 0"><p>No students yet</p></div>
+            <div class="empty-state" *ngIf="recentStudents.length === 0"><i class="bi bi-people"></i><p>No students yet</p></div>
           </div>
           <div class="table-card flex-1">
-            <div class="card-header"><h6>Awaiting Practical Test</h6></div>
-            <div *ngFor="let s of pendingPractical" class="list-item">
-              <span>{{ s.studentName }}</span>
-              <span class="badge bg-warning text-dark">{{ s.branchName }}</span>
+            <div class="card-header"><h6><i class="bi bi-cash me-2"></i>Recent Payments</h6></div>
+            <div *ngFor="let p of recentPayments" class="list-item">
+              <div>
+                <div style="font-size:0.85rem;font-weight:600;">{{ p.studentName }}</div>
+                <div style="font-size:0.75rem;color:var(--text-secondary);">{{ p.billNumber }} · {{ p.paymentMethod }}</div>
+              </div>
+              <span class="badge badge-paid">Rs. {{ p.amount | number }}</span>
             </div>
-            <div class="empty-state" *ngIf="pendingPractical.length === 0"><p>None pending</p></div>
+            <div class="empty-state" *ngIf="recentPayments.length === 0"><p>No payments yet</p></div>
           </div>
+        </div>
+        <div class="table-card" *ngIf="pendingPractical.length > 0">
+          <div class="card-header"><h6><i class="bi bi-clipboard-check me-2"></i>Students Awaiting Practical Test ({{ pendingPractical.length }})</h6></div>
+          <table class="data-table">
+            <thead><tr><th>Student</th><th>NIC</th><th>Branch</th><th>Exam Status</th><th>Attempts</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let s of pendingPractical">
+                <td>{{ s.studentName }}</td><td>{{ s.nic }}</td>
+                <td>{{ s.branchName }}</td>
+                <td><span class="badge" [class.badge-paid]="s.examStatus==='Pass'" [class.badge-pending]="!s.examStatus">{{ s.examStatus || 'Pending' }}</span></td>
+                <td>{{ s.examAttempts || 0 }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </ng-container>
 
       <!-- ===== BRANCH ADMIN DASHBOARD ===== -->
       <ng-container *ngIf="isBranchAdmin">
         <div class="page-header">
-          <div><h2>Branch Dashboard</h2><p>Your branch at a glance</p></div>
+          <div><h2>Branch Dashboard</h2><p>{{ stats.newThisMonth || 0 }} new students this month</p></div>
           <button class="btn btn-primary" (click)="addStudent()"><i class="bi bi-plus-lg me-2"></i>Add Student</button>
         </div>
         <div class="stats-grid">
-          <div class="stat-card primary">
-            <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
+          <div class="stat-card">
+            <div class="stat-icon total"><i class="bi bi-people-fill"></i></div>
             <div class="stat-info"><span class="stat-value">{{ stats.totalStudents || 0 }}</span><span class="stat-label">Branch Students</span></div>
           </div>
-          <div class="stat-card success">
-            <div class="stat-icon"><i class="bi bi-cash-stack"></i></div>
+          <div class="stat-card">
+            <div class="stat-icon income"><i class="bi bi-cash-stack"></i></div>
             <div class="stat-info"><span class="stat-value">Rs. {{ (stats.totalIncome || 0) | number:'1.0-0' }}</span><span class="stat-label">Branch Revenue</span></div>
           </div>
-          <div class="stat-card warning">
-            <div class="stat-icon"><i class="bi bi-exclamation-triangle"></i></div>
+          <div class="stat-card">
+            <div class="stat-icon pending"><i class="bi bi-exclamation-triangle"></i></div>
             <div class="stat-info"><span class="stat-value">Rs. {{ (stats.pendingAmount || 0) | number:'1.0-0' }}</span><span class="stat-label">Pending</span></div>
           </div>
-          <div class="stat-card info" (click)="goToExam()" style="cursor:pointer">
-            <div class="stat-icon"><i class="bi bi-clipboard-check"></i></div>
+          <div class="stat-card" (click)="goToExam()" style="cursor:pointer">
+            <div class="stat-icon paid"><i class="bi bi-clipboard-check"></i></div>
             <div class="stat-info"><span class="stat-value">{{ pendingPractical.length }}</span><span class="stat-label">Ready for Practical</span></div>
           </div>
         </div>
@@ -85,24 +112,29 @@
         </div>
         <div class="dashboard-row">
           <div class="table-card flex-2">
-            <div class="card-header"><h6>Recent Students</h6></div>
+            <div class="card-header"><h6><i class="bi bi-people me-2"></i>Recent Students</h6></div>
             <table class="data-table" *ngIf="recentStudents.length > 0">
               <thead><tr><th>Name</th><th>NIC</th><th>Package</th><th>Registered</th></tr></thead>
               <tbody>
                 <tr *ngFor="let s of recentStudents">
-                  <td>{{ s.studentName }}</td><td>{{ s.nic }}</td>
-                  <td>{{ s.packageType || '-' }}</td><td>{{ s.registrationDate | date:'dd/MM/yyyy' }}</td>
+                  <td><strong>{{ s.studentName }}</strong></td><td>{{ s.nic }}</td>
+                  <td>{{ s.packageType || '—' }}</td>
+                  <td>{{ s.registrationDate | date:'dd/MM/yyyy' }}</td>
                 </tr>
               </tbody>
             </table>
+            <div class="empty-state" *ngIf="recentStudents.length === 0"><p>No students yet</p></div>
           </div>
           <div class="table-card flex-1">
-            <div class="card-header"><h6>Approved for Practical</h6></div>
-            <div *ngFor="let s of pendingPractical" class="list-item">
-              <span>{{ s.studentName }}</span>
-              <span class="badge bg-success">Ready</span>
+            <div class="card-header"><h6><i class="bi bi-cash me-2"></i>Recent Payments</h6></div>
+            <div *ngFor="let p of recentPayments" class="list-item">
+              <div>
+                <div style="font-size:0.85rem;font-weight:600;">{{ p.studentName }}</div>
+                <div style="font-size:0.75rem;color:var(--text-secondary);">{{ p.paymentMethod }}</div>
+              </div>
+              <span class="badge badge-paid">Rs. {{ p.amount | number }}</span>
             </div>
-            <div class="empty-state" *ngIf="pendingPractical.length === 0"><p>None yet</p></div>
+            <div class="empty-state" *ngIf="recentPayments.length === 0"><p>No payments yet</p></div>
           </div>
         </div>
       </ng-container>
@@ -114,13 +146,21 @@
           <button class="btn btn-primary" (click)="addStudent()"><i class="bi bi-plus-lg me-2"></i>Register Student</button>
         </div>
         <div class="stats-grid">
-          <div class="stat-card primary">
-            <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
+          <div class="stat-card">
+            <div class="stat-icon total"><i class="bi bi-people-fill"></i></div>
             <div class="stat-info"><span class="stat-value">{{ stats.totalStudents || 0 }}</span><span class="stat-label">Total Students</span></div>
           </div>
-          <div class="stat-card warning">
-            <div class="stat-icon"><i class="bi bi-receipt"></i></div>
+          <div class="stat-card">
+            <div class="stat-icon income"><i class="bi bi-cash-coin"></i></div>
+            <div class="stat-info"><span class="stat-value">Rs. {{ (stats.totalIncome || 0) | number:'1.0-0' }}</span><span class="stat-label">Revenue Collected</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon pending"><i class="bi bi-receipt"></i></div>
             <div class="stat-info"><span class="stat-value">{{ stats.pendingBills || 0 }}</span><span class="stat-label">Pending Bills</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon paid"><i class="bi bi-person-check"></i></div>
+            <div class="stat-info"><span class="stat-value">{{ stats.newThisMonth || 0 }}</span><span class="stat-label">New This Month</span></div>
           </div>
         </div>
         <div class="quick-actions">
@@ -128,19 +168,32 @@
           <button class="quick-btn" (click)="goToStudents()"><i class="bi bi-people"></i><span>View Students</span></button>
           <button class="quick-btn" (click)="goToBilling()"><i class="bi bi-receipt"></i><span>Billing</span></button>
         </div>
-        <div class="table-card">
-          <div class="card-header"><h6>Recently Registered Students</h6></div>
-          <table class="data-table" *ngIf="recentStudents.length > 0">
-            <thead><tr><th>Name</th><th>NIC</th><th>Phone</th><th>Package</th><th>Date</th></tr></thead>
-            <tbody>
-              <tr *ngFor="let s of recentStudents">
-                <td>{{ s.studentName }}</td><td>{{ s.nic }}</td>
-                <td>{{ s.phoneNumber }}</td><td>{{ s.packageType || '-' }}</td>
-                <td>{{ s.registrationDate | date:'dd/MM/yyyy' }}</td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="empty-state" *ngIf="recentStudents.length === 0"><p>No students yet</p></div>
+        <div class="dashboard-row">
+          <div class="table-card flex-2">
+            <div class="card-header"><h6><i class="bi bi-people me-2"></i>Recently Registered Students</h6></div>
+            <table class="data-table" *ngIf="recentStudents.length > 0">
+              <thead><tr><th>Name</th><th>NIC</th><th>Phone</th><th>Package</th><th>Date</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let s of recentStudents">
+                  <td><strong>{{ s.studentName }}</strong></td><td>{{ s.nic }}</td>
+                  <td>{{ s.phoneNumber }}</td><td>{{ s.packageType || '—' }}</td>
+                  <td>{{ s.registrationDate | date:'dd/MM/yyyy' }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="empty-state" *ngIf="recentStudents.length === 0"><i class="bi bi-people"></i><p>No students yet</p></div>
+          </div>
+          <div class="table-card flex-1">
+            <div class="card-header"><h6><i class="bi bi-cash me-2"></i>Recent Payments</h6></div>
+            <div *ngFor="let p of recentPayments" class="list-item">
+              <div>
+                <div style="font-size:0.85rem;font-weight:600;">{{ p.studentName }}</div>
+                <div style="font-size:0.75rem;color:var(--text-secondary);">{{ p.paymentMethod }}</div>
+              </div>
+              <span class="badge badge-paid">Rs. {{ p.amount | number }}</span>
+            </div>
+            <div class="empty-state" *ngIf="recentPayments.length === 0"><p>No payments yet</p></div>
+          </div>
         </div>
       </ng-container>
 

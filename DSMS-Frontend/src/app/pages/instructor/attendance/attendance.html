@@ -3,73 +3,158 @@
   <div class="main-content">
     <app-topbar></app-topbar>
     <div class="page-content">
+
       <div class="page-header">
-        <div><h2>Training Attendance</h2><p>Record daily training attendance for students</p></div>
+        <div><h2>Training Attendance</h2><p>Record daily training sessions for students</p></div>
       </div>
 
-      <div *ngIf="successMessage" class="alert alert-success"><i class="bi bi-check-circle me-2"></i>{{ successMessage }}</div>
-      <div *ngIf="errorMessage" class="alert alert-danger"><i class="bi bi-exclamation-circle me-2"></i>{{ errorMessage }}</div>
+      <div *ngIf="successMessage" class="alert-success"><i class="bi bi-check-circle me-2"></i>{{ successMessage }}</div>
+      <div *ngIf="errorMessage"   class="alert-danger"><i class="bi bi-exclamation-circle me-2"></i>{{ errorMessage }}</div>
 
-      <div class="form-card">
-        <div class="form-section">
-          <h6 class="section-title"><i class="bi bi-person me-2"></i>Select Student Registration</h6>
-          <div class="form-group">
-            <label>Student Package Registration ID</label>
-            <input type="number" class="form-control" [(ngModel)]="form.studentPackageRegistrationId"
-              placeholder="Enter SPR ID" (change)="selectStudent(form.studentPackageRegistrationId)">
+      <div class="attendance-layout">
+
+        <!-- LEFT: Student List -->
+        <div class="student-picker">
+          <div class="picker-header">
+            <h6><i class="bi bi-people me-2"></i>Select Student</h6>
+            <span class="result-count">{{ filteredProgress.length }}</span>
+          </div>
+          <div class="search-bar" style="margin:0.75rem 0 0;">
+            <div class="search-input">
+              <i class="bi bi-search"></i>
+              <input type="text" placeholder="Search by name or NIC..."
+                [(ngModel)]="searchTerm" (input)="searchStudents()">
+            </div>
+          </div>
+
+          <div *ngIf="isLoadingStudents" class="loading-state" style="padding:2rem;">
+            <div class="spinner-border text-danger"></div>
+          </div>
+
+          <div class="student-list" *ngIf="!isLoadingStudents">
+            <div *ngFor="let s of filteredProgress"
+                 class="student-list-item"
+                 [class.active]="selected?.sprId === s.sprId"
+                 (click)="selectStudent(s)">
+              <div class="sli-avatar">{{ s.studentName?.charAt(0) }}</div>
+              <div class="sli-info">
+                <div class="sli-name">{{ s.studentName }}</div>
+                <div class="sli-nic">{{ s.nic }}</div>
+              </div>
+              <div class="sli-days" [class.done]="s.attendanceDays >= 15">
+                <span>{{ s.attendanceDays }}/15</span>
+                <i *ngIf="s.isRecommendForTrial" class="bi bi-check-circle-fill text-success"></i>
+              </div>
+            </div>
+            <div *ngIf="filteredProgress.length === 0" class="empty-state" style="padding:1.5rem;">
+              <i class="bi bi-people"></i><p>No students found</p>
+            </div>
           </div>
         </div>
 
-        <div class="form-section" *ngIf="selectedSprId">
-          <h6 class="section-title"><i class="bi bi-calendar me-2"></i>Attendance Entry</h6>
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Date</label>
-              <input type="date" class="form-control" [(ngModel)]="form.attendanceDate">
+        <!-- RIGHT: Attendance Panel -->
+        <div class="attendance-panel">
+          <div *ngIf="!selected" class="empty-state" style="padding:4rem 2rem;text-align:center;">
+            <i class="bi bi-arrow-left-circle" style="font-size:2.5rem;color:var(--text-secondary);display:block;margin-bottom:0.75rem;"></i>
+            <p>Select a student from the list</p>
+          </div>
+
+          <div *ngIf="selected">
+            <!-- Student bar -->
+            <div class="selected-student-bar">
+              <div class="ssb-avatar">{{ selected.studentName?.charAt(0) }}</div>
+              <div class="ssb-info">
+                <div class="ssb-name">{{ selected.studentName }}</div>
+                <div class="ssb-sub">{{ selected.nic }} &bull; {{ selected.branchName }}</div>
+              </div>
+              <div>
+                <span *ngIf="selected.isRecommendForTrial" class="badge badge-paid"><i class="bi bi-check-circle me-1"></i>Practical Approved</span>
+                <span *ngIf="!selected.isRecommendForTrial" class="badge badge-pending">In Training</span>
+              </div>
             </div>
-            <div class="form-group">
-              <label>Day Number (1-15)</label>
-              <input type="number" class="form-control" [(ngModel)]="form.dayNumber" min="1" max="15">
+
+            <!-- Progress -->
+            <div class="training-progress">
+              <div class="tp-label">
+                <span>Training Progress</span>
+                <strong>{{ attendanceRecords.length }} / 15 days</strong>
+              </div>
+              <div class="tp-bar">
+                <div class="tp-fill" [style.width.%]="progressPercent" [class.tp-complete]="attendanceRecords.length >= 15"></div>
+              </div>
+              <div style="font-size:0.78rem;color:var(--text-secondary);margin-top:0.3rem;">
+                <span *ngIf="daysLeft > 0">{{ daysLeft }} days remaining</span>
+                <span *ngIf="daysLeft === 0" class="text-success"><i class="bi bi-trophy me-1"></i>Training complete!</span>
+              </div>
             </div>
-            <div class="form-group full-width">
-              <label>Notes</label>
-              <textarea class="form-control" [(ngModel)]="form.notes" rows="2" placeholder="Optional notes"></textarea>
+
+            <!-- Form -->
+            <div *ngIf="attendanceRecords.length < 15" class="form-card" style="margin-top:1rem;">
+              <h6 class="section-title"><i class="bi bi-calendar-plus me-2"></i>Record Day {{ form.dayNumber }}</h6>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Attendance Date</label>
+                  <input type="date" class="form-control" [(ngModel)]="form.attendanceDate">
+                </div>
+                <div class="form-group">
+                  <label>Day Number</label>
+                  <input type="number" class="form-control" [(ngModel)]="form.dayNumber" min="1" max="15">
+                </div>
+                <div class="form-group full-width">
+                  <label>Session Notes <span style="color:var(--text-secondary)">(optional)</span></label>
+                  <textarea class="form-control" [(ngModel)]="form.notes" rows="2" placeholder="e.g. Highway driving, parking practice..."></textarea>
+                </div>
+                <div class="form-group full-width">
+                  <label class="checkbox-label">
+                    <input type="checkbox" [(ngModel)]="form.isReadyForPracticalTest" style="margin-right:0.5rem;">
+                    <span><i class="bi bi-patch-check me-1 text-success"></i>Mark as <strong>Ready for Practical Test</strong></span>
+                  </label>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="btn btn-primary" (click)="save()" [disabled]="isSaving">
+                  <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
+                  <i *ngIf="!isSaving" class="bi bi-check-lg me-2"></i>
+                  {{ isSaving ? 'Saving...' : 'Record Attendance' }}
+                </button>
+              </div>
             </div>
-            <div class="form-group full-width">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" [(ngModel)]="form.isReadyForPracticalTest" id="practicalCheck">
-                <label class="form-check-label" for="practicalCheck">
-                  <strong>Mark student as Ready for Practical Test</strong>
-                </label>
+
+            <div *ngIf="attendanceRecords.length >= 15" class="alert-success" style="margin-top:1rem;">
+              <i class="bi bi-trophy-fill me-2"></i>All 15 training days completed!
+            </div>
+
+            <!-- History -->
+            <div class="table-card" style="margin-top:1.25rem;">
+              <div class="card-header"><h6><i class="bi bi-list-check me-2"></i>Attendance History</h6></div>
+              <div *ngIf="isLoadingRecords" class="loading-state" style="padding:1rem;">
+                <div class="spinner-border text-danger"></div>
+              </div>
+              <table class="data-table" *ngIf="!isLoadingRecords && attendanceRecords.length > 0">
+                <thead><tr><th>Day</th><th>Date</th><th>Notes</th><th>Practical</th><th></th></tr></thead>
+                <tbody>
+                  <tr *ngFor="let r of attendanceRecords">
+                    <td><span class="badge badge-partial">Day {{ r.dayNumber }}</span></td>
+                    <td>{{ r.attendanceDate | date:'dd MMM yyyy' }}</td>
+                    <td>{{ r.notes || '—' }}</td>
+                    <td>
+                      <span *ngIf="r.isReadyForPracticalTest" class="badge badge-paid">Approved</span>
+                      <span *ngIf="!r.isReadyForPracticalTest" style="color:var(--text-secondary);">—</span>
+                    </td>
+                    <td>
+                      <button class="btn-action delete" title="Delete" (click)="deleteRecord(r.id)">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="empty-state" *ngIf="!isLoadingRecords && attendanceRecords.length === 0" style="padding:1.5rem;">
+                <i class="bi bi-calendar-x"></i><p>No attendance recorded yet</p>
               </div>
             </div>
           </div>
-          <div class="form-actions">
-            <button class="btn btn-primary" (click)="save()" [disabled]="isSaving">
-              <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
-              <i *ngIf="!isSaving" class="bi bi-check-lg me-2"></i>
-              {{ isSaving ? 'Saving...' : 'Record Attendance' }}
-            </button>
-          </div>
         </div>
-      </div>
-
-      <!-- Attendance history -->
-      <div class="table-card" *ngIf="attendanceRecords.length > 0">
-        <div class="card-header"><h6>Attendance History ({{ attendanceRecords.length }} / 15 days)</h6></div>
-        <table class="data-table">
-          <thead><tr><th>Day</th><th>Date</th><th>Notes</th><th>Practical Approved</th></tr></thead>
-          <tbody>
-            <tr *ngFor="let r of attendanceRecords">
-              <td><span class="badge bg-primary">Day {{ r.dayNumber }}</span></td>
-              <td>{{ r.attendanceDate | date:'dd/MM/yyyy' }}</td>
-              <td>{{ r.notes || '-' }}</td>
-              <td><span class="badge" [class.bg-success]="r.isReadyForPracticalTest" [class.bg-secondary]="!r.isReadyForPracticalTest">
-                {{ r.isReadyForPracticalTest ? 'Approved' : '-' }}
-              </span></td>
-            </tr>
-          </tbody>
-        </table>
       </div>
     </div>
   </div>
