@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using DSMS.API.Data;
 using DSMS.API.Models;
 using DSMS.API.DTOs;
+using DSMS.API.Services;
 
 namespace DSMS.API.Controllers
 {
@@ -13,10 +14,20 @@ namespace DSMS.API.Controllers
     public class BillingController : ControllerBase
     {
         private readonly DsmsDbContext _context;
+        private readonly IEmailService _emailService;
+        private readonly IWhatsAppService _whatsAppService;
+        private readonly IReceiptService _receiptService;
 
-        public BillingController(DsmsDbContext context)
+        public BillingController(
+            DsmsDbContext context,
+            IEmailService emailService,
+            IWhatsAppService whatsAppService,
+            IReceiptService receiptService)
         {
             _context = context;
+            _emailService = emailService;
+            _whatsAppService = whatsAppService;
+            _receiptService = receiptService;
         }
 
         [HttpGet]
@@ -221,6 +232,123 @@ namespace DSMS.API.Controllers
                 pendingAmount = bills.Sum(b => b.BalanceAmount),
                 totalBills = bills.Count
             });
+        }
+
+        // ─── Send Receipt ─────────────────────────────────────────────────────
+
+        [HttpPost("{id}/send-receipt")]
+        public async Task<IActionResult> SendReceipt(int id, [FromBody] SendReceiptDto dto)
+        {
+            var bill = await _context.Bills
+                .Include(b => b.Student)
+                .Include(b => b.Payments)
+                .FirstOrDefaultAsync(b => b.Id == id && b.Active == true);
+
+            if (bill == null)
+                return NotFound(new { message = "Bill not found" });
+
+            var lastPayment = bill.Payments.OrderByDescending(p => p.PaymentDate).FirstOrDefault();
+
+            var receiptData = new ReceiptData
+            {
+                BillNumber    = bill.BillNumber,
+                BillDate      = bill.BillDate,
+                StudentName   = bill.Student.StudentName,
+                StudentNic    = bill.Student.Nic,
+                StudentPhone  = bill.Student.PhoneNumber,
+                StudentEmail  = bill.Student.Email,
+                TotalAmount   = bill.TotalAmount,
+                DiscountAmount= bill.DiscountAmount,
+                NetAmount     = bill.NetAmount,
+                PaidAmount    = bill.PaidAmount,
+                BalanceAmount = bill.BalanceAmount,
+                Status        = bill.Status,
+                PaymentMethod = lastPayment?.PaymentMethod ?? "N/A",
+                ReferenceNo   = lastPayment?.ReferenceNo,
+                Remarks       = bill.Remarks
+            };
+
+            var sent = new List<string>();
+            var errors = new List<string>();
+
+            // Email
+            if (dto.SendEmail)
+            {
+                var email = dto.OverrideEmail ?? bill.Student.Email;
+                if (string.IsNullOrEmpty(email))
+                {
+                    errors.Add("No email address found for student.");
+                }
+                else
+                {
+                    var html = _receiptService.GenerateReceiptHtml(receiptData);
+                    var ok   = await _emailService.SendReceiptEmailAsync(email, bill.Student.StudentName, html, bill.BillNumber);
+                    if (ok) sent.Add($"Email sent to {email}");
+                    else    errors.Add("Email delivery failed — check SMTP configuration.");
+                }
+            }
+
+            // WhatsApp
+            if (dto.SendWhatsApp)
+            {
+                var phone = dto.OverridePhone ?? bill.Student.WhatsAppNumber ?? bill.Student.PhoneNumber;
+                if (string.IsNullOrEmpty(phone))
+                {
+                    errors.Add("No phone number found for student.");
+                }
+                else
+                {
+                    var text = _receiptService.GenerateReceiptText(receiptData);
+                    var ok   = await _whatsAppService.SendReceiptWhatsAppAsync(phone, text);
+                    if (ok) sent.Add($"WhatsApp sent to {phone}");
+                    else    errors.Add("WhatsApp delivery failed — check Twilio configuration.");
+                }
+            }
+
+            return Ok(new
+            {
+                billNumber = bill.BillNumber,
+                sent,
+                errors,
+                receiptHtml = _receiptService.GenerateReceiptHtml(receiptData)
+            });
+        }
+
+        // ─── Receipt Preview (returns HTML for in-browser preview) ───────────
+
+        [HttpGet("{id}/receipt")]
+        public async Task<IActionResult> GetReceiptHtml(int id)
+        {
+            var bill = await _context.Bills
+                .Include(b => b.Student)
+                .Include(b => b.Payments)
+                .FirstOrDefaultAsync(b => b.Id == id && b.Active == true);
+
+            if (bill == null) return NotFound();
+
+            var lastPayment = bill.Payments.OrderByDescending(p => p.PaymentDate).FirstOrDefault();
+
+            var receiptData = new ReceiptData
+            {
+                BillNumber    = bill.BillNumber,
+                BillDate      = bill.BillDate,
+                StudentName   = bill.Student.StudentName,
+                StudentNic    = bill.Student.Nic,
+                StudentPhone  = bill.Student.PhoneNumber,
+                StudentEmail  = bill.Student.Email,
+                TotalAmount   = bill.TotalAmount,
+                DiscountAmount= bill.DiscountAmount,
+                NetAmount     = bill.NetAmount,
+                PaidAmount    = bill.PaidAmount,
+                BalanceAmount = bill.BalanceAmount,
+                Status        = bill.Status,
+                PaymentMethod = lastPayment?.PaymentMethod ?? "N/A",
+                ReferenceNo   = lastPayment?.ReferenceNo,
+                Remarks       = bill.Remarks
+            };
+
+            var html = _receiptService.GenerateReceiptHtml(receiptData);
+            return Content(html, "text/html");
         }
     }
 }
