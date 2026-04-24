@@ -22,10 +22,10 @@ import { Router } from '@angular/router';
         <a class="nav-item" routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">
           <i class="bi bi-speedometer2"></i><span>Dashboard</span>
         </a>
+        <a class="nav-item" routerLink="/students" routerLinkActive="active">
+          <i class="bi bi-people"></i><span>Students</span>
+        </a>
         <ng-container *ngIf="!isInstructor">
-          <a class="nav-item" routerLink="/students" routerLinkActive="active">
-            <i class="bi bi-people"></i><span>Students</span>
-          </a>
           <a class="nav-item" routerLink="/billing" routerLinkActive="active">
             <i class="bi bi-receipt"></i><span>Billing</span>
           </a>

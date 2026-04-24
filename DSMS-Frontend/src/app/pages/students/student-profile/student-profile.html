@@ -1,0 +1,230 @@
+<div class="dsms-layout">
+  <app-sidebar></app-sidebar>
+  <div class="main-content">
+    <app-topbar></app-topbar>
+    <div class="page-content">
+
+      <!-- Header -->
+      <div class="page-header">
+        <div>
+          <h2>Student Profile</h2>
+          <p>Full details and payment history</p>
+        </div>
+        <div style="display:flex;gap:0.75rem;">
+          <button *ngIf="canEdit && student" class="btn btn-primary" (click)="editStudent()">
+            <i class="bi bi-pencil me-2"></i>Edit Student
+          </button>
+          <button class="btn btn-back" (click)="goBack()">
+            <i class="bi bi-arrow-left me-2"></i>Back
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="isLoading" class="loading-state">
+        <div class="spinner-border text-danger"></div>
+        <p>Loading student...</p>
+      </div>
+
+      <!-- Error -->
+      <div *ngIf="errorMessage" class="alert-danger">
+        <i class="bi bi-exclamation-circle me-2"></i>{{ errorMessage }}
+      </div>
+
+      <!-- Profile Content -->
+      <div *ngIf="!isLoading && student" class="profile-layout">
+
+        <!-- ── Left: Identity Card ── -->
+        <div class="profile-card">
+          <div class="profile-avatar">{{ student.studentName?.charAt(0) }}</div>
+          <h3 class="profile-name">{{ student.studentName }}</h3>
+          <p class="profile-nic"><i class="bi bi-card-text me-1"></i>{{ student.nic }}</p>
+          <span class="badge" [ngClass]="student.packageType === 'FullCoursework' ? 'badge-paid' : 'badge-partial'">
+            {{ student.packageType || 'No Package' }}
+          </span>
+          <div class="profile-meta">
+            <div class="meta-item"><i class="bi bi-building"></i><span>{{ student.branchName }}</span></div>
+            <div class="meta-item"><i class="bi bi-phone"></i><span>{{ student.phoneNumber }}</span></div>
+            <div *ngIf="student.email" class="meta-item"><i class="bi bi-envelope"></i><span>{{ student.email }}</span></div>
+            <div *ngIf="student.whatsAppNumber" class="meta-item"><i class="bi bi-whatsapp"></i><span>{{ student.whatsAppNumber }}</span></div>
+            <div class="meta-item"><i class="bi bi-calendar3"></i><span>Reg: {{ student.registrationDate | date:'dd MMM yyyy' }}</span></div>
+          </div>
+
+          <!-- Vehicle Classes -->
+          <div class="profile-section-title">Vehicle Classes</div>
+          <div class="vehicle-badges">
+            <span *ngFor="let vc of student.vehicleClasses" class="vehicle-badge">{{ vc }}</span>
+            <span *ngIf="!student.vehicleClasses?.length" class="text-muted" style="font-size:0.8rem;">None assigned</span>
+          </div>
+
+          <!-- Payment Summary -->
+          <div class="profile-section-title" style="margin-top:1.25rem;">Payment Summary</div>
+          <div class="payment-summary-mini">
+            <div class="psm-row"><span>Total Billed</span><strong>Rs. {{ totalBilled | number }}</strong></div>
+            <div class="psm-row text-success"><span>Total Paid</span><strong class="text-success">Rs. {{ totalPaid | number }}</strong></div>
+            <div class="psm-row" [class.text-warning]="totalPending > 0"><span>Balance Due</span><strong [class.text-warning]="totalPending > 0">Rs. {{ totalPending | number }}</strong></div>
+          </div>
+        </div>
+
+        <!-- ── Right: Tabs ── -->
+        <div class="profile-detail">
+
+          <!-- Tab nav -->
+          <div class="profile-tabs">
+            <button class="ptab" [class.active]="activeTab==='info'" (click)="activeTab='info'">
+              <i class="bi bi-person-circle me-1"></i>Personal Info
+            </button>
+            <button class="ptab" [class.active]="activeTab==='payments'" (click)="activeTab='payments'">
+              <i class="bi bi-receipt me-1"></i>Payment History
+              <span class="tab-count">{{ bills.length }}</span>
+            </button>
+            <button class="ptab" [class.active]="activeTab==='docs'" (click)="activeTab='docs'">
+              <i class="bi bi-folder-check me-1"></i>Documents
+            </button>
+          </div>
+
+          <!-- ── Tab: Personal Info ── -->
+          <div *ngIf="activeTab==='info'" class="tab-content">
+            <div class="info-grid">
+              <div class="info-block">
+                <div class="info-label">Full Name</div>
+                <div class="info-value">{{ student.studentName }}</div>
+              </div>
+              <div class="info-block">
+                <div class="info-label">NIC</div>
+                <div class="info-value">{{ student.nic }}</div>
+              </div>
+              <div class="info-block">
+                <div class="info-label">Date of Birth</div>
+                <div class="info-value">{{ student.dob | date:'dd MMM yyyy' }}</div>
+              </div>
+              <div class="info-block">
+                <div class="info-label">Gender</div>
+                <div class="info-value">{{ student.gender }}</div>
+              </div>
+              <div class="info-block">
+                <div class="info-label">Phone Number</div>
+                <div class="info-value">{{ student.phoneNumber }}</div>
+              </div>
+              <div class="info-block">
+                <div class="info-label">WhatsApp</div>
+                <div class="info-value">{{ student.whatsAppNumber || '—' }}</div>
+              </div>
+              <div class="info-block">
+                <div class="info-label">Email</div>
+                <div class="info-value">{{ student.email || '—' }}</div>
+              </div>
+              <div class="info-block">
+                <div class="info-label">Existing License No.</div>
+                <div class="info-value">{{ student.existingLicenseNo || '—' }}</div>
+              </div>
+              <div class="info-block span-2">
+                <div class="info-label">Address</div>
+                <div class="info-value">{{ student.address || '—' }}</div>
+              </div>
+              <div class="info-block">
+                <div class="info-label">Nearest Police Station</div>
+                <div class="info-value">{{ student.nearestPoliceStation || '—' }}</div>
+              </div>
+              <div class="info-block">
+                <div class="info-label">Divisional Secretariat</div>
+                <div class="info-value">{{ student.nearestDivisionalSecretariat || '—' }}</div>
+              </div>
+              <div class="info-block">
+                <div class="info-label">Postal Code</div>
+                <div class="info-value">{{ student.postalCode || '—' }}</div>
+              </div>
+              <div class="info-block">
+                <div class="info-label">Branch</div>
+                <div class="info-value">{{ student.branchName }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Tab: Payment History ── -->
+          <div *ngIf="activeTab==='payments'" class="tab-content">
+
+            <!-- Bill search -->
+            <div class="search-bar" style="margin-bottom:1rem;">
+              <div class="search-input">
+                <i class="bi bi-search"></i>
+                <input type="text" placeholder="Search by bill number, status or payment method..."
+                  [(ngModel)]="billSearch" (input)="searchBills()">
+              </div>
+              <span class="result-count">{{ filteredBills.length }} bills</span>
+            </div>
+
+            <div *ngIf="isBillsLoading" class="loading-state" style="padding:2rem;">
+              <div class="spinner-border text-danger"></div>
+              <p>Loading payment history...</p>
+            </div>
+
+            <div *ngIf="!isBillsLoading && filteredBills.length === 0" class="empty-state" style="padding:2.5rem;">
+              <i class="bi bi-receipt"></i>
+              <p>No payment records found</p>
+            </div>
+
+            <div *ngIf="!isBillsLoading && filteredBills.length > 0" class="bills-list">
+              <div *ngFor="let b of filteredBills" class="bill-card">
+                <div class="bill-card-header">
+                  <div>
+                    <span class="bill-number">{{ b.billNumber }}</span>
+                    <span class="badge ms-2" [ngClass]="getStatusClass(b.status)">{{ b.status }}</span>
+                  </div>
+                  <span class="bill-date">{{ b.billDate | date:'dd MMM yyyy' }}</span>
+                </div>
+                <div class="bill-card-body">
+                  <div class="bill-amounts">
+                    <div class="ba-item">
+                      <span>Net Amount</span>
+                      <strong>Rs. {{ b.netAmount | number }}</strong>
+                    </div>
+                    <div class="ba-item">
+                      <span>Paid</span>
+                      <strong class="text-success">Rs. {{ b.paidAmount | number }}</strong>
+                    </div>
+                    <div class="ba-item">
+                      <span>Balance</span>
+                      <strong [class.text-warning]="b.balanceAmount > 0">Rs. {{ b.balanceAmount | number }}</strong>
+                    </div>
+                  </div>
+                  <div *ngIf="b.remarks" class="bill-remarks">
+                    <i class="bi bi-chat-text me-1"></i>{{ b.remarks }}
+                  </div>
+                </div>
+                <div class="bill-card-footer">
+                  <button class="btn-action edit" title="Preview Receipt" (click)="previewReceipt(b.id)">
+                    <i class="bi bi-eye"></i> Preview Receipt
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Tab: Documents ── -->
+          <div *ngIf="activeTab==='docs'" class="tab-content">
+            <div class="docs-grid">
+              <div class="doc-item" [class.doc-ok]="student.hasBirthCertificate" [class.doc-missing]="!student.hasBirthCertificate">
+                <i class="bi" [ngClass]="student.hasBirthCertificate ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
+                <span>Birth Certificate</span>
+              </div>
+              <div class="doc-item" [class.doc-ok]="student.hasNtmiMedical" [class.doc-missing]="!student.hasNtmiMedical">
+                <i class="bi" [ngClass]="student.hasNtmiMedical ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
+                <span>NTMI Medical</span>
+              </div>
+              <div class="doc-item" [class.doc-ok]="student.hasNicCopy" [class.doc-missing]="!student.hasNicCopy">
+                <i class="bi" [ngClass]="student.hasNicCopy ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
+                <span>NIC Copy</span>
+              </div>
+            </div>
+            <div *ngIf="student.isSpecialRequirements" class="special-req-badge">
+              <i class="bi bi-info-circle me-2"></i>Special Requirements noted
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

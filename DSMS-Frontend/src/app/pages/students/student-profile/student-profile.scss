@@ -1,0 +1,328 @@
+// Student Profile — page-specific styles
+
+// ── Layout ────────────────────────────────────────────────────────────────────
+.profile-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+
+  @media (max-width: 900px) { grid-template-columns: 1fr; }
+}
+
+// ── Left Identity Card ─────────────────────────────────────────────────────────
+.profile-card {
+  background: var(--dark-card, #161b22);
+  border: 1px solid var(--dark-border, #30363d);
+  border-radius: 12px;
+  padding: 1.75rem 1.25rem;
+  text-align: center;
+  position: sticky;
+  top: 1rem;
+}
+
+.profile-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--primary, #e63946);
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  text-transform: uppercase;
+}
+
+.profile-name {
+  color: var(--text-primary, #e6edf3);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.profile-nic {
+  color: var(--text-secondary, #8b949e);
+  font-size: 0.82rem;
+  margin-bottom: 0.75rem;
+}
+
+.profile-meta {
+  margin-top: 1.25rem;
+  text-align: left;
+  border-top: 1px solid var(--dark-border, #30363d);
+  padding-top: 1rem;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-secondary, #8b949e);
+  font-size: 0.82rem;
+  padding: 0.3rem 0;
+
+  i { color: var(--primary, #e63946); min-width: 14px; }
+  span { word-break: break-all; }
+}
+
+.profile-section-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary, #8b949e);
+  margin: 1rem 0 0.5rem;
+  text-align: left;
+}
+
+// ── Vehicle Class Badges ───────────────────────────────────────────────────────
+.vehicle-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: flex-start;
+}
+
+.vehicle-badge {
+  background: rgba(230,57,70,0.15);
+  color: var(--primary, #e63946);
+  border: 1px solid rgba(230,57,70,0.3);
+  border-radius: 6px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+// ── Payment Summary Mini ───────────────────────────────────────────────────────
+.payment-summary-mini {
+  background: var(--dark-bg, #0d1117);
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+.psm-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  padding: 0.3rem 0;
+  color: var(--text-secondary, #8b949e);
+  border-bottom: 1px solid #21262d;
+
+  &:last-child { border-bottom: none; }
+  strong { color: var(--text-primary, #e6edf3); }
+}
+
+// ── Right Detail Panel ─────────────────────────────────────────────────────────
+.profile-detail {
+  background: var(--dark-card, #161b22);
+  border: 1px solid var(--dark-border, #30363d);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+// ── Tab Nav ───────────────────────────────────────────────────────────────────
+.profile-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--dark-border, #30363d);
+  background: var(--dark-bg, #0d1117);
+}
+
+.ptab {
+  flex: 1;
+  padding: 0.85rem 0.5rem;
+  background: none;
+  border: none;
+  color: var(--text-secondary, #8b949e);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+
+  &:hover { color: var(--text-primary, #e6edf3); }
+  &.active {
+    color: var(--primary, #e63946);
+    border-bottom-color: var(--primary, #e63946);
+    font-weight: 600;
+  }
+}
+
+.tab-count {
+  background: var(--primary, #e63946);
+  color: #fff;
+  border-radius: 10px;
+  padding: 0.05rem 0.45rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.tab-content { padding: 1.5rem; }
+
+// ── Info Grid ─────────────────────────────────────────────────────────────────
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+
+  @media (max-width: 600px) { grid-template-columns: 1fr; }
+}
+
+.info-block {
+  &.span-2 { grid-column: span 2; @media (max-width:600px) { grid-column: span 1; } }
+}
+
+.info-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary, #8b949e);
+  margin-bottom: 0.3rem;
+}
+
+.info-value {
+  color: var(--text-primary, #e6edf3);
+  font-size: 0.9rem;
+  word-break: break-word;
+}
+
+// ── Bill Cards ─────────────────────────────────────────────────────────────────
+.bills-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.bill-card {
+  background: var(--dark-bg, #0d1117);
+  border: 1px solid var(--dark-border, #30363d);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+
+  &:hover { border-color: var(--primary, #e63946); }
+}
+
+.bill-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #21262d;
+}
+
+.bill-number {
+  font-weight: 700;
+  color: var(--text-primary, #e6edf3);
+  font-size: 0.9rem;
+  font-family: monospace;
+}
+
+.bill-date {
+  color: var(--text-secondary, #8b949e);
+  font-size: 0.8rem;
+}
+
+.bill-card-body {
+  padding: 0.75rem 1rem;
+}
+
+.bill-amounts {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.ba-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+
+  span {
+    font-size: 0.72rem;
+    color: var(--text-secondary, #8b949e);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  strong {
+    font-size: 0.95rem;
+    color: var(--text-primary, #e6edf3);
+  }
+}
+
+.bill-remarks {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary, #8b949e);
+}
+
+.bill-card-footer {
+  padding: 0.6rem 1rem;
+  border-top: 1px solid #21262d;
+  display: flex;
+  justify-content: flex-end;
+
+  .btn-action {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+  }
+}
+
+// ── Documents ─────────────────────────────────────────────────────────────────
+.docs-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.doc-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  border: 1px solid;
+
+  &.doc-ok {
+    background: rgba(35,134,54,0.1);
+    border-color: rgba(35,134,54,0.3);
+    color: #3fb950;
+    i { color: #3fb950; }
+  }
+  &.doc-missing {
+    background: rgba(230,57,70,0.08);
+    border-color: rgba(230,57,70,0.25);
+    color: var(--text-secondary, #8b949e);
+    i { color: #e63946; }
+  }
+}
+
+.special-req-badge {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: rgba(210,153,34,0.1);
+  border: 1px solid rgba(210,153,34,0.3);
+  color: #d29922;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+// ── Search clear button ────────────────────────────────────────────────────────
+.search-clear {
+  background: none;
+  border: none;
+  color: var(--text-secondary, #8b949e);
+  cursor: pointer;
+  padding: 0 0.25rem;
+  &:hover { color: var(--text-primary, #e6edf3); }
+}

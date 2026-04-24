@@ -3,23 +3,32 @@
   <div class="main-content">
     <app-topbar></app-topbar>
     <div class="page-content">
+
       <div class="page-header">
         <div>
           <h2>Students</h2>
-          <p>Manage all registered students</p>
+          <p>{{ isInstructor ? 'View registered students' : 'Manage all registered students' }}</p>
         </div>
-        <button class="btn btn-primary" (click)="addStudent()">
+        <button *ngIf="canEdit" class="btn btn-primary" (click)="addStudent()">
           <i class="bi bi-plus-lg me-2"></i>Add Student
         </button>
       </div>
+
       <div class="search-bar">
         <div class="search-input">
           <i class="bi bi-search"></i>
-          <input type="text" placeholder="Search by name, NIC or phone..."
+          <input type="text" placeholder="Search by name, NIC, phone or bill number (e.g. BILL-00001)..."
             [(ngModel)]="searchTerm" (input)="search()">
+          <button *ngIf="searchTerm" class="search-clear" (click)="clearSearch()" title="Clear">
+            <i class="bi bi-x"></i>
+          </button>
         </div>
-        <span class="result-count">{{ filteredStudents.length }} students</span>
+        <span class="result-count">
+          <span *ngIf="isSearching" class="spinner-border spinner-border-sm me-1"></span>
+          {{ filteredStudents.length }} students
+        </span>
       </div>
+
       <div class="table-card">
         <div *ngIf="isLoading" class="loading-state">
           <div class="spinner-border text-danger"></div>
@@ -28,7 +37,7 @@
         <div *ngIf="!isLoading && filteredStudents.length === 0" class="empty-state">
           <i class="bi bi-people"></i>
           <p>No students found</p>
-          <button class="btn btn-primary" (click)="addStudent()">Add First Student</button>
+          <button *ngIf="canEdit" class="btn btn-primary" (click)="addStudent()">Add First Student</button>
         </div>
         <table *ngIf="!isLoading && filteredStudents.length > 0" class="data-table">
           <thead>
@@ -54,18 +63,27 @@
               </td>
               <td>{{ s.nic }}</td>
               <td>{{ s.phoneNumber }}</td>
-              <td><span class="badge bg-info text-dark" *ngIf="s.packageType">{{ s.packageType }}</span><span *ngIf="!s.packageType">-</span></td>
+              <td>
+                <span class="badge bg-info text-dark" *ngIf="s.packageType">{{ s.packageType }}</span>
+                <span *ngIf="!s.packageType">-</span>
+              </td>
               <td>{{ s.branchName }}</td>
               <td>{{ s.registrationDate | date:'dd/MM/yyyy' }}</td>
               <td>
-                <button class="btn-action edit" (click)="editStudent(s.id)">
-                  <i class="bi bi-pencil"></i>
-                </button>
+                <div style="display:flex;gap:0.4rem;">
+                  <button class="btn-action approve" title="View Profile" (click)="viewProfile(s.id)">
+                    <i class="bi bi-person-lines-fill"></i>
+                  </button>
+                  <button *ngIf="canEdit" class="btn-action edit" title="Edit Student" (click)="editStudent(s.id)">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
+
     </div>
   </div>
 </div>

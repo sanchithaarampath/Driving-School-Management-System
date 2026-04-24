@@ -15,6 +15,10 @@ export const authGuard: CanActivateFn = (route, state) => {
   if (path.startsWith('instructor') && role !== 'Instructor') {
     router.navigate(['/dashboard']); return false;
   }
+  // Instructors can view students but not create/edit
+  if ((path === 'students/new' || path === 'students/edit/:id') && role === 'Instructor') {
+    router.navigate(['/students']); return false;
+  }
   // Staff cannot access admin-only areas
   if (path === 'branches' && role !== 'Company Admin') {
     router.navigate(['/dashboard']); return false;

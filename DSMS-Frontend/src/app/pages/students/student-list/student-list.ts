@@ -19,6 +19,7 @@ export class StudentList implements OnInit {
   filteredStudents: any[] = [];
   searchTerm = '';
   isLoading = true;
+  isSearching = false;
   user: any;
   private apiUrl = 'http://localhost:5062/api';
 
@@ -28,6 +29,9 @@ export class StudentList implements OnInit {
     this.user = this.authService.getUser();
     this.loadStudents();
   }
+
+  get isInstructor() { return this.authService.isInstructor(); }
+  get canEdit() { return !this.authService.isInstructor(); }
 
   getHeaders() {
     return new HttpHeaders({ Authorization: `Bearer ${this.authService.getToken()}` });
@@ -46,21 +50,37 @@ export class StudentList implements OnInit {
   }
 
   search() {
-    if (!this.searchTerm) {
+    const term = this.searchTerm.trim();
+    if (!term) {
       this.filteredStudents = this.students;
       return;
     }
-    const term = this.searchTerm.toLowerCase();
+
+    // If term looks like a bill number — search via API
+    if (term.toUpperCase().startsWith('BILL-') || /^\d{4,}$/.test(term)) {
+      this.isSearching = true;
+      this.http.get<any[]>(`${this.apiUrl}/student/search?q=${encodeURIComponent(term)}`, { headers: this.getHeaders() }).subscribe({
+        next: (data) => { this.filteredStudents = data; this.isSearching = false; },
+        error: () => { this.isSearching = false; }
+      });
+      return;
+    }
+
+    // Client-side search by name, NIC, phone
+    const lower = term.toLowerCase();
     this.filteredStudents = this.students.filter(s =>
-      s.studentName?.toLowerCase().includes(term) ||
-      s.nic?.toLowerCase().includes(term) ||
-      s.phoneNumber?.toLowerCase().includes(term)
+      s.studentName?.toLowerCase().includes(lower) ||
+      s.nic?.toLowerCase().includes(lower) ||
+      s.phoneNumber?.toLowerCase().includes(lower)
     );
   }
 
-  addStudent() { this.router.navigate(['/students/new']); }
+  clearSearch() {
+    this.searchTerm = '';
+    this.filteredStudents = this.students;
+  }
+
+  viewProfile(id: number) { this.router.navigate(['/students/profile', id]); }
+  addStudent()            { this.router.navigate(['/students/new']); }
   editStudent(id: number) { this.router.navigate(['/students/edit', id]); }
-  logout() { this.authService.logout(); }
-  goToDashboard() { this.router.navigate(['/dashboard']); }
-  goToBilling() { this.router.navigate(['/billing']); }
 }

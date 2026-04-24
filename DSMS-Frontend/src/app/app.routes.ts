@@ -31,6 +31,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/students/student-form/student-form').then(m => m.StudentForm),
     canActivate: [authGuard]
   },
+  {
+    path: 'students/profile/:id',
+    loadComponent: () => import('./pages/students/student-profile/student-profile').then(m => m.StudentProfile),
+    canActivate: [authGuard]
+  },
 
   // ===== BILLING =====
   {

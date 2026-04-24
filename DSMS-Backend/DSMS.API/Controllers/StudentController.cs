@@ -214,7 +214,7 @@ namespace DSMS.API.Controllers
             return Ok(new { message = "Student deleted successfully" });
         }
 
-        // GET /api/student/search?q=  — search by name, NIC, phone, student ID
+        // GET /api/student/search?q=  — search by name, NIC, phone, student ID, or bill number
         [HttpGet("search")]
         public async Task<IActionResult> Search([FromQuery] string? q, [FromQuery] string? name, [FromQuery] string? nic, [FromQuery] string? phone)
         {
@@ -224,8 +224,17 @@ namespace DSMS.API.Controllers
             if (callerBranchId.HasValue)
                 query = query.Where(s => s.BranchId == callerBranchId);
 
-            // Universal search
-            if (!string.IsNullOrEmpty(q))
+            // If query looks like a bill number, find student via billing
+            if (!string.IsNullOrEmpty(q) && q.ToUpper().StartsWith("BILL-"))
+            {
+                var bill = await _context.Bills
+                    .FirstOrDefaultAsync(b => b.BillNumber.Contains(q));
+                if (bill != null)
+                    query = query.Where(s => s.Id == bill.StudentId);
+                else
+                    return Ok(new List<object>());
+            }
+            else if (!string.IsNullOrEmpty(q))
             {
                 query = query.Where(s =>
                     s.StudentName.Contains(q) ||
@@ -233,6 +242,7 @@ namespace DSMS.API.Controllers
                     s.PhoneNumber.Contains(q) ||
                     s.Id.ToString() == q);
             }
+
             if (!string.IsNullOrEmpty(name)) query = query.Where(s => s.StudentName.Contains(name));
             if (!string.IsNullOrEmpty(nic)) query = query.Where(s => s.Nic.Contains(nic));
             if (!string.IsNullOrEmpty(phone)) query = query.Where(s => s.PhoneNumber.Contains(phone));

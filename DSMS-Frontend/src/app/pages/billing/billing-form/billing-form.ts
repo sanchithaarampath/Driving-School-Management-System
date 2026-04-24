@@ -34,7 +34,7 @@ export class BillingForm implements OnInit, AfterViewChecked {
   activePaymentTab: 'Cash' | 'Bank Transfer' | 'Cheque' | 'Card' | 'PayPal' = 'Cash';
 
   // ── Stripe ────────────────────────────────────────────────────────────────
-  private stripe: any = null;
+  stripe: any = null;
   private cardElement: any = null;
   private stripePublishableKey = '';
   stripeCardMounted = false;
@@ -43,7 +43,7 @@ export class BillingForm implements OnInit, AfterViewChecked {
   private stripeCardShouldMount = false;
 
   // ── PayPal ────────────────────────────────────────────────────────────────
-  private paypalClientId = '';
+  paypalClientId = '';
   private paypalCurrency = 'USD';
   paypalLoaded = false;
   private paypalRendered = false;
