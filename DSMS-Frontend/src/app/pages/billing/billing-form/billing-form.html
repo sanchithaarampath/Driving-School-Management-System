@@ -1,74 +1,91 @@
-<p>billing-form works!</p>
 <div class="dsms-layout">
-  <div class="sidebar">
-    <div class="sidebar-brand">
-      <div class="brand-logo"><i class="bi bi-car-front-fill"></i></div>
-      <div class="brand-text">
-        <span class="brand-name">Arampath</span>
-        <span class="brand-sub">Driving School</span>
-      </div>
-    </div>
-    <nav class="sidebar-nav">
-      <a class="nav-item" routerLink="/dashboard"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
-      <a class="nav-item" routerLink="/students"><i class="bi bi-people"></i><span>Students</span></a>
-      <a class="nav-item active" routerLink="/billing"><i class="bi bi-receipt"></i><span>Billing</span></a>
-    </nav>
-    <div class="sidebar-footer"><span>DSMS v1</span></div>
-  </div>
+  <app-sidebar></app-sidebar>
   <div class="main-content">
-    <div class="topbar">
-      <div class="topbar-left"><h5>Driving School Management System</h5></div>
-      <div class="topbar-right">
-        <div class="user-info">
-          <div class="user-avatar"><i class="bi bi-person-fill"></i></div>
-          <div class="user-details">
-            <span class="user-name">{{ user?.userFullName }}</span>
-            <span class="user-role">{{ user?.role }}</span>
-          </div>
-        </div>
-        <button class="btn btn-logout" (click)="logout()"><i class="bi bi-box-arrow-right"></i> Logout</button>
-      </div>
-    </div>
+    <app-topbar></app-topbar>
     <div class="page-content">
+
+      <!-- ===== PAGE HEADER ===== -->
       <div class="page-header">
         <div>
           <h2>Create New Bill</h2>
-          <p>Generate a bill and record payment</p>
+          <p>Generate a bill and accept payment</p>
         </div>
-        <button class="btn btn-back" (click)="goBack()">
-          <i class="bi bi-arrow-left me-2"></i>Back
+        <button class="btn btn-back" (click)="goBack()"><i class="bi bi-arrow-left me-2"></i>Back</button>
+      </div>
+
+      <div *ngIf="errorMessage" class="alert-danger"><i class="bi bi-exclamation-circle me-2"></i>{{ errorMessage }}</div>
+
+      <!-- ===== RECEIPT SUCCESS PANEL ===== -->
+      <div *ngIf="showReceiptPanel" class="receipt-success-panel">
+        <div class="receipt-icon"><i class="bi bi-check-circle-fill"></i></div>
+        <h3>Bill {{ createdBillNumber }} Created!</h3>
+        <p>Payment recorded successfully. Send the receipt to the student:</p>
+
+        <div class="receipt-contact-fields">
+          <div class="form-group">
+            <label><i class="bi bi-envelope me-1"></i>Email Address</label>
+            <input type="email" class="form-control" [(ngModel)]="overrideEmail" placeholder="student@email.com">
+          </div>
+          <div class="form-group">
+            <label><i class="bi bi-whatsapp me-1"></i>WhatsApp / Phone</label>
+            <input type="text" class="form-control" [(ngModel)]="overridePhone" placeholder="+94 77 123 4567">
+          </div>
+        </div>
+
+        <div class="receipt-actions">
+          <button class="receipt-btn email" (click)="sendReceipt('email')" [disabled]="receiptSending || !overrideEmail">
+            <i class="bi bi-envelope-fill"></i> Send via Email
+          </button>
+          <button class="receipt-btn whatsapp" (click)="sendReceipt('whatsapp')" [disabled]="receiptSending || !overridePhone">
+            <i class="bi bi-whatsapp"></i> Send via WhatsApp
+          </button>
+          <button class="receipt-btn both" (click)="sendReceipt('both')" [disabled]="receiptSending">
+            <i class="bi bi-send-fill"></i> Send Both
+          </button>
+          <button class="receipt-btn preview" (click)="previewReceipt()">
+            <i class="bi bi-eye"></i> Preview Receipt
+          </button>
+        </div>
+
+        <div *ngIf="receiptSending" class="receipt-status sending"><span class="spinner-border spinner-border-sm me-2"></span>Sending...</div>
+        <div *ngIf="receiptSuccess" class="receipt-status success"><i class="bi bi-check-circle me-2"></i>{{ receiptSuccess }}</div>
+        <div *ngIf="receiptError"   class="receipt-status error"><i class="bi bi-exclamation-triangle me-2"></i>{{ receiptError }}</div>
+
+        <button class="btn btn-primary mt-3" (click)="finishAndGoBack()">
+          <i class="bi bi-check-lg me-2"></i>Done — Go to Billing
         </button>
       </div>
 
-      <div *ngIf="successMessage" class="alert alert-success">
-        <i class="bi bi-check-circle me-2"></i>{{ successMessage }}
-      </div>
-      <div *ngIf="errorMessage" class="alert alert-danger">
-        <i class="bi bi-exclamation-circle me-2"></i>{{ errorMessage }}
-      </div>
+      <!-- ===== BILL FORM (hidden after success) ===== -->
+      <div *ngIf="!showReceiptPanel" class="form-row">
 
-      <div class="form-row">
+        <!-- Left: Bill Info -->
         <div class="form-card">
           <h6 class="section-title"><i class="bi bi-receipt me-2"></i>Bill Information</h6>
+
           <div class="form-group">
             <label>Select Student <span class="required">*</span></label>
             <select class="form-control" [(ngModel)]="bill.studentId" (change)="onStudentChange()">
               <option [value]="null">-- Select Student --</option>
-              <option *ngFor="let s of students" [value]="s.id">{{ s.studentName }} - {{ s.nic }}</option>
+              <option *ngFor="let s of students" [value]="s.id">{{ s.studentName }} — {{ s.nic }}</option>
             </select>
           </div>
+
           <div *ngIf="selectedStudent" class="student-info-box">
-            <div class="info-row"><span>Name:</span><strong>{{ selectedStudent.studentName }}</strong></div>
-            <div class="info-row"><span>NIC:</span><strong>{{ selectedStudent.nic }}</strong></div>
-            <div class="info-row"><span>Phone:</span><strong>{{ selectedStudent.phoneNumber }}</strong></div>
+            <div class="info-row"><span>Name</span><strong>{{ selectedStudent.studentName }}</strong></div>
+            <div class="info-row"><span>NIC</span><strong>{{ selectedStudent.nic }}</strong></div>
+            <div class="info-row"><span>Phone</span><strong>{{ selectedStudent.phoneNumber }}</strong></div>
+            <div *ngIf="selectedStudent.email" class="info-row"><span>Email</span><strong>{{ selectedStudent.email }}</strong></div>
+            <div *ngIf="selectedStudent.whatsAppNumber" class="info-row"><span>WhatsApp</span><strong>{{ selectedStudent.whatsAppNumber }}</strong></div>
           </div>
+
           <div class="form-group mt-3">
             <label>Total Amount (Rs.) <span class="required">*</span></label>
-            <input type="number" class="form-control" [(ngModel)]="bill.totalAmount" (input)="calculateNet()" placeholder="0.00">
+            <input type="number" class="form-control" [(ngModel)]="bill.totalAmount" (input)="calculateNet()" placeholder="0.00" min="0">
           </div>
           <div class="form-group">
             <label>Discount Amount (Rs.)</label>
-            <input type="number" class="form-control" [(ngModel)]="bill.discountAmount" (input)="calculateNet()" placeholder="0.00">
+            <input type="number" class="form-control" [(ngModel)]="bill.discountAmount" (input)="calculateNet()" placeholder="0.00" min="0">
           </div>
           <div class="form-group">
             <label>Net Amount (Rs.)</label>
@@ -80,48 +97,92 @@
           </div>
         </div>
 
+        <!-- Right: Payment Details -->
         <div class="form-card">
-          <h6 class="section-title"><i class="bi bi-cash me-2"></i>Payment Details</h6>
-          <div class="form-group">
+          <h6 class="section-title"><i class="bi bi-credit-card me-2"></i>Payment</h6>
+
+          <!-- Payment Method Tabs -->
+          <div class="payment-tabs">
+            <button class="pm-tab" [class.active]="activePaymentTab==='Cash'"         (click)="selectPaymentTab('Cash')">
+              <i class="bi bi-cash"></i> Cash
+            </button>
+            <button class="pm-tab" [class.active]="activePaymentTab==='Bank Transfer'" (click)="selectPaymentTab('Bank Transfer')">
+              <i class="bi bi-bank"></i> Bank
+            </button>
+            <button class="pm-tab" [class.active]="activePaymentTab==='Cheque'"       (click)="selectPaymentTab('Cheque')">
+              <i class="bi bi-journal-check"></i> Cheque
+            </button>
+            <button class="pm-tab stripe-tab" [class.active]="activePaymentTab==='Card'" (click)="selectPaymentTab('Card')">
+              <i class="bi bi-credit-card-2-front"></i> Card
+            </button>
+            <button class="pm-tab paypal-tab" [class.active]="activePaymentTab==='PayPal'" (click)="selectPaymentTab('PayPal')">
+              <i class="bi bi-paypal"></i> PayPal
+            </button>
+          </div>
+
+          <!-- Amount input (Cash / Bank / Cheque / Card) -->
+          <div *ngIf="activePaymentTab !== 'PayPal'" class="form-group mt-2">
             <label>Payment Amount (Rs.)</label>
-            <input type="number" class="form-control" [(ngModel)]="payment.amount" placeholder="0.00">
-            <small class="hint">Leave 0 if no payment now</small>
+            <input type="number" class="form-control" [(ngModel)]="payment.amount" placeholder="0.00" min="0">
+            <small class="hint">Leave 0 to save bill without payment</small>
           </div>
-          <div class="form-group">
-            <label>Payment Method</label>
-            <select class="form-control" [(ngModel)]="payment.paymentMethod">
-              <option value="Cash">Cash</option>
-              <option value="Bank Transfer">Bank Transfer</option>
-              <option value="Cheque">Cheque</option>
-              <option value="Online">Online</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Reference No.</label>
+
+          <!-- Bank / Cheque reference -->
+          <div *ngIf="activePaymentTab==='Bank Transfer' || activePaymentTab==='Cheque'" class="form-group">
+            <label>{{ activePaymentTab === 'Cheque' ? 'Cheque No.' : 'Reference No.' }}</label>
             <input type="text" class="form-control" [(ngModel)]="payment.referenceNo" placeholder="Optional">
           </div>
-          <div class="form-group">
+
+          <!-- ─── Stripe Card Element ─── -->
+          <div *ngIf="activePaymentTab==='Card'" class="stripe-section">
+            <div id="stripe-card-element" class="stripe-card-input"></div>
+            <div *ngIf="stripeError" class="stripe-error"><i class="bi bi-exclamation-circle me-1"></i>{{ stripeError }}</div>
+            <div *ngIf="!stripe" class="stripe-warning">
+              <i class="bi bi-info-circle me-1"></i>
+              Stripe is not configured. Set <code>Stripe:PublishableKey</code> in appsettings.json.
+            </div>
+          </div>
+
+          <!-- ─── PayPal ─── -->
+          <div *ngIf="activePaymentTab==='PayPal'" class="paypal-section">
+            <div class="form-group">
+              <label>Payment Amount (Rs.)</label>
+              <input type="number" class="form-control" [(ngModel)]="payment.amount" placeholder="Enter amount, then click PayPal" min="0">
+            </div>
+            <div id="paypal-button-container" class="mt-2"></div>
+            <div *ngIf="!paypalClientId || paypalClientId.startsWith('YOUR_')" class="stripe-warning">
+              <i class="bi bi-info-circle me-1"></i>
+              PayPal is not configured. Set <code>PayPal:ClientId</code> in appsettings.json.
+            </div>
+          </div>
+
+          <!-- Payment remarks -->
+          <div *ngIf="activePaymentTab !== 'PayPal'" class="form-group">
             <label>Payment Remarks</label>
             <textarea class="form-control" [(ngModel)]="payment.remarks" rows="2" placeholder="Optional"></textarea>
           </div>
+
+          <!-- Bill Summary -->
           <div class="bill-summary">
             <div class="summary-row"><span>Total Amount</span><strong>Rs. {{ bill.totalAmount | number }}</strong></div>
-            <div class="summary-row"><span>Discount</span><strong>- Rs. {{ bill.discountAmount | number }}</strong></div>
+            <div class="summary-row" *ngIf="bill.discountAmount > 0"><span>Discount</span><strong class="text-success">- Rs. {{ bill.discountAmount | number }}</strong></div>
             <div class="summary-row"><span>Net Amount</span><strong>Rs. {{ bill.netAmount | number }}</strong></div>
-            <div class="summary-row"><span>Payment Now</span><strong class="text-green">Rs. {{ payment.amount | number }}</strong></div>
-            <div class="summary-row total"><span>Balance</span><strong class="text-red">Rs. {{ (bill.netAmount - payment.amount) | number }}</strong></div>
+            <div class="summary-row" *ngIf="payment.amount > 0"><span>Paying Now</span><strong class="text-success">Rs. {{ payment.amount | number }}</strong></div>
+            <div class="summary-row total"><span>Balance</span><strong [class.text-danger]="balanceAmount > 0" [class.text-success]="balanceAmount === 0">Rs. {{ balanceAmount | number }}</strong></div>
           </div>
         </div>
       </div>
 
-      <div class="form-actions">
+      <!-- Form Actions -->
+      <div *ngIf="!showReceiptPanel && activePaymentTab !== 'PayPal'" class="form-actions">
         <button class="btn btn-cancel" (click)="goBack()">Cancel</button>
-        <button class="btn btn-primary" (click)="onSubmit()" [disabled]="isSaving">
-          <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
-          <i *ngIf="!isSaving" class="bi bi-check-lg me-2"></i>
-          {{ isSaving ? 'Creating...' : 'Create Bill' }}
+        <button class="btn btn-primary" (click)="onSubmit()" [disabled]="isSaving || stripeProcessing">
+          <span *ngIf="isSaving || stripeProcessing" class="spinner-border spinner-border-sm me-2"></span>
+          <i *ngIf="!isSaving && !stripeProcessing" class="bi bi-check-lg me-2"></i>
+          {{ stripeProcessing ? 'Processing Card...' : isSaving ? 'Creating...' : activePaymentTab === 'Card' ? 'Pay with Card' : 'Create Bill' }}
         </button>
       </div>
+
     </div>
   </div>
 </div>

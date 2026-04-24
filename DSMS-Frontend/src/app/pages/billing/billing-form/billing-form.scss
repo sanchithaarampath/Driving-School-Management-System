@@ -1,38 +1,89 @@
-// Billing Form — page-specific styles (shared layout lives in styles.scss)
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
+// Billing Form — page-specific styles (layout comes from global styles.scss)
 
-  @media (max-width: 900px) { grid-template-columns: 1fr; }
+// ─── Payment Method Tabs ──────────────────────────────────────────────────
+.payment-tabs {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
 }
 
-.net-amount { color: #3fb950 !important; font-weight: 700; }
-
-.hint { color: var(--text-secondary, #8b949e); font-size: 0.75rem; }
-
-.student-info-box {
-  background: #0d1117;
-  border: 1px solid #30363d;
+.pm-tab {
+  flex: 1;
+  min-width: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.6rem 0.5rem;
+  background: var(--dark-bg, #0d1117);
+  border: 1.5px solid var(--dark-border, #30363d);
   border-radius: 8px;
-  padding: 0.75rem;
+  color: var(--text-secondary, #8b949e);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  i { font-size: 1.1rem; }
+
+  &:hover  { border-color: var(--primary, #e63946); color: var(--primary, #e63946); }
+  &.active { border-color: var(--primary, #e63946); background: rgba(230,57,70,0.12); color: var(--primary, #e63946); font-weight: 600; }
+
+  &.stripe-tab.active  { border-color: #635bff; background: rgba(99,91,255,0.12); color: #a0a0ff; }
+  &.stripe-tab:hover   { border-color: #635bff; color: #a0a0ff; }
+  &.paypal-tab.active  { border-color: #003087; background: rgba(0,48,135,0.15); color: #009cde; }
+  &.paypal-tab:hover   { border-color: #003087; color: #009cde; }
+}
+
+// ─── Stripe Card Element ──────────────────────────────────────────────────
+.stripe-section {
+  margin-bottom: 1rem;
+}
+
+.stripe-card-input {
+  background: var(--dark-bg, #0d1117);
+  border: 1.5px solid #635bff;
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+  min-height: 46px;
+  transition: border-color 0.2s;
+
+  &:focus-within { border-color: #a0a0ff; box-shadow: 0 0 0 2px rgba(99,91,255,0.2); }
+}
+
+.stripe-error {
+  color: #ff6b7a;
+  font-size: 0.8rem;
   margin-top: 0.5rem;
 }
 
-.info-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 0.25rem 0;
-  font-size: 0.85rem;
-  color: #8b949e;
+.stripe-warning {
+  background: rgba(210,153,34,0.1);
+  border: 1px solid rgba(210,153,34,0.3);
+  color: #d29922;
+  border-radius: 6px;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
 
-  strong { color: #e6edf3; }
+  code { background: rgba(210,153,34,0.2); padding: 0.1rem 0.3rem; border-radius: 3px; font-size: 0.78rem; }
 }
 
+// ─── PayPal Section ───────────────────────────────────────────────────────
+.paypal-section {
+  margin-bottom: 1rem;
+}
+
+#paypal-button-container {
+  min-height: 45px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+// ─── Bill Summary ─────────────────────────────────────────────────────────
 .bill-summary {
-  background: #0d1117;
-  border: 1px solid #30363d;
+  background: var(--dark-bg, #0d1117);
+  border: 1px solid var(--dark-border, #30363d);
   border-radius: 8px;
   padding: 1rem;
   margin-top: 1rem;
@@ -43,17 +94,110 @@
   justify-content: space-between;
   padding: 0.4rem 0;
   font-size: 0.875rem;
-  color: #8b949e;
+  color: var(--text-secondary, #8b949e);
   border-bottom: 1px solid #21262d;
 
   &:last-child { border-bottom: none; }
-  strong { color: #e6edf3; }
+  strong { color: var(--text-primary, #e6edf3); }
 
   &.total {
     padding-top: 0.75rem;
-    span { color: #e6edf3; font-weight: 600; }
+    font-weight: 700;
+    font-size: 0.95rem;
+    strong { font-size: 1rem; }
   }
 }
 
+// ─── Student Info Box ─────────────────────────────────────────────────────
+.student-info-box {
+  background: var(--dark-bg, #0d1117);
+  border: 1px solid var(--dark-border, #30363d);
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+// ─── Receipt Success Panel ────────────────────────────────────────────────
+.receipt-success-panel {
+  background: var(--dark-card, #161b22);
+  border: 1px solid #238636;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto;
+
+  .receipt-icon {
+    font-size: 3rem;
+    color: #3fb950;
+    margin-bottom: 0.75rem;
+  }
+
+  h3 { color: var(--text-primary, #e6edf3); font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; }
+  p  { color: var(--text-secondary, #8b949e); font-size: 0.9rem; margin-bottom: 1.25rem; }
+}
+
+.receipt-contact-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  text-align: left;
+  margin-bottom: 1.25rem;
+
+  @media (max-width: 600px) { grid-template-columns: 1fr; }
+}
+
+.receipt-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.receipt-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  &.email   { background: #1a73e8; color: #fff; &:hover:not(:disabled) { background: #1557b0; } }
+  &.whatsapp{ background: #25d366; color: #fff; &:hover:not(:disabled) { background: #1da851; } }
+  &.both    { background: var(--primary, #e63946); color: #fff; &:hover:not(:disabled) { background: #c1121f; } }
+  &.preview { background: var(--dark-border, #30363d); color: var(--text-primary, #e6edf3); &:hover { background: #484f58; } }
+}
+
+.receipt-status {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  margin: 0.5rem auto;
+  display: inline-block;
+
+  &.sending { color: var(--text-secondary, #8b949e); }
+  &.success { background: rgba(35,134,54,0.15); color: #3fb950; border: 1px solid rgba(35,134,54,0.3); }
+  &.error   { background: rgba(230,57,70,0.15); color: #ff6b7a; border: 1px solid rgba(230,57,70,0.3); }
+}
+
+// ─── Billing Form Layout ─────────────────────────────────────────────────
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+
+  @media (max-width: 900px) { grid-template-columns: 1fr; }
+}
+
+.net-amount { color: #3fb950 !important; font-weight: 700; }
+.hint { color: var(--text-secondary, #8b949e); font-size: 0.75rem; }
 .text-green { color: #3fb950 !important; }
 .text-red   { color: #e63946 !important; }

@@ -1,43 +1,20 @@
 <div class="dsms-layout">
-  <div class="sidebar">
-    <div class="sidebar-brand">
-      <div class="brand-logo"><i class="bi bi-car-front-fill"></i></div>
-      <div class="brand-text">
-        <span class="brand-name">Arampath</span>
-        <span class="brand-sub">Driving School</span>
-      </div>
-    </div>
-    <nav class="sidebar-nav">
-      <a class="nav-item" routerLink="/dashboard"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
-      <a class="nav-item" routerLink="/students"><i class="bi bi-people"></i><span>Students</span></a>
-      <a class="nav-item active" routerLink="/billing"><i class="bi bi-receipt"></i><span>Billing</span></a>
-    </nav>
-    <div class="sidebar-footer"><span>DSMS v1</span></div>
-  </div>
+  <app-sidebar></app-sidebar>
   <div class="main-content">
-    <div class="topbar">
-      <div class="topbar-left"><h5>Driving School Management System</h5></div>
-      <div class="topbar-right">
-        <div class="user-info">
-          <div class="user-avatar"><i class="bi bi-person-fill"></i></div>
-          <div class="user-details">
-            <span class="user-name">{{ user?.userFullName }}</span>
-            <span class="user-role">{{ user?.role }}</span>
-          </div>
-        </div>
-        <button class="btn btn-logout" (click)="logout()"><i class="bi bi-box-arrow-right"></i> Logout</button>
-      </div>
-    </div>
+    <app-topbar></app-topbar>
     <div class="page-content">
+
       <div class="page-header">
         <div>
-          <h2>Billing & Payments</h2>
-          <p>Manage all bills and payment records</p>
+          <h2>Billing &amp; Payments</h2>
+          <p>Manage all bills, payments and receipts</p>
         </div>
         <button class="btn btn-primary" (click)="addBill()">
           <i class="bi bi-plus-lg me-2"></i>Create Bill
         </button>
       </div>
+
+      <!-- Stats -->
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-icon total"><i class="bi bi-receipt"></i></div>
@@ -68,6 +45,8 @@
           </div>
         </div>
       </div>
+
+      <!-- Search -->
       <div class="search-bar">
         <div class="search-input">
           <i class="bi bi-search"></i>
@@ -76,14 +55,14 @@
         </div>
         <span class="result-count">{{ filteredBills.length }} bills</span>
       </div>
+
+      <!-- Table -->
       <div class="table-card">
         <div *ngIf="isLoading" class="loading-state">
-          <div class="spinner-border text-danger"></div>
-          <p>Loading bills...</p>
+          <div class="spinner-border text-danger"></div><p>Loading bills...</p>
         </div>
         <div *ngIf="!isLoading && filteredBills.length === 0" class="empty-state">
-          <i class="bi bi-receipt"></i>
-          <p>No bills found</p>
+          <i class="bi bi-receipt"></i><p>No bills found</p>
           <button class="btn btn-primary" (click)="addBill()">Create First Bill</button>
         </div>
         <table *ngIf="!isLoading && filteredBills.length > 0" class="data-table">
@@ -93,11 +72,12 @@
               <th>Bill No.</th>
               <th>Student</th>
               <th>NIC</th>
-              <th>Bill Date</th>
-              <th>Total</th>
+              <th>Date</th>
+              <th>Net</th>
               <th>Paid</th>
               <th>Balance</th>
               <th>Status</th>
+              <th>Receipt</th>
             </tr>
           </thead>
           <tbody>
@@ -109,12 +89,66 @@
               <td>{{ b.billDate | date:'dd/MM/yyyy' }}</td>
               <td>Rs. {{ b.netAmount | number }}</td>
               <td class="text-success">Rs. {{ b.paidAmount | number }}</td>
-              <td class="text-warning">Rs. {{ b.balanceAmount | number }}</td>
+              <td [class.text-warning]="b.balanceAmount > 0">Rs. {{ b.balanceAmount | number }}</td>
               <td><span class="badge" [ngClass]="getStatusClass(b.status)">{{ b.status }}</span></td>
+              <td>
+                <div style="display:flex;gap:0.4rem;">
+                  <button class="btn-action approve" title="Send Receipt" (click)="openReceiptModal(b)">
+                    <i class="bi bi-send"></i>
+                  </button>
+                  <button class="btn-action edit" title="Preview Receipt" (click)="previewReceipt(b.id)">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                </div>
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Receipt Modal ===== -->
+<div *ngIf="showReceiptModal" class="modal-overlay" (click)="closeReceiptModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <h5><i class="bi bi-send me-2"></i>Send Receipt — {{ selectedBill?.billNumber }}</h5>
+
+    <div class="modal-bill-info">
+      <div class="info-row"><span>Student</span><strong>{{ selectedBill?.studentName }}</strong></div>
+      <div class="info-row"><span>Amount</span><strong>Rs. {{ selectedBill?.netAmount | number }}</strong></div>
+      <div class="info-row"><span>Status</span><strong><span class="badge" [ngClass]="getStatusClass(selectedBill?.status)">{{ selectedBill?.status }}</span></strong></div>
+    </div>
+
+    <div class="form-grid" style="margin-top:1rem;">
+      <div class="form-group">
+        <label><i class="bi bi-envelope me-1"></i>Email Address</label>
+        <input type="email" class="form-control" [(ngModel)]="overrideEmail" placeholder="student@email.com">
+      </div>
+      <div class="form-group">
+        <label><i class="bi bi-whatsapp me-1"></i>WhatsApp / Phone</label>
+        <input type="text" class="form-control" [(ngModel)]="overridePhone" placeholder="+94 77 123 4567">
+      </div>
+    </div>
+
+    <div class="modal-receipt-actions">
+      <button class="receipt-btn email" (click)="sendReceipt('email')" [disabled]="receiptSending || !overrideEmail">
+        <i class="bi bi-envelope-fill"></i> Email
+      </button>
+      <button class="receipt-btn whatsapp" (click)="sendReceipt('whatsapp')" [disabled]="receiptSending || !overridePhone">
+        <i class="bi bi-whatsapp"></i> WhatsApp
+      </button>
+      <button class="receipt-btn both" (click)="sendReceipt('both')" [disabled]="receiptSending">
+        <i class="bi bi-send-fill"></i> Send Both
+      </button>
+    </div>
+
+    <div *ngIf="receiptSending" class="receipt-status sending"><span class="spinner-border spinner-border-sm me-2"></span>Sending...</div>
+    <div *ngIf="receiptSuccess" class="receipt-status success"><i class="bi bi-check-circle me-2"></i>{{ receiptSuccess }}</div>
+    <div *ngIf="receiptError"   class="receipt-status error"><i class="bi bi-exclamation-triangle me-2"></i>{{ receiptError }}</div>
+
+    <div class="form-actions">
+      <button class="btn btn-cancel" (click)="closeReceiptModal()">Close</button>
     </div>
   </div>
 </div>

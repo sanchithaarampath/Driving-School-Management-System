@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using DSMS.API.Data;
+using DSMS.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +35,11 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
+
+// DSMS Services
+builder.Services.AddScoped<IReceiptService, ReceiptService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IWhatsAppService, WhatsAppService>();
 
 builder.Services.AddCors(options =>
 {

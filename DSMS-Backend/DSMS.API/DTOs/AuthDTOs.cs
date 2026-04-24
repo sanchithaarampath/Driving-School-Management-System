@@ -171,4 +171,21 @@
         public string? Remarks { get; set; }
         public int StudentId { get; set; }
     }
+
+    // ==================== PAYMENT GATEWAY ====================
+    public class StripeIntentDto
+    {
+        public decimal Amount { get; set; }
+        public int BillId { get; set; }
+        public string? StudentName { get; set; }
+    }
+
+    // ==================== RECEIPT / NOTIFICATIONS ====================
+    public class SendReceiptDto
+    {
+        public bool SendEmail { get; set; }
+        public bool SendWhatsApp { get; set; }
+        public string? OverrideEmail { get; set; }
+        public string? OverridePhone { get; set; }
+    }
 }

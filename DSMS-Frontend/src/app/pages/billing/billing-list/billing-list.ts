@@ -4,11 +4,13 @@ import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../../../services/auth';
+import { SidebarComponent } from '../../../shared/layout/sidebar';
+import { TopbarComponent } from '../../../shared/layout/topbar';
 
 @Component({
   selector: 'app-billing-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, SidebarComponent, TopbarComponent],
   templateUrl: './billing-list.html',
   styleUrl: './billing-list.scss'
 })
@@ -21,6 +23,15 @@ export class BillingList implements OnInit {
   user: any;
   private apiUrl = 'http://localhost:5062/api';
 
+  // Receipt modal
+  showReceiptModal = false;
+  selectedBill: any = null;
+  overrideEmail = '';
+  overridePhone = '';
+  receiptSending = false;
+  receiptSuccess = '';
+  receiptError = '';
+
   constructor(private authService: AuthService, private router: Router, private http: HttpClient) {}
 
   ngOnInit() {
@@ -29,18 +40,12 @@ export class BillingList implements OnInit {
     this.loadSummary();
   }
 
-  getHeaders() {
-    return new HttpHeaders({ Authorization: `Bearer ${this.authService.getToken()}` });
-  }
+  getHeaders() { return new HttpHeaders({ Authorization: `Bearer ${this.authService.getToken()}` }); }
 
   loadBills() {
     this.isLoading = true;
     this.http.get(`${this.apiUrl}/billing`, { headers: this.getHeaders() }).subscribe({
-      next: (data: any) => {
-        this.bills = data;
-        this.filteredBills = data;
-        this.isLoading = false;
-      },
+      next: (data: any) => { this.bills = data; this.filteredBills = data; this.isLoading = false; },
       error: () => { this.isLoading = false; }
     });
   }
@@ -62,11 +67,54 @@ export class BillingList implements OnInit {
   }
 
   getStatusClass(status: string) {
-    if (status === 'Paid') return 'badge-paid';
+    if (status === 'Paid')    return 'badge-paid';
     if (status === 'Partial') return 'badge-partial';
     return 'badge-pending';
   }
 
+  // Receipt modal
+  openReceiptModal(bill: any) {
+    this.selectedBill = bill;
+    this.overrideEmail = '';
+    this.overridePhone = '';
+    this.receiptSuccess = '';
+    this.receiptError = '';
+    this.showReceiptModal = true;
+
+    // Load student details to prefill contact
+    this.http.get<any>(`${this.apiUrl}/billing/${bill.id}`, { headers: this.getHeaders() }).subscribe({
+      next: () => {} // email/phone not in list response — user fills manually
+    });
+  }
+
+  closeReceiptModal() { this.showReceiptModal = false; this.selectedBill = null; }
+
+  sendReceipt(channel: 'email' | 'whatsapp' | 'both') {
+    if (!this.selectedBill) return;
+    this.receiptSending = true;
+    this.receiptSuccess = '';
+    this.receiptError = '';
+
+    const payload = {
+      sendEmail:    channel === 'email' || channel === 'both',
+      sendWhatsApp: channel === 'whatsapp' || channel === 'both',
+      overrideEmail: this.overrideEmail || null,
+      overridePhone: this.overridePhone || null
+    };
+
+    this.http.post<any>(`${this.apiUrl}/billing/${this.selectedBill.id}/send-receipt`, payload, { headers: this.getHeaders() }).subscribe({
+      next: (res) => {
+        this.receiptSending = false;
+        this.receiptSuccess = res.sent?.join(' • ') ?? 'Sent!';
+        if (res.errors?.length) this.receiptError = res.errors.join(' • ');
+      },
+      error: () => { this.receiptSending = false; this.receiptError = 'Failed to send receipt.'; }
+    });
+  }
+
+  previewReceipt(billId: number) {
+    window.open(`${this.apiUrl}/billing/${billId}/receipt`, '_blank');
+  }
+
   addBill() { this.router.navigate(['/billing/new']); }
-  logout() { this.authService.logout(); }
 }
