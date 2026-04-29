@@ -264,47 +264,215 @@
 }
 
 .bill-card-footer {
-  padding: 0.6rem 1rem;
+  padding: 0.55rem 1rem;
   border-top: 1px solid #21262d;
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
 
-  .btn-action {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.8rem;
+  // Push preview/download/delete to the right
+  .btn-action.edit,
+  .btn-action.approve,
+  .btn-action.delete-bill {
+    margin-left: auto;
   }
+  // But only the first of the right-side group should push
+  .btn-action.edit { margin-left: auto; }
+  .btn-action.approve,
+  .btn-action.delete-bill { margin-left: 0; }
 }
 
-// ── Documents ─────────────────────────────────────────────────────────────────
-.docs-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+// ── Payment instalments breakdown ─────────────────────────────────────────────
+.payment-history-breakdown {
+  margin-top: 0.85rem;
+  border-top: 1px dashed #21262d;
+  padding-top: 0.65rem;
 }
 
-.doc-item {
+.phb-title {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary, #8b949e);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.4rem;
+}
+
+.phb-row {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.85rem 1rem;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  border: 1px solid;
+  padding: 0.25rem 0;
+  font-size: 0.8rem;
+  border-bottom: 1px solid rgba(48,54,61,0.5);
 
-  &.doc-ok {
-    background: rgba(35,134,54,0.1);
-    border-color: rgba(35,134,54,0.3);
-    color: #3fb950;
-    i { color: #3fb950; }
-  }
-  &.doc-missing {
-    background: rgba(230,57,70,0.08);
-    border-color: rgba(230,57,70,0.25);
-    color: var(--text-secondary, #8b949e);
-    i { color: #e63946; }
-  }
+  &:last-child { border-bottom: none; }
+}
+
+.phb-date   { color: var(--text-secondary, #8b949e); min-width: 90px; }
+.phb-method { color: var(--text-primary, #e6edf3); flex: 1; }
+.phb-ref    { color: var(--text-secondary, #8b949e); font-size: 0.75rem; }
+.phb-amount { margin-left: auto; font-size: 0.9rem; }
+
+// ── Documents — Profile ───────────────────────────────────────────────────────
+.prof-docs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.prof-doc-card {
+  background: var(--dark-bg, #0d1117);
+  border-radius: 10px;
+  border: 1.5px solid var(--dark-border, #30363d);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  transition: border-color 0.2s;
+
+  &.prof-doc-ok      { border-color: rgba(35,134,54,0.45); }
+  &.prof-doc-missing { border-color: rgba(230,57,70,0.3); }
+}
+
+.prof-doc-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.prof-doc-icon {
+  font-size: 1.15rem;
+  color: var(--primary, #e63946);
+  flex-shrink: 0;
+}
+
+.prof-doc-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary, #e6edf3);
+  flex: 1;
+}
+
+.prof-doc-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
+
+  &.badge-ok      { background: rgba(35,134,54,0.15);  color: #3fb950; border: 1px solid rgba(35,134,54,0.3); }
+  &.badge-missing { background: rgba(230,57,70,0.1);   color: #e63946; border: 1px solid rgba(230,57,70,0.25); }
+}
+
+.prof-doc-file-area {
+  background: rgba(35,134,54,0.06);
+  border: 1px solid rgba(35,134,54,0.2);
+  border-radius: 7px;
+  padding: 0.5rem 0.7rem;
+}
+
+.prof-doc-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.76rem;
+  color: var(--text-secondary, #8b949e);
+  margin-bottom: 0.4rem;
+  flex-wrap: wrap;
+
+  span { word-break: break-all; }
+}
+
+.prof-doc-date {
+  margin-left: auto;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  color: var(--text-secondary, #8b949e);
+}
+
+.prof-doc-actions {
+  display: flex;
+  gap: 0.35rem;
+}
+
+// ── Profile doc upload section ─────────────────────────────────────────────────
+.prof-doc-upload { display: flex; flex-direction: column; gap: 0.45rem; }
+
+.prof-doc-preview-wrap {
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--dark-border, #30363d);
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0d1117;
+}
+
+.prof-doc-preview-img { width: 100%; height: 100%; object-fit: cover; }
+
+.prof-doc-pdf-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.76rem;
+  color: var(--text-secondary, #8b949e);
+  word-break: break-all;
+  i { font-size: 1rem; flex-shrink: 0; }
+}
+
+.prof-doc-upload-row { display: flex; gap: 0.35rem; align-items: center; flex-wrap: wrap; }
+
+.prof-doc-err {
+  font-size: 0.73rem;
+  color: #ff6b7a;
+  background: rgba(230,57,70,0.08);
+  padding: 0.3rem 0.5rem;
+  border-radius: 5px;
+}
+
+// ── Shared doc action button ───────────────────────────────────────────────────
+.btn-prof-doc {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
+  border: 1px solid;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+
+  &.view   { background: rgba(99,91,255,0.1); border-color: rgba(99,91,255,0.3); color: #a0a0ff;
+              &:hover { background: rgba(99,91,255,0.2); } }
+  &.delete { background: rgba(230,57,70,0.1); border-color: rgba(230,57,70,0.3); color: #e63946;
+              &:hover { background: rgba(230,57,70,0.2); } }
+  &.pick   { background: var(--dark-card, #161b22); border-color: var(--dark-border, #30363d); color: var(--text-primary, #e6edf3);
+              &:hover:not(.disabled) { border-color: var(--primary, #e63946); color: var(--primary, #e63946); }
+              &.disabled { opacity: 0.5; cursor: not-allowed; } }
+  &.save   { background: rgba(35,134,54,0.15); border-color: rgba(35,134,54,0.3); color: #3fb950;
+              &:hover:not(:disabled) { background: rgba(35,134,54,0.25); } }
+  &.clear  { background: none; border-color: var(--dark-border, #30363d); color: var(--text-secondary, #8b949e);
+              &:hover { color: var(--primary, #e63946); } }
+
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+.prof-doc-delete-confirm {
+  margin-top: 0.75rem;
+  padding: 0.85rem 1rem;
+  background: rgba(230,57,70,0.08);
+  border: 1px solid rgba(230,57,70,0.3);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: var(--text-primary, #e6edf3);
 }
 
 .special-req-badge {
@@ -315,6 +483,249 @@
   color: #d29922;
   border-radius: 8px;
   font-size: 0.85rem;
+}
+
+// ── Registered Package Info Card ──────────────────────────────────────────────
+.reg-pkg-info-card {
+  margin-top: 1.25rem;
+  background: rgba(63,185,80,0.05);
+  border: 1.5px solid rgba(63,185,80,0.3);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.rpic-header {
+  background: rgba(63,185,80,0.1);
+  border-bottom: 1px solid rgba(63,185,80,0.2);
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #3fb950;
+  display: flex;
+  align-items: center;
+}
+
+.rpic-body { padding: 0.85rem 1rem; }
+
+.rpic-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary, #e6edf3);
+  margin-bottom: 0.4rem;
+}
+
+.rpic-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 0.45rem;
+}
+
+.rpic-type {
+  font-size: 0.72rem;
+  color: var(--text-secondary, #8b949e);
+  background: rgba(99,91,255,0.1);
+  border: 1px solid rgba(99,91,255,0.2);
+  border-radius: 8px;
+  padding: 0.1rem 0.45rem;
+}
+
+.rpic-badge {
+  background: rgba(99,91,255,0.15);
+  color: #a0a0ff;
+  border: 1px solid rgba(99,91,255,0.25);
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.1rem 0.4rem;
+}
+
+.rpic-price {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #3fb950;
+}
+
+.rpic-discount {
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--text-secondary, #8b949e);
+}
+
+.rpic-desc {
+  font-size: 0.78rem;
+  color: var(--text-secondary, #8b949e);
+  font-style: italic;
+  margin-top: 0.35rem;
+}
+
+.rpic-none {
+  margin-top: 1rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary, #8b949e);
+}
+
+// ── Payments tab header (search + button) ────────────────────────────────────
+.payments-tab-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+// ── Payment method row inside bill card ───────────────────────────────────────
+.payment-method-row {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary, #8b949e);
+  margin-top: 0.5rem;
+
+  i { color: var(--primary, #e63946); }
+}
+
+// ── Bill delete button & confirm ──────────────────────────────────────────────
+.btn-action.delete-bill {
+  background: rgba(230,57,70,0.08);
+  border-color: rgba(230,57,70,0.25);
+  color: #e63946;
+  margin-left: auto;   // push to the right
+  &:hover { background: rgba(230,57,70,0.18); }
+}
+
+.bill-delete-confirm {
+  margin: 0 1rem 0;
+  padding: 0.65rem 0.85rem;
+  background: rgba(230,57,70,0.08);
+  border: 1px solid rgba(230,57,70,0.3);
+  border-radius: 7px;
+  font-size: 0.82rem;
+  color: var(--text-primary, #e6edf3);
+}
+
+// ── Add Payment button style ──────────────────────────────────────────────────
+.btn-action.pay {
+  background: rgba(63,185,80,0.1);
+  border-color: rgba(63,185,80,0.3);
+  color: #3fb950;
+  &:hover { background: rgba(63,185,80,0.2); }
+}
+
+// ── Add Payment Modal ─────────────────────────────────────────────────────────
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(2px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.pay-modal {
+  background: var(--dark-card, #161b22);
+  border: 1px solid var(--dark-border, #30363d);
+  border-radius: 14px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+  overflow: hidden;
+}
+
+.pay-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1.1rem 1.25rem;
+  border-bottom: 1px solid var(--dark-border, #30363d);
+  background: var(--dark-bg, #0d1117);
+}
+
+.pay-modal-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary, #e6edf3);
+  display: flex;
+  align-items: center;
+}
+
+.pay-modal-sub {
+  font-size: 0.78rem;
+  color: var(--text-secondary, #8b949e);
+  margin-top: 0.2rem;
+}
+
+.pay-modal-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary, #8b949e);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.1rem;
+  &:hover { color: var(--primary, #e63946); }
+}
+
+.pay-modal-body {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.pay-modal-footer {
+  padding: 0.85rem 1.25rem;
+  border-top: 1px solid var(--dark-border, #30363d);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.65rem;
+}
+
+.pay-modal-error {
+  background: rgba(230,57,70,0.1);
+  border: 1px solid rgba(230,57,70,0.3);
+  border-radius: 7px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.82rem;
+  color: #ff6b7a;
+}
+
+// ── Payment method tabs (compact for modal) ───────────────────────────────────
+.pm-tabs-sm {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.pm-tab-sm {
+  flex: 1;
+  min-width: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0.5rem 0.5rem;
+  background: var(--dark-bg, #0d1117);
+  border: 1.5px solid var(--dark-border, #30363d);
+  border-radius: 7px;
+  color: var(--text-secondary, #8b949e);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover  { border-color: var(--primary, #e63946); color: var(--primary, #e63946); }
+  &.active { border-color: var(--primary, #e63946); background: rgba(230,57,70,0.12); color: var(--primary, #e63946); font-weight: 600; }
+
+  &.card {
+    &:hover  { border-color: #3fb950; color: #3fb950; }
+    &.active { border-color: #3fb950; background: rgba(63,185,80,0.1); color: #3fb950; }
+  }
 }
 
 // ── Search clear button ────────────────────────────────────────────────────────

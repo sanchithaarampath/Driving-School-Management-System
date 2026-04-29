@@ -1,14 +1,275 @@
-// Users page — page-specific styles (shared layout lives in styles.scss)
+// Users page — page-specific styles
+
+// ── Scope Banner (Branch Admin info strip) ────────────────────────────────
+.scope-banner {
+  background: rgba(88,166,255,0.08);
+  border: 1px solid rgba(88,166,255,0.2);
+  border-radius: 10px;
+  padding: 0.75rem 1.1rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary, #8b949e);
+  margin-bottom: 1.25rem;
+
+  strong { color: #58a6ff; }
+  i { color: #58a6ff; }
+}
+
+// ── Locked Branch Display ─────────────────────────────────────────────────
+.locked-branch-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--dark-bg, #0d1117);
+  border: 1px solid var(--dark-border, #30363d);
+  border-radius: 8px;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.875rem;
+  color: var(--text-primary, #e6edf3);
+  font-weight: 500;
+
+  i { color: var(--text-secondary, #8b949e); }
+}
+
+.locked-tag {
+  margin-left: auto;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #58a6ff;
+  background: rgba(88,166,255,0.1);
+  border: 1px solid rgba(88,166,255,0.2);
+  border-radius: 20px;
+  padding: 0.1rem 0.5rem;
+}
+
+// ── Field hint (below inputs) ─────────────────────────────────────────────
+.field-hint {
+  font-size: 0.72rem;
+  color: var(--text-secondary, #8b949e);
+  margin-top: 0.3rem;
+
+  i { color: inherit; }
+}
+
+// ── Role Badges ───────────────────────────────────────────────────────────
 .role-badge {
   display: inline-flex;
   align-items: center;
-  padding: 0.25rem 0.6rem;
+  padding: 0.25rem 0.65rem;
   border-radius: 20px;
   font-size: 0.75rem;
   font-weight: 600;
 
-  &.company-admin { background: rgba(230,57,70,0.15); color: #e63946; }
-  &.branch-admin  { background: rgba(88,166,255,0.15); color: #58a6ff; }
-  &.staff         { background: rgba(35,134,54,0.15); color: #3fb950; }
-  &.instructor    { background: rgba(210,153,34,0.15); color: #d29922; }
+  &.company-admin { background: rgba(230,57,70,0.15);   color: #e63946; }
+  &.branch-admin  { background: rgba(88,166,255,0.15);  color: #58a6ff; }
+  &.staff         { background: rgba(35,134,54,0.15);   color: #3fb950; }
+  &.instructor    { background: rgba(210,153,34,0.15);  color: #d29922; }
+}
+
+// ── Set Password Modal ────────────────────────────────────────────────────
+.pw-user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: var(--dark-bg, #0d1117);
+  border: 1px solid var(--dark-border, #30363d);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-top: 0.5rem;
+}
+
+.pw-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(230,57,70,0.2);
+  color: var(--primary, #e63946);
+  font-size: 1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+.pw-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary, #e6edf3);
+}
+
+.pw-username {
+  font-size: 0.78rem;
+  color: var(--text-secondary, #8b949e);
+}
+
+// ── Password input with show/hide toggle ──────────────────────────────────
+.pw-input-wrap {
+  position: relative;
+
+  .form-control { padding-right: 2.5rem; }
+}
+
+.pw-toggle {
+  position: absolute;
+  right: 0.65rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-secondary, #8b949e);
+  cursor: pointer;
+  padding: 0.2rem;
+  font-size: 0.95rem;
+  line-height: 1;
+
+  &:hover { color: var(--text-primary, #e6edf3); }
+}
+
+// ── Password match indicator ──────────────────────────────────────────────
+.pw-match-hint {
+  font-size: 0.78rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 5px;
+
+  &.match-ok {
+    color: #3fb950;
+    background: rgba(35,134,54,0.1);
+    border: 1px solid rgba(35,134,54,0.25);
+  }
+  &.match-no {
+    color: #ff6b7a;
+    background: rgba(230,57,70,0.08);
+    border: 1px solid rgba(230,57,70,0.25);
+  }
+}
+
+// ── User Active / Inactive status pill ───────────────────────────────────
+.user-status-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 20px;
+  font-size: 0.73rem;
+  font-weight: 600;
+  padding: 0.18rem 0.55rem;
+
+  &.status-active   { background: rgba(35,134,54,0.12);   color: #3fb950; border: 1px solid rgba(35,134,54,0.25); }
+  &.status-inactive { background: rgba(139,148,158,0.1);  color: var(--text-secondary, #8b949e); border: 1px solid rgba(139,148,158,0.2); }
+}
+
+// ── Permanent Delete Modal ────────────────────────────────────────────────
+.delete-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+
+  h5 { margin: 0; color: #ff6b7a; font-size: 1.05rem; }
+}
+
+.delete-modal-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(230,57,70,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.2rem;
+  color: #e63946;
+}
+
+.delete-target-info {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: var(--dark-bg, #0d1117);
+  border: 1px solid rgba(230,57,70,0.3);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.delete-warning-box {
+  background: rgba(230,57,70,0.06);
+  border: 1px solid rgba(230,57,70,0.2);
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  font-size: 0.83rem;
+  color: var(--text-secondary, #8b949e);
+  margin-bottom: 0.75rem;
+
+  p  { margin: 0 0 0.4rem; }
+  ul { margin: 0; padding-left: 1.2rem; line-height: 1.7; }
+  strong { color: #ff6b7a; }
+}
+
+// ── Inactive row treatment ────────────────────────────────────────────────
+.row-inactive {
+  opacity: 0.55;
+  background: rgba(139,148,158,0.04) !important;
+
+  &:hover { opacity: 0.75; }
+
+  .avatar-inactive {
+    background: rgba(139,148,158,0.15) !important;
+    color: var(--text-secondary, #8b949e) !important;
+  }
+}
+
+// ── Action cell (key + edit + delete) ────────────────────────────────────
+.action-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: nowrap;
+}
+
+// ── Inline delete confirm ─────────────────────────────────────────────────
+.del-warn-sm {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #e63946;
+  white-space: nowrap;
+}
+
+// ── Status toggle (Active / Inactive selector in edit modal) ─────────────
+.status-toggle-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.status-toggle-opt {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.75rem;
+  border: 1.5px solid var(--dark-border, #30363d);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text-secondary, #8b949e);
+  transition: all 0.2s;
+
+  &.opt-active  { border-color: #3fb950; background: rgba(35,134,54,0.1); color: #3fb950; }
+  &.opt-inactive { border-color: #e63946; background: rgba(230,57,70,0.1); color: #e63946; }
+  &:not(.opt-active):not(.opt-inactive):hover { border-color: var(--primary, #e63946); color: var(--text-primary, #e6edf3); }
+}
+
+// ── Reuse receipt-status from global ─────────────────────────────────────
+.receipt-status {
+  padding: 0.5rem 0.85rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  display: inline-block;
+
+  &.error { background: rgba(230,57,70,0.15); color: #ff6b7a; border: 1px solid rgba(230,57,70,0.3); }
 }

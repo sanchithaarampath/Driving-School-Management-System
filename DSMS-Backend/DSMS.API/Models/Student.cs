@@ -39,6 +39,9 @@ public partial class Student
 
     public string? PackageType { get; set; } // "FullCoursework" | "SemiCoursework"
 
+    /// <summary>The Course Package selected at registration (links to pricing)</summary>
+    public int? CoursePackageId { get; set; }
+
     // Document checklist
     public bool? HasBirthCertificate { get; set; }
 
@@ -57,6 +60,8 @@ public partial class Student
     public string? LastModifiedBy { get; set; }
 
     public DateTime? LastModifiedDateTime { get; set; }
+
+    public virtual CoursePackage? CoursePackage { get; set; }
 
     public virtual ICollection<Bill> Bills { get; set; } = new List<Bill>();
 

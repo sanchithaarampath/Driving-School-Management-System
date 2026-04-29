@@ -1,44 +1,20 @@
 <div class="dsms-layout">
-  <div class="sidebar">
-    <div class="sidebar-brand">
-      <div class="brand-logo"><i class="bi bi-car-front-fill"></i></div>
-      <div class="brand-text">
-        <span class="brand-name">Arampath</span>
-        <span class="brand-sub">Driving School</span>
-      </div>
-    </div>
-    <nav class="sidebar-nav">
-      <a class="nav-item" routerLink="/dashboard"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
-      <a class="nav-item" routerLink="/students"><i class="bi bi-people"></i><span>Students</span></a>
-      <a class="nav-item active" routerLink="/employees"><i class="bi bi-person-badge"></i><span>Employees</span></a>
-      <a class="nav-item" routerLink="/billing"><i class="bi bi-receipt"></i><span>Billing</span></a>
-    </nav>
-    <div class="sidebar-footer"><span>DSMS v1</span></div>
-  </div>
+  <app-sidebar></app-sidebar>
   <div class="main-content">
-    <div class="topbar">
-      <div class="topbar-left"><h5>Driving School Management System</h5></div>
-      <div class="topbar-right">
-        <div class="user-info">
-          <div class="user-avatar"><i class="bi bi-person-fill"></i></div>
-          <div class="user-details">
-            <span class="user-name">{{ user?.userFullName }}</span>
-            <span class="user-role">{{ user?.role }}</span>
-          </div>
-        </div>
-        <button class="btn btn-logout" (click)="logout()"><i class="bi bi-box-arrow-right"></i> Logout</button>
-      </div>
-    </div>
+    <app-topbar></app-topbar>
     <div class="page-content">
+
       <div class="page-header">
         <div>
           <h2>Employees</h2>
-          <p>Manage all staff members</p>
+          <p>Manage all staff and instructor records</p>
         </div>
         <button class="btn btn-primary" (click)="addEmployee()">
           <i class="bi bi-plus-lg me-2"></i>Add Employee
         </button>
       </div>
+
+      <!-- Search -->
       <div class="search-bar">
         <div class="search-input">
           <i class="bi bi-search"></i>
@@ -47,27 +23,31 @@
         </div>
         <span class="result-count">{{ filteredEmployees.length }} employees</span>
       </div>
+
+      <!-- Table -->
       <div class="table-card">
         <div *ngIf="isLoading" class="loading-state">
           <div class="spinner-border text-danger"></div>
           <p>Loading employees...</p>
         </div>
+
         <div *ngIf="!isLoading && filteredEmployees.length === 0" class="empty-state">
           <i class="bi bi-person-badge"></i>
           <p>No employees found</p>
           <button class="btn btn-primary" (click)="addEmployee()">Add First Employee</button>
         </div>
+
         <table *ngIf="!isLoading && filteredEmployees.length > 0" class="data-table">
           <thead>
             <tr>
               <th>#</th>
-              <th>Name</th>
+              <th>Employee</th>
               <th>NIC</th>
               <th>Phone</th>
               <th>Designation</th>
               <th>Department</th>
               <th>Branch</th>
-              <th>System User</th>
+              <th>System Access</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -76,21 +56,27 @@
               <td>{{ i + 1 }}</td>
               <td>
                 <div class="student-name">
-                  <div class="avatar">{{ e.employeeName?.charAt(0) }}</div>
+                  <div class="avatar">{{ e.employeeName?.charAt(0) | uppercase }}</div>
                   {{ e.employeeName }}
                 </div>
               </td>
-              <td>{{ e.nic }}</td>
+              <td class="mono">{{ e.nic }}</td>
               <td>{{ e.phone }}</td>
-              <td>{{ e.designation || '-' }}</td>
-              <td>{{ e.department || '-' }}</td>
-              <td>{{ e.branchName }}</td>
+              <td>{{ e.designation || '—' }}</td>
+              <td>{{ e.department || '—' }}</td>
               <td>
-                <span *ngIf="e.userId" class="badge bg-success">Linked</span>
-                <span *ngIf="!e.userId" class="badge bg-secondary">No Account</span>
+                <span class="emp-branch-pill">{{ e.branchName }}</span>
               </td>
               <td>
-                <button class="btn-action edit" (click)="editEmployee(e.id)">
+                <span *ngIf="e.userId"  class="emp-status-pill emp-linked">
+                  <i class="bi bi-check-circle-fill me-1"></i>Linked
+                </span>
+                <span *ngIf="!e.userId" class="emp-status-pill emp-none">
+                  <i class="bi bi-dash-circle me-1"></i>No Account
+                </span>
+              </td>
+              <td>
+                <button class="btn-action edit" title="Edit" (click)="editEmployee(e.id)">
                   <i class="bi bi-pencil"></i>
                 </button>
               </td>
@@ -98,6 +84,7 @@
           </tbody>
         </table>
       </div>
+
     </div>
   </div>
 </div>

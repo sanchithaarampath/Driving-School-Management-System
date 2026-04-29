@@ -1,0 +1,105 @@
+// Pending Payments — page-specific styles
+
+// ── Summary Banner ─────────────────────────────────────────────────────────
+.pending-banner {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  background: rgba(230,57,70,0.08);
+  border: 1px solid rgba(230,57,70,0.25);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.banner-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.banner-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--primary, #e63946);
+}
+
+.banner-label {
+  font-size: 0.78rem;
+  color: var(--text-secondary, #8b949e);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.banner-divider {
+  width: 1px;
+  height: 40px;
+  background: rgba(230,57,70,0.2);
+}
+
+// ── Collect Payment button ─────────────────────────────────────────────────
+.btn-action.collect {
+  background: rgba(35,134,54,0.12);
+  color: #3fb950;
+  &:hover { background: rgba(35,134,54,0.25); }
+}
+
+// ── Shared modal bill info ─────────────────────────────────────────────────
+.modal-bill-info {
+  background: var(--dark-bg, #0d1117);
+  border: 1px solid var(--dark-border, #30363d);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.3rem 0;
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--dark-border, #21262d);
+
+    &:last-child { border-bottom: none; }
+
+    span { color: var(--text-secondary, #8b949e); }
+    strong { color: var(--text-primary, #e6edf3); }
+  }
+}
+
+.modal-receipt-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.receipt-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.1rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+  &.email    { background: #1a73e8; color: #fff; &:hover:not(:disabled) { background: #1557b0; } }
+  &.whatsapp { background: #25d366; color: #fff; &:hover:not(:disabled) { background: #1da851; } }
+  &.both     { background: var(--primary, #e63946); color: #fff; &:hover:not(:disabled) { background: #c1121f; } }
+}
+
+.receipt-status {
+  padding: 0.5rem 0.85rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  margin-bottom: 0.5rem;
+  display: inline-block;
+
+  &.sending { color: var(--text-secondary, #8b949e); }
+  &.success { background: rgba(35,134,54,0.15); color: #3fb950; border: 1px solid rgba(35,134,54,0.3); }
+  &.error   { background: rgba(230,57,70,0.15);  color: #ff6b7a; border: 1px solid rgba(230,57,70,0.3); }
+}

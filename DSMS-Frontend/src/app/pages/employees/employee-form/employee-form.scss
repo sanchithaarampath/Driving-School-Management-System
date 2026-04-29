@@ -1,1 +1,9 @@
 // Employee Form — page-specific styles (shared layout lives in styles.scss)
+
+// ── Section hint (subtitle text inside section-title) ────────────────────
+.section-hint {
+  font-size: 0.73rem;
+  font-weight: 400;
+  color: var(--text-secondary, #8b949e);
+  margin-left: 0.5rem;
+}

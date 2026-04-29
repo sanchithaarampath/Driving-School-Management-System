@@ -54,6 +54,8 @@ public partial class DsmsDbContext : DbContext
 
     public virtual DbSet<VehicleType> VehicleTypes { get; set; }
 
+    public virtual DbSet<CoursePackage> CoursePackages { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Bill>(entity =>
@@ -268,6 +270,11 @@ public partial class DsmsDbContext : DbContext
                 .HasForeignKey(d => d.BranchId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Student_Branch");
+
+            entity.HasOne(d => d.CoursePackage).WithMany()
+                .HasForeignKey(d => d.CoursePackageId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_Student_CoursePackage");
         });
 
         modelBuilder.Entity<StudentVehicleClass>(entity =>
@@ -326,6 +333,8 @@ public partial class DsmsDbContext : DbContext
             entity.Property(e => e.FileName).HasMaxLength(255);
             entity.Property(e => e.FilePath).HasMaxLength(500);
             entity.Property(e => e.LastModifiedBy).HasMaxLength(100);
+            entity.Property(e => e.DocumentType).HasMaxLength(100);
+            entity.Property(e => e.ContentType).HasMaxLength(100);
 
             entity.HasOne(d => d.RequiredDocument).WithMany(p => p.StudentDocuments)
                 .HasForeignKey(d => d.RequiredDocumentId)

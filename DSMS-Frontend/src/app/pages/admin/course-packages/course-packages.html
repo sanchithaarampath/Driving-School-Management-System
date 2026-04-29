@@ -1,0 +1,152 @@
+<div class="dsms-layout">
+  <app-sidebar></app-sidebar>
+  <div class="main-content">
+    <app-topbar></app-topbar>
+    <div class="page-content">
+
+      <div class="page-header">
+        <div>
+          <h2><i class="bi bi-box-seam me-2"></i>Course Package Pricing</h2>
+          <p>Set prices for each vehicle class combination and course type</p>
+        </div>
+        <button class="btn btn-primary" (click)="openCreate()">
+          <i class="bi bi-plus-lg me-2"></i>Add Package
+        </button>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="isLoading" class="loading-state">
+        <div class="spinner-border text-danger"></div><p>Loading packages...</p>
+      </div>
+
+      <!-- Empty -->
+      <div *ngIf="!isLoading && packages.length === 0" class="empty-state">
+        <i class="bi bi-box-seam"></i>
+        <p>No packages yet. Add your first pricing package.</p>
+        <button class="btn btn-primary" (click)="openCreate()">Add Package</button>
+      </div>
+
+      <!-- Package Cards Grid -->
+      <div *ngIf="!isLoading && packages.length > 0" class="packages-grid">
+        <div class="pkg-admin-card" *ngFor="let p of packages">
+
+          <div class="pkg-admin-header">
+            <div>
+              <div class="pkg-admin-name">{{ p.packageName }}</div>
+              <div class="pkg-admin-type">{{ p.courseType }}</div>
+            </div>
+            <div class="pkg-admin-price">Rs. {{ p.price | number }}</div>
+          </div>
+
+          <div class="pkg-admin-codes">
+            <span class="vc-badge" *ngFor="let c of codesOf(p)">{{ c }}</span>
+          </div>
+
+          <div *ngIf="p.description" class="pkg-admin-desc">{{ p.description }}</div>
+
+          <div class="pkg-admin-footer">
+            <span *ngIf="p.maxDiscount > 0" class="discount-info">
+              <i class="bi bi-tag me-1"></i>Max discount: Rs. {{ p.maxDiscount | number }}
+            </span>
+            <div class="pkg-admin-actions">
+              <button class="btn-action edit" (click)="openEdit(p)" title="Edit">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button class="btn-action delete" (click)="confirmDelete(p)" title="Delete">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===== Create / Edit Modal ===== -->
+<div *ngIf="showModal" class="modal-overlay" (click)="closeModal()">
+  <div class="modal-box modal-wide" (click)="$event.stopPropagation()">
+    <h5><i class="bi bi-box-seam me-2"></i>{{ isEditing ? 'Edit Package' : 'New Course Package' }}</h5>
+
+    <div class="form-grid">
+
+      <div class="form-group" style="grid-column: 1/-1">
+        <label>Package Name <span class="required">*</span></label>
+        <input type="text" class="form-control" [(ngModel)]="form.packageName"
+               placeholder="e.g. Full Course — Bike + Dual Purpose">
+      </div>
+
+      <div class="form-group">
+        <label>Course Type <span class="required">*</span></label>
+        <select class="form-control" [(ngModel)]="form.courseType">
+          <option *ngFor="let t of courseTypes" [value]="t">{{ t }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Price (Rs.) <span class="required">*</span></label>
+        <input type="number" class="form-control" [(ngModel)]="form.price" placeholder="0.00" min="0">
+      </div>
+
+      <div class="form-group">
+        <label>Max Discount (Rs.)</label>
+        <input type="number" class="form-control" [(ngModel)]="form.maxDiscount" placeholder="0.00" min="0">
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <input type="text" class="form-control" [(ngModel)]="form.description" placeholder="Optional note">
+      </div>
+
+    </div>
+
+    <!-- Vehicle Class Checkboxes -->
+    <div class="form-group mt-2">
+      <label>Vehicle Classes <span class="required">*</span>
+        <span class="selected-codes-label">{{ selectedCodesLabel }}</span>
+      </label>
+      <div class="vc-checkbox-grid">
+        <label class="vc-check" *ngFor="let opt of vehicleClassOptions"
+               [class.vc-check-active]="isCodeSelected(opt.code)">
+          <input type="checkbox" [checked]="isCodeSelected(opt.code)" (change)="toggleCode(opt.code)">
+          <span class="vc-check-code">{{ opt.code }}</span>
+          <span class="vc-check-label">{{ opt.label }}</span>
+        </label>
+      </div>
+    </div>
+
+    <div *ngIf="saveSuccess" class="receipt-status success mt-2">
+      <i class="bi bi-check-circle me-2"></i>{{ saveSuccess }}
+    </div>
+    <div *ngIf="saveError" class="receipt-status error mt-2">
+      <i class="bi bi-exclamation-triangle me-2"></i>{{ saveError }}
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-cancel" (click)="closeModal()" [disabled]="isSaving">Cancel</button>
+      <button class="btn btn-primary" (click)="save()" [disabled]="isSaving">
+        <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
+        <i *ngIf="!isSaving" class="bi bi-check-lg me-2"></i>
+        {{ isSaving ? 'Saving...' : isEditing ? 'Update Package' : 'Create Package' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Delete Confirm ===== -->
+<div *ngIf="showDeleteConfirm" class="modal-overlay" (click)="cancelDelete()">
+  <div class="modal-box" style="max-width:420px" (click)="$event.stopPropagation()">
+    <h5><i class="bi bi-trash text-danger me-2"></i>Delete Package</h5>
+    <p style="color:var(--text-secondary)">
+      Are you sure you want to delete <strong style="color:var(--text-primary)">{{ deletingName }}</strong>?
+      This cannot be undone.
+    </p>
+    <div class="form-actions">
+      <button class="btn btn-cancel" (click)="cancelDelete()">Cancel</button>
+      <button class="btn btn-danger" (click)="doDelete()">
+        <i class="bi bi-trash me-2"></i>Delete
+      </button>
+    </div>
+  </div>
+</div>

@@ -5,11 +5,13 @@ import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../../../services/auth';
 import { EmployeeService } from '../../../services/employee';
+import { SidebarComponent } from '../../../shared/layout/sidebar';
+import { TopbarComponent } from '../../../shared/layout/topbar';
 
 @Component({
   selector: 'app-employee-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, SidebarComponent, TopbarComponent],
   templateUrl: './employee-form.html',
   styleUrl: './employee-form.scss'
 })

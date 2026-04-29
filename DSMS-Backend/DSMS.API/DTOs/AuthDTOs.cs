@@ -26,6 +26,11 @@
         public string NewPassword { get; set; } = string.Empty;
     }
 
+    public class SetPasswordDto
+    {
+        public string NewPassword { get; set; } = string.Empty;
+    }
+
     // ==================== STUDENT ====================
     public class StudentCreateDto
     {
@@ -130,6 +135,7 @@
         public bool? HasBirthCertificate { get; set; }
         public bool? HasNtmiMedical { get; set; }
         public bool? HasNicCopy { get; set; }
+        public int? CoursePackageId { get; set; }
         public List<string> VehicleClasses { get; set; } = new();
     }
 
@@ -156,10 +162,11 @@
     public class BillCreateDto
     {
         public int StudentId { get; set; }
-        public decimal TotalAmount { get; set; }
+        public decimal PackagePrice { get; set; }   // student's registered package price
+        public decimal InstallmentAmount { get; set; } // amount paid in THIS instalment
         public decimal DiscountAmount { get; set; }
-        public decimal NetAmount { get; set; }
-        public decimal PaidAmount { get; set; }
+        public string PaymentMethod { get; set; } = "Cash";
+        public string? ReferenceNo { get; set; }
         public string? Remarks { get; set; }
     }
 
@@ -178,6 +185,27 @@
         public decimal Amount { get; set; }
         public int BillId { get; set; }
         public string? StudentName { get; set; }
+    }
+
+    // ==================== COURSE PACKAGE ====================
+    public class CoursePackageDto
+    {
+        public string PackageName { get; set; } = string.Empty;
+        public string CourseType { get; set; } = "Full Course";
+        public string VehicleClassCodes { get; set; } = string.Empty;
+        public decimal Price { get; set; }
+        public decimal MaxDiscount { get; set; }
+        public string? Description { get; set; }
+    }
+
+    // ==================== PAYHERE ====================
+    public class PayHereCreateDto
+    {
+        public decimal Amount { get; set; }
+        public string OrderId { get; set; } = string.Empty;
+        public string CustomerName { get; set; } = string.Empty;
+        public string CustomerEmail { get; set; } = string.Empty;
+        public string CustomerPhone { get; set; } = string.Empty;
     }
 
     // ==================== RECEIPT / NOTIFICATIONS ====================

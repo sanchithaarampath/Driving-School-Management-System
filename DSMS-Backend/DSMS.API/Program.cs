@@ -36,6 +36,12 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 
+// Allow up to 10 MB multipart uploads for document images
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(o =>
+{
+    o.MultipartBodyLengthLimit = 10 * 1024 * 1024;
+});
+
 // DSMS Services
 builder.Services.AddScoped<IReceiptService, ReceiptService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -85,6 +91,10 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var app = builder.Build();
+
+// Ensure uploads folder exists on startup
+var uploadsDir = Path.Combine(app.Environment.ContentRootPath, "Uploads", "student-docs");
+Directory.CreateDirectory(uploadsDir);
 
 app.UseSwagger();
 app.UseSwaggerUI();

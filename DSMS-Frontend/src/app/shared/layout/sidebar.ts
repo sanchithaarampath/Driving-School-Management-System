@@ -26,8 +26,11 @@ import { Router } from '@angular/router';
           <i class="bi bi-people"></i><span>Students</span>
         </a>
         <ng-container *ngIf="!isInstructor">
-          <a class="nav-item" routerLink="/billing" routerLinkActive="active">
+          <a class="nav-item" routerLink="/billing" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">
             <i class="bi bi-receipt"></i><span>Billing</span>
+          </a>
+          <a class="nav-item nav-sub" routerLink="/billing/pending" routerLinkActive="active">
+            <i class="bi bi-clock-history"></i><span>Pending Payments</span>
           </a>
         </ng-container>
         <ng-container *ngIf="isBranchAdmin || isCompanyAdmin">
@@ -39,6 +42,9 @@ import { Router } from '@angular/router';
           </a>
           <a class="nav-item" routerLink="/users" routerLinkActive="active">
             <i class="bi bi-shield-person"></i><span>Users</span>
+          </a>
+          <a class="nav-item" routerLink="/admin/course-packages" routerLinkActive="active">
+            <i class="bi bi-box-seam"></i><span>Course Packages</span>
           </a>
         </ng-container>
         <ng-container *ngIf="isCompanyAdmin">

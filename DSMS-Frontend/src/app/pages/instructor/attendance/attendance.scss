@@ -161,3 +161,23 @@
   border: 1px solid rgba(230,57,70,0.3);
   &:hover { background: rgba(230,57,70,0.25); }
 }
+
+// ── Inline delete confirm ──────────────────────────────────────────────────────
+.inline-del-confirm {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  animation: slideIn 0.15s ease;
+}
+
+.del-warn-sm {
+  font-size: 0.71rem;
+  font-weight: 600;
+  color: #e63946;
+  white-space: nowrap;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-4px); }
+  to   { opacity: 1; transform: translateX(0); }
+}

@@ -9,12 +9,17 @@
           <h2>Billing &amp; Payments</h2>
           <p>Manage all bills, payments and receipts</p>
         </div>
-        <button class="btn btn-primary" (click)="addBill()">
-          <i class="bi bi-plus-lg me-2"></i>Create Bill
-        </button>
+        <div style="display:flex;gap:0.75rem;">
+          <button class="btn btn-cancel" (click)="goToPending()">
+            <i class="bi bi-clock-history me-2"></i>Pending Payments
+          </button>
+          <button class="btn btn-primary" (click)="addBill()">
+            <i class="bi bi-plus-lg me-2"></i>Create Bill
+          </button>
+        </div>
       </div>
 
-      <!-- Stats -->
+      <!-- Stats — full revenue detail only for admins -->
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-icon total"><i class="bi bi-receipt"></i></div>
@@ -23,25 +28,42 @@
             <span class="stat-label">Total Bills</span>
           </div>
         </div>
-        <div class="stat-card">
-          <div class="stat-icon income"><i class="bi bi-cash-coin"></i></div>
-          <div class="stat-info">
-            <span class="stat-value">Rs. {{ summary.totalAmount | number }}</span>
-            <span class="stat-label">Total Amount</span>
+        <ng-container *ngIf="!isStaff">
+          <div class="stat-card">
+            <div class="stat-icon income"><i class="bi bi-cash-coin"></i></div>
+            <div class="stat-info">
+              <span class="stat-value">Rs. {{ summary.totalAmount | number }}</span>
+              <span class="stat-label">Total Amount</span>
+            </div>
           </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon paid"><i class="bi bi-check-circle"></i></div>
-          <div class="stat-info">
-            <span class="stat-value">Rs. {{ summary.paidAmount | number }}</span>
-            <span class="stat-label">Collected</span>
+          <div class="stat-card">
+            <div class="stat-icon paid"><i class="bi bi-check-circle"></i></div>
+            <div class="stat-info">
+              <span class="stat-value">Rs. {{ summary.paidAmount | number }}</span>
+              <span class="stat-label">Collected</span>
+            </div>
           </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon pending"><i class="bi bi-clock-history"></i></div>
-          <div class="stat-info">
-            <span class="stat-value">Rs. {{ summary.pendingAmount | number }}</span>
-            <span class="stat-label">Pending</span>
+          <div class="stat-card clickable-stat" (click)="goToPending()">
+            <div class="stat-icon pending"><i class="bi bi-clock-history"></i></div>
+            <div class="stat-info">
+              <span class="stat-value">Rs. {{ summary.pendingAmount | number }}</span>
+              <span class="stat-label">Outstanding <i class="bi bi-arrow-right-short"></i></span>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- Monthly Revenue Chart — admins only -->
+      <div class="table-card monthly-chart-card" *ngIf="!isStaff && monthlyData.length > 0">
+        <div class="section-title"><i class="bi bi-bar-chart-fill me-2"></i>Monthly Revenue (Last 6 Months)</div>
+        <div class="monthly-chart">
+          <div class="month-bar-wrap" *ngFor="let m of monthlyData">
+            <div class="month-value">Rs. {{ m.revenue | number:'1.0-0' }}</div>
+            <div class="month-bar-track">
+              <div class="month-bar" [style.height.%]="m.revenue > 0 ? (m.revenue / maxBarValue) * 100 : 4"
+                   [class.bar-active]="m.revenue > 0"></div>
+            </div>
+            <div class="month-label">{{ m.label }}</div>
           </div>
         </div>
       </div>
@@ -77,7 +99,7 @@
               <th>Paid</th>
               <th>Balance</th>
               <th>Status</th>
-              <th>Receipt</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -92,12 +114,19 @@
               <td [class.text-warning]="b.balanceAmount > 0">Rs. {{ b.balanceAmount | number }}</td>
               <td><span class="badge" [ngClass]="getStatusClass(b.status)">{{ b.status }}</span></td>
               <td>
-                <div style="display:flex;gap:0.4rem;">
+                <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+                  <button *ngIf="b.balanceAmount > 0" class="btn-action collect" title="Collect Payment" (click)="openPaymentModal(b)">
+                    <i class="bi bi-cash-coin"></i>
+                  </button>
                   <button class="btn-action approve" title="Send Receipt" (click)="openReceiptModal(b)">
                     <i class="bi bi-send"></i>
                   </button>
                   <button class="btn-action edit" title="Preview Receipt" (click)="previewReceipt(b.id)">
                     <i class="bi bi-eye"></i>
+                  </button>
+                  <button class="btn-action" title="Download Receipt" (click)="downloadReceipt(b.id, b.billNumber)"
+                    style="background:rgba(160,160,255,0.1);color:#a0a0ff;border:1px solid rgba(160,160,255,0.2);">
+                    <i class="bi bi-download"></i>
                   </button>
                 </div>
               </td>
@@ -105,6 +134,7 @@
           </tbody>
         </table>
       </div>
+
     </div>
   </div>
 </div>
@@ -132,10 +162,10 @@
     </div>
 
     <div class="modal-receipt-actions">
-      <button class="receipt-btn email" (click)="sendReceipt('email')" [disabled]="receiptSending || !overrideEmail">
+      <button class="receipt-btn email" (click)="sendReceipt('email')" [disabled]="receiptSending">
         <i class="bi bi-envelope-fill"></i> Email
       </button>
-      <button class="receipt-btn whatsapp" (click)="sendReceipt('whatsapp')" [disabled]="receiptSending || !overridePhone">
+      <button class="receipt-btn whatsapp" (click)="sendReceipt('whatsapp')" [disabled]="receiptSending">
         <i class="bi bi-whatsapp"></i> WhatsApp
       </button>
       <button class="receipt-btn both" (click)="sendReceipt('both')" [disabled]="receiptSending">
@@ -149,6 +179,54 @@
 
     <div class="form-actions">
       <button class="btn btn-cancel" (click)="closeReceiptModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Add Payment Modal ===== -->
+<div *ngIf="showPaymentModal" class="modal-overlay" (click)="closePaymentModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <h5><i class="bi bi-cash-coin me-2"></i>Collect Payment — {{ paymentBill?.billNumber }}</h5>
+
+    <div class="modal-bill-info">
+      <div class="info-row"><span>Student</span><strong>{{ paymentBill?.studentName }}</strong></div>
+      <div class="info-row"><span>Net Amount</span><strong>Rs. {{ paymentBill?.netAmount | number }}</strong></div>
+      <div class="info-row"><span>Already Paid</span><strong class="text-success">Rs. {{ paymentBill?.paidAmount | number }}</strong></div>
+      <div class="info-row"><span>Balance Due</span><strong class="text-warning">Rs. {{ paymentBill?.balanceAmount | number }}</strong></div>
+    </div>
+
+    <div class="form-grid" style="margin-top:1rem;">
+      <div class="form-group">
+        <label>Payment Amount (Rs.) <span class="required">*</span></label>
+        <input type="number" class="form-control" [(ngModel)]="paymentForm.amount"
+               [max]="paymentBill?.balanceAmount" min="1" placeholder="0.00">
+      </div>
+      <div class="form-group">
+        <label>Payment Method <span class="required">*</span></label>
+        <select class="form-control" [(ngModel)]="paymentForm.paymentMethod">
+          <option *ngFor="let m of paymentMethods" [value]="m">{{ m }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Reference / Cheque No.</label>
+        <input type="text" class="form-control" [(ngModel)]="paymentForm.referenceNo" placeholder="Optional">
+      </div>
+      <div class="form-group">
+        <label>Remarks</label>
+        <input type="text" class="form-control" [(ngModel)]="paymentForm.remarks" placeholder="Optional">
+      </div>
+    </div>
+
+    <div *ngIf="paymentSuccess" class="receipt-status success"><i class="bi bi-check-circle me-2"></i>{{ paymentSuccess }}</div>
+    <div *ngIf="paymentError"   class="receipt-status error"><i class="bi bi-exclamation-triangle me-2"></i>{{ paymentError }}</div>
+
+    <div class="form-actions">
+      <button class="btn btn-cancel" (click)="closePaymentModal()" [disabled]="isSavingPayment">Cancel</button>
+      <button class="btn btn-primary" (click)="savePayment()" [disabled]="isSavingPayment">
+        <span *ngIf="isSavingPayment" class="spinner-border spinner-border-sm me-2"></span>
+        <i *ngIf="!isSavingPayment" class="bi bi-check-lg me-2"></i>
+        {{ isSavingPayment ? 'Saving...' : 'Record Payment' }}
+      </button>
     </div>
   </div>
 </div>

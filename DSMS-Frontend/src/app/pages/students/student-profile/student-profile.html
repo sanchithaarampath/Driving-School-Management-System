@@ -64,6 +64,12 @@
             <div class="psm-row text-success"><span>Total Paid</span><strong class="text-success">Rs. {{ totalPaid | number }}</strong></div>
             <div class="psm-row" [class.text-warning]="totalPending > 0"><span>Balance Due</span><strong [class.text-warning]="totalPending > 0">Rs. {{ totalPending | number }}</strong></div>
           </div>
+          <!-- Create Bill shortcut — shown when no bills exist -->
+          <button *ngIf="!isBillsLoading && bills.length === 0 && canEdit"
+            class="btn btn-primary" style="width:100%;margin-top:0.85rem;font-size:0.82rem;"
+            (click)="createBill()">
+            <i class="bi bi-plus-lg me-1"></i>Create Bill
+          </button>
         </div>
 
         <!-- ── Right: Tabs ── -->
@@ -139,19 +145,50 @@
                 <div class="info-value">{{ student.branchName }}</div>
               </div>
             </div>
+
+            <!-- Registered Package Card -->
+            <div *ngIf="student.coursePackage" class="reg-pkg-info-card">
+              <div class="rpic-header">
+                <i class="bi bi-box-seam me-2" style="color:var(--primary,#e63946)"></i>
+                <span>Registered Course Package</span>
+              </div>
+              <div class="rpic-body">
+                <div class="rpic-name">{{ student.coursePackage.packageName }}</div>
+                <div class="rpic-row">
+                  <span class="rpic-type">{{ student.coursePackage.courseType }}</span>
+                  <span *ngFor="let c of codesOf(student.coursePackage)" class="rpic-badge">{{ c }}</span>
+                </div>
+                <div class="rpic-price">Rs. {{ student.coursePackage.price | number }}
+                  <span *ngIf="student.coursePackage.maxDiscount > 0" class="rpic-discount">
+                    &nbsp;·&nbsp;<i class="bi bi-tag me-1"></i>Max discount Rs. {{ student.coursePackage.maxDiscount | number }}
+                  </span>
+                </div>
+                <div *ngIf="student.coursePackage.description" class="rpic-desc">{{ student.coursePackage.description }}</div>
+              </div>
+            </div>
+            <div *ngIf="!student.coursePackage" class="rpic-none">
+              <i class="bi bi-info-circle me-1"></i> No package selected at registration.
+            </div>
+
           </div>
 
           <!-- ── Tab: Payment History ── -->
           <div *ngIf="activeTab==='payments'" class="tab-content">
 
-            <!-- Bill search -->
-            <div class="search-bar" style="margin-bottom:1rem;">
-              <div class="search-input">
-                <i class="bi bi-search"></i>
-                <input type="text" placeholder="Search by bill number, status or payment method..."
-                  [(ngModel)]="billSearch" (input)="searchBills()">
+            <!-- Header: search + record instalment button -->
+            <div class="payments-tab-header">
+              <div class="search-bar" style="flex:1;margin-bottom:0;">
+                <div class="search-input">
+                  <i class="bi bi-search"></i>
+                  <input type="text" placeholder="Search bill number or method..."
+                    [(ngModel)]="billSearch" (input)="searchBills()">
+                </div>
+                <span class="result-count">{{ filteredBills.length }} bills</span>
               </div>
-              <span class="result-count">{{ filteredBills.length }} bills</span>
+              <button *ngIf="canEdit && totalPending > 0" class="btn btn-primary btn-sm ms-3"
+                (click)="recordInstalment()">
+                <i class="bi bi-plus-lg me-1"></i>Record Instalment
+              </button>
             </div>
 
             <div *ngIf="isBillsLoading" class="loading-state" style="padding:2rem;">
@@ -159,13 +196,22 @@
               <p>Loading payment history...</p>
             </div>
 
+            <div *ngIf="billsError" class="alert alert-danger" style="margin:1rem 0;">
+              <i class="bi bi-exclamation-triangle me-2"></i>{{ billsError }}
+              <button class="btn btn-sm btn-cancel ms-3" (click)="loadBills(studentId)">Retry</button>
+            </div>
+
             <div *ngIf="!isBillsLoading && filteredBills.length === 0" class="empty-state" style="padding:2.5rem;">
               <i class="bi bi-receipt"></i>
-              <p>No payment records found</p>
+              <p>No payments recorded yet</p>
+              <button *ngIf="canEdit" class="btn btn-primary" (click)="recordInstalment()">
+                <i class="bi bi-plus-lg me-2"></i>Record First Instalment
+              </button>
             </div>
 
             <div *ngIf="!isBillsLoading && filteredBills.length > 0" class="bills-list">
               <div *ngFor="let b of filteredBills" class="bill-card">
+
                 <div class="bill-card-header">
                   <div>
                     <span class="bill-number">{{ b.billNumber }}</span>
@@ -173,53 +219,154 @@
                   </div>
                   <span class="bill-date">{{ b.billDate | date:'dd MMM yyyy' }}</span>
                 </div>
+
                 <div class="bill-card-body">
                   <div class="bill-amounts">
                     <div class="ba-item">
-                      <span>Net Amount</span>
-                      <strong>Rs. {{ b.netAmount | number }}</strong>
+                      <span>Package Total</span>
+                      <strong>Rs. {{ b.totalAmount | number }}</strong>
                     </div>
                     <div class="ba-item">
-                      <span>Paid</span>
+                      <span>This Instalment</span>
                       <strong class="text-success">Rs. {{ b.paidAmount | number }}</strong>
                     </div>
                     <div class="ba-item">
-                      <span>Balance</span>
-                      <strong [class.text-warning]="b.balanceAmount > 0">Rs. {{ b.balanceAmount | number }}</strong>
+                      <span>Balance After</span>
+                      <strong [class.text-warning]="b.balanceAmount > 0"
+                              [class.text-success]="b.balanceAmount <= 0">
+                        Rs. {{ b.balanceAmount | number }}
+                      </strong>
                     </div>
+                  </div>
+                  <div *ngIf="b.payments?.length > 0" class="payment-method-row">
+                    <i class="bi bi-credit-card me-1"></i>
+                    <span>{{ b.payments[0].paymentMethod }}</span>
+                    <span *ngIf="b.payments[0].referenceNo" class="phb-ref ms-2">
+                      · Ref: {{ b.payments[0].referenceNo }}
+                    </span>
                   </div>
                   <div *ngIf="b.remarks" class="bill-remarks">
                     <i class="bi bi-chat-text me-1"></i>{{ b.remarks }}
                   </div>
                 </div>
+
+                <div *ngIf="deleteBillConfirmId === b.id" class="bill-delete-confirm">
+                  <i class="bi bi-exclamation-triangle text-danger me-2"></i>
+                  Delete <strong>{{ b.billNumber }}</strong>? Payment record will be removed too.
+                  <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+                    <button class="btn btn-danger btn-sm" (click)="doDeleteBill()" [disabled]="isDeletingBill">
+                      <span *ngIf="isDeletingBill" class="spinner-border spinner-border-sm me-1"></span>
+                      Yes, Delete
+                    </button>
+                    <button class="btn btn-cancel btn-sm" (click)="cancelDeleteBill()">Cancel</button>
+                  </div>
+                </div>
+
                 <div class="bill-card-footer">
-                  <button class="btn-action edit" title="Preview Receipt" (click)="previewReceipt(b.id)">
-                    <i class="bi bi-eye"></i> Preview Receipt
+                  <button class="btn-action edit" (click)="previewReceipt(b.id, b.billNumber)">
+                    <i class="bi bi-eye"></i> Preview
+                  </button>
+                  <button class="btn-action approve" (click)="downloadReceipt(b.id, b.billNumber)">
+                    <i class="bi bi-download"></i> Download
+                  </button>
+                  <button *ngIf="canEdit" class="btn-action delete-bill" (click)="confirmDeleteBill(b.id)">
+                    <i class="bi bi-trash"></i> Delete
                   </button>
                 </div>
+
               </div>
             </div>
           </div>
 
           <!-- ── Tab: Documents ── -->
           <div *ngIf="activeTab==='docs'" class="tab-content">
-            <div class="docs-grid">
-              <div class="doc-item" [class.doc-ok]="student.hasBirthCertificate" [class.doc-missing]="!student.hasBirthCertificate">
-                <i class="bi" [ngClass]="student.hasBirthCertificate ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
-                <span>Birth Certificate</span>
-              </div>
-              <div class="doc-item" [class.doc-ok]="student.hasNtmiMedical" [class.doc-missing]="!student.hasNtmiMedical">
-                <i class="bi" [ngClass]="student.hasNtmiMedical ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
-                <span>NTMI Medical</span>
-              </div>
-              <div class="doc-item" [class.doc-ok]="student.hasNicCopy" [class.doc-missing]="!student.hasNicCopy">
-                <i class="bi" [ngClass]="student.hasNicCopy ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
-                <span>NIC Copy</span>
-              </div>
+
+            <div *ngIf="isDocsLoading" class="loading-state" style="padding:2rem;">
+              <div class="spinner-border text-danger"></div><p>Loading documents...</p>
             </div>
-            <div *ngIf="student.isSpecialRequirements" class="special-req-badge">
+
+            <div *ngIf="!isDocsLoading" class="prof-docs-grid">
+
+              <ng-container *ngFor="let slot of docSlotDefs">
+                <div class="prof-doc-card" [class.prof-doc-ok]="docFor(slot.key)" [class.prof-doc-missing]="!docFor(slot.key)">
+
+                  <!-- Card header -->
+                  <div class="prof-doc-header">
+                    <i class="bi {{ slot.icon }} prof-doc-icon"></i>
+                    <span class="prof-doc-label">{{ slot.label }}</span>
+                    <span class="prof-doc-badge" [class.badge-ok]="docFor(slot.key)" [class.badge-missing]="!docFor(slot.key)">
+                      <i class="bi" [ngClass]="docFor(slot.key) ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
+                      {{ docFor(slot.key) ? 'Uploaded' : 'Missing' }}
+                    </span>
+                  </div>
+
+                  <!-- Existing file area -->
+                  <div *ngIf="docFor(slot.key) as doc" class="prof-doc-file-area">
+                    <div class="prof-doc-meta">
+                      <i class="bi" [ngClass]="isImage(doc) ? 'bi-image' : 'bi-file-earmark-pdf text-danger'"></i>
+                      <span>{{ doc.fileName }}</span>
+                      <span class="prof-doc-date">{{ doc.createdDateTime | date:'dd MMM yyyy' }}</span>
+                    </div>
+                    <div class="prof-doc-actions">
+                      <button class="btn-prof-doc view" (click)="viewDoc(doc)" title="View/Download">
+                        <i class="bi bi-eye me-1"></i>View
+                      </button>
+                      <button *ngIf="canEdit" class="btn-prof-doc delete" (click)="confirmDelete(doc.id)" title="Delete">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Upload section (for new or replacement) -->
+                  <div *ngIf="canEdit" class="prof-doc-upload">
+                    <div *ngIf="uploadState[slot.key].preview" class="prof-doc-preview-wrap">
+                      <img [src]="uploadState[slot.key].preview" class="prof-doc-preview-img" alt="preview">
+                    </div>
+                    <div *ngIf="uploadState[slot.key].file && !uploadState[slot.key].preview" class="prof-doc-pdf-row">
+                      <i class="bi bi-file-earmark-pdf text-danger"></i>
+                      <span>{{ uploadState[slot.key].file!.name }}</span>
+                    </div>
+                    <div class="prof-doc-upload-row">
+                      <label class="btn-prof-doc pick" [class.disabled]="uploadState[slot.key].uploading">
+                        <i class="bi bi-upload me-1"></i>{{ uploadState[slot.key].file ? 'Change' : (docFor(slot.key) ? 'Replace' : 'Upload') }}
+                        <input type="file" accept="image/jpeg,image/png,image/webp,application/pdf"
+                          (change)="onFileSelected($event, slot.key)" style="display:none">
+                      </label>
+                      <button *ngIf="uploadState[slot.key].file" class="btn-prof-doc save"
+                        (click)="uploadDoc(slot.key)" [disabled]="uploadState[slot.key].uploading">
+                        <span *ngIf="uploadState[slot.key].uploading" class="spinner-border spinner-border-sm me-1"></span>
+                        <i *ngIf="!uploadState[slot.key].uploading" class="bi bi-check-lg me-1"></i>
+                        {{ uploadState[slot.key].uploading ? 'Saving...' : 'Save' }}
+                      </button>
+                      <button *ngIf="uploadState[slot.key].file && !uploadState[slot.key].uploading"
+                        class="btn-prof-doc clear" (click)="clearUpload(slot.key)">
+                        <i class="bi bi-x-lg"></i>
+                      </button>
+                    </div>
+                    <div *ngIf="uploadState[slot.key].error" class="prof-doc-err">
+                      <i class="bi bi-exclamation-triangle me-1"></i>{{ uploadState[slot.key].error }}
+                    </div>
+                  </div>
+
+                </div>
+              </ng-container>
+
+            </div>
+
+            <div *ngIf="student.isSpecialRequirements" class="special-req-badge" style="margin-top:1rem;">
               <i class="bi bi-info-circle me-2"></i>Special Requirements noted
             </div>
+
+            <!-- Delete confirmation -->
+            <div *ngIf="deleteConfirmId" class="prof-doc-delete-confirm">
+              <i class="bi bi-exclamation-triangle text-danger me-2"></i>
+              Are you sure you want to remove this document?
+              <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+                <button class="btn btn-danger btn-sm" (click)="doDeleteDoc()">Yes, Delete</button>
+                <button class="btn btn-cancel btn-sm" (click)="cancelDelete()">Cancel</button>
+              </div>
+            </div>
+
           </div>
 
         </div>
@@ -228,3 +375,4 @@
     </div>
   </div>
 </div>
+

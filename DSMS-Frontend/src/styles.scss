@@ -110,6 +110,13 @@ body {
   &.active { background: rgba(230,57,70,0.15); color: var(--primary); font-weight: 600; }
 }
 
+.nav-sub {
+  padding-left: 2.25rem;
+  font-size: 0.83rem;
+  opacity: 0.85;
+  &.active { opacity: 1; }
+}
+
 .sidebar-footer {
   padding: 1rem 1.25rem 0;
   color: var(--text-secondary);
@@ -197,6 +204,23 @@ body {
   color: #fff !important;
 
   &:hover { background-color: var(--primary-hover) !important; border-color: var(--primary-hover) !important; }
+}
+
+.btn-danger {
+  background-color: #c1121f !important;
+  border-color: #c1121f !important;
+  color: #fff !important;
+  padding: 0.5rem 1.1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+
+  &:hover:not(:disabled) { background-color: #9d0208 !important; border-color: #9d0208 !important; }
+  &:disabled { opacity: 0.55; cursor: not-allowed; }
 }
 
 .btn-back, .btn-cancel {

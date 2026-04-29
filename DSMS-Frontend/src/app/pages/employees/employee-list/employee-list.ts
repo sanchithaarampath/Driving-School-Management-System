@@ -4,19 +4,21 @@ import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../services/auth';
 import { EmployeeService } from '../../../services/employee';
+import { SidebarComponent } from '../../../shared/layout/sidebar';
+import { TopbarComponent } from '../../../shared/layout/topbar';
 
 @Component({
   selector: 'app-employee-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, SidebarComponent, TopbarComponent],
   templateUrl: './employee-list.html',
   styleUrl: './employee-list.scss'
 })
 export class EmployeeList implements OnInit {
-  employees: any[] = [];
+  employees: any[]         = [];
   filteredEmployees: any[] = [];
   searchTerm = '';
-  isLoading = true;
+  isLoading  = true;
   user: any;
 
   constructor(
@@ -33,20 +35,13 @@ export class EmployeeList implements OnInit {
   loadEmployees() {
     this.isLoading = true;
     this.employeeService.getAll().subscribe({
-      next: (data: any) => {
-        this.employees = data;
-        this.filteredEmployees = data;
-        this.isLoading = false;
-      },
+      next: (data: any) => { this.employees = data; this.filteredEmployees = data; this.isLoading = false; },
       error: () => { this.isLoading = false; }
     });
   }
 
   search() {
-    if (!this.searchTerm) {
-      this.filteredEmployees = this.employees;
-      return;
-    }
+    if (!this.searchTerm) { this.filteredEmployees = this.employees; return; }
     const term = this.searchTerm.toLowerCase();
     this.filteredEmployees = this.employees.filter(e =>
       e.employeeName?.toLowerCase().includes(term) ||
@@ -56,7 +51,6 @@ export class EmployeeList implements OnInit {
     );
   }
 
-  addEmployee() { this.router.navigate(['/employees/new']); }
+  addEmployee()            { this.router.navigate(['/employees/new']); }
   editEmployee(id: number) { this.router.navigate(['/employees/edit', id]); }
-  logout() { this.authService.logout(); }
 }

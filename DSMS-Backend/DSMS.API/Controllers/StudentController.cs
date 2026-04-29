@@ -32,7 +32,8 @@ namespace DSMS.API.Controllers
             var students = await query.Select(s => new {
                 s.Id, s.StudentName, s.Nic, s.PhoneNumber, s.Email,
                 s.Address, s.Gender, s.RegistrationDate, s.ExistingLicenseNo,
-                s.PackageType, BranchName = s.Branch.Name
+                s.PackageType, s.BranchId, BranchName = s.Branch.Name,
+                CoursePackageName = s.CoursePackage != null ? s.CoursePackage.PackageName : null
             }).ToListAsync();
 
             return Ok(students);
@@ -45,6 +46,7 @@ namespace DSMS.API.Controllers
 
             var student = await _context.Students
                 .Include(s => s.Branch)
+                .Include(s => s.CoursePackage)
                 .FirstOrDefaultAsync(s => s.Id == id && s.Active == true);
 
             if (student == null)
@@ -81,6 +83,16 @@ namespace DSMS.API.Controllers
                 student.PostalCode, student.ExistingLicenseNo, student.PackageType,
                 student.IsSpecialRequirements, student.SpecialRequirementTypeId,
                 student.HasBirthCertificate, student.HasNtmiMedical, student.HasNicCopy,
+                student.CoursePackageId,
+                CoursePackage = student.CoursePackage == null ? null : new {
+                    student.CoursePackage.Id,
+                    student.CoursePackage.PackageName,
+                    student.CoursePackage.CourseType,
+                    student.CoursePackage.VehicleClassCodes,
+                    student.CoursePackage.Price,
+                    student.CoursePackage.MaxDiscount,
+                    student.CoursePackage.Description
+                },
                 student.RegistrationDate, BranchName = student.Branch.Name,
                 vehicleClasses, payments, registrations = sprs
             });
@@ -119,6 +131,7 @@ namespace DSMS.API.Controllers
                 HasBirthCertificate = dto.HasBirthCertificate,
                 HasNtmiMedical = dto.HasNtmiMedical,
                 HasNicCopy = dto.HasNicCopy,
+                CoursePackageId = dto.CoursePackageId,
                 Active = true,
                 RegistrationDate = DateTime.Now,
                 CreatedDateTime = DateTime.Now,
@@ -177,6 +190,7 @@ namespace DSMS.API.Controllers
             student.HasBirthCertificate = dto.HasBirthCertificate;
             student.HasNtmiMedical = dto.HasNtmiMedical;
             student.HasNicCopy = dto.HasNicCopy;
+            student.CoursePackageId = dto.CoursePackageId;
             student.LastModifiedBy = User.Identity?.Name ?? "system";
             student.LastModifiedDateTime = DateTime.Now;
 
@@ -254,6 +268,17 @@ namespace DSMS.API.Controllers
             }).ToListAsync();
 
             return Ok(students);
+        }
+
+        // Returns just the vehicle class codes for a student — used by billing form package picker
+        [HttpGet("{id}/vehicle-classes")]
+        public async Task<IActionResult> GetVehicleClasses(int id)
+        {
+            var codes = await _context.StudentVehicleClasses
+                .Where(v => v.StudentId == id)
+                .Select(v => new { vehicleClassCode = v.VehicleClassCode })
+                .ToListAsync();
+            return Ok(codes);
         }
 
         [HttpGet("count")]

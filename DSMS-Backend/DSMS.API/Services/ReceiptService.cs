@@ -30,6 +30,13 @@ public class ReceiptService : IReceiptService
   <style>
     * {{ margin:0; padding:0; box-sizing:border-box; }}
     body {{ font-family: 'Segoe UI', Arial, sans-serif; background:#f5f5f5; color:#222; }}
+    @media print {{
+      * {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
+      body {{ background:#fff !important; margin:0; padding:0; }}
+      .receipt {{ max-width:100%; margin:0; border-radius:0; box-shadow:none; }}
+      .no-print {{ display:none !important; }}
+      @page {{ margin: 10mm 12mm; size: A4; }}
+    }}
     .receipt {{ max-width:620px; margin:30px auto; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.12); }}
     .header {{ background:linear-gradient(135deg,#e63946,#c1121f); color:#fff; padding:28px 32px; text-align:center; }}
     .header .logo {{ font-size:2.5rem; margin-bottom:6px; }}

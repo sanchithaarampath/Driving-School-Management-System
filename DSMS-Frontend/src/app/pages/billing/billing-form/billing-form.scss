@@ -1,4 +1,4 @@
-// Billing Form — page-specific styles (layout comes from global styles.scss)
+// Billing Form — page-specific styles
 
 // ─── Payment Method Tabs ──────────────────────────────────────────────────
 .payment-tabs {
@@ -10,7 +10,7 @@
 
 .pm-tab {
   flex: 1;
-  min-width: 60px;
+  min-width: 70px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -29,55 +29,24 @@
   &:hover  { border-color: var(--primary, #e63946); color: var(--primary, #e63946); }
   &.active { border-color: var(--primary, #e63946); background: rgba(230,57,70,0.12); color: var(--primary, #e63946); font-weight: 600; }
 
-  &.stripe-tab.active  { border-color: #635bff; background: rgba(99,91,255,0.12); color: #a0a0ff; }
-  &.stripe-tab:hover   { border-color: #635bff; color: #a0a0ff; }
-  &.paypal-tab.active  { border-color: #003087; background: rgba(0,48,135,0.15); color: #009cde; }
-  &.paypal-tab:hover   { border-color: #003087; color: #009cde; }
+  &.card-tab {
+    &:hover  { border-color: #3fb950; color: #3fb950; }
+    &.active { border-color: #3fb950; background: rgba(63,185,80,0.1); color: #3fb950; }
+  }
 }
 
-// ─── Stripe Card Element ──────────────────────────────────────────────────
-.stripe-section {
-  margin-bottom: 1rem;
-}
-
-.stripe-card-input {
-  background: var(--dark-bg, #0d1117);
-  border: 1.5px solid #635bff;
+// ─── POS Info Banner ──────────────────────────────────────────────────────
+.pos-info-box {
+  background: rgba(63,185,80,0.08);
+  border: 1px solid rgba(63,185,80,0.25);
   border-radius: 8px;
-  padding: 0.9rem 1rem;
-  min-height: 46px;
-  transition: border-color 0.2s;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.82rem;
+  color: var(--text-secondary, #8b949e);
+  margin-bottom: 0.5rem;
 
-  &:focus-within { border-color: #a0a0ff; box-shadow: 0 0 0 2px rgba(99,91,255,0.2); }
-}
-
-.stripe-error {
-  color: #ff6b7a;
-  font-size: 0.8rem;
-  margin-top: 0.5rem;
-}
-
-.stripe-warning {
-  background: rgba(210,153,34,0.1);
-  border: 1px solid rgba(210,153,34,0.3);
-  color: #d29922;
-  border-radius: 6px;
-  padding: 0.6rem 0.85rem;
-  font-size: 0.8rem;
-  margin-top: 0.5rem;
-
-  code { background: rgba(210,153,34,0.2); padding: 0.1rem 0.3rem; border-radius: 3px; font-size: 0.78rem; }
-}
-
-// ─── PayPal Section ───────────────────────────────────────────────────────
-.paypal-section {
-  margin-bottom: 1rem;
-}
-
-#paypal-button-container {
-  min-height: 45px;
-  border-radius: 8px;
-  overflow: hidden;
+  strong { color: #3fb950; }
+  i      { color: #3fb950; }
 }
 
 // ─── Bill Summary ─────────────────────────────────────────────────────────
@@ -108,6 +77,201 @@
   }
 }
 
+// ─── Student Live Search ──────────────────────────────────────────────────
+.student-search-wrap {
+  position: relative;
+}
+
+.student-search-input-row {
+  display: flex;
+  align-items: center;
+  position: relative;
+
+  .search-icon {
+    position: absolute;
+    left: 0.75rem;
+    color: var(--text-secondary, #8b949e);
+    font-size: 0.9rem;
+    pointer-events: none;
+  }
+
+  .search-input {
+    padding-left: 2.2rem !important;
+    padding-right: 2.2rem !important;
+  }
+
+  .clear-btn {
+    position: absolute;
+    right: 0.6rem;
+    background: none;
+    border: none;
+    color: var(--text-secondary, #8b949e);
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 0.2rem;
+    &:hover { color: var(--primary, #e63946); }
+  }
+}
+
+.student-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--dark-card, #161b22);
+  border: 1px solid var(--dark-border, #30363d);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  z-index: 100;
+  overflow: hidden;
+}
+
+.student-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover { background: rgba(230,57,70,0.08); }
+  &:not(:last-child) { border-bottom: 1px solid var(--dark-border, #21262d); }
+}
+
+.student-opt-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(230,57,70,0.15);
+  color: var(--primary, #e63946);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.student-opt-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.student-opt-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary, #e6edf3);
+}
+
+.student-opt-nic {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #8b949e);
+}
+
+// ─── Vehicle class badges ─────────────────────────────────────────────────
+.vc-badge {
+  display: inline-block;
+  background: rgba(99,91,255,0.15);
+  color: #a0a0ff;
+  border: 1px solid rgba(99,91,255,0.25);
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.1rem 0.4rem;
+  margin-right: 0.25rem;
+}
+
+// ─── Package Picker ───────────────────────────────────────────────────────
+.pkg-picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.6rem;
+
+  label { margin: 0; }
+}
+
+.toggle-all-label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary, #8b949e);
+  cursor: pointer;
+  font-weight: 400 !important;
+
+  input { accent-color: var(--primary, #e63946); }
+}
+
+.no-pkg-hint {
+  font-size: 0.82rem;
+  color: var(--text-secondary, #8b949e);
+  padding: 0.6rem 0.5rem;
+
+  .link-action {
+    color: var(--primary, #e63946);
+    cursor: pointer;
+    text-decoration: underline;
+    margin-left: 0.3rem;
+  }
+}
+
+.pkg-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.6rem;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 0.1rem;
+}
+
+.pkg-card {
+  background: var(--dark-bg, #0d1117);
+  border: 1.5px solid var(--dark-border, #30363d);
+  border-radius: 8px;
+  padding: 0.65rem 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover { border-color: var(--primary, #e63946); }
+
+  &.pkg-selected {
+    border-color: #3fb950;
+    background: rgba(63,185,80,0.07);
+  }
+}
+
+.pkg-name  { font-size: 0.8rem; font-weight: 600; color: var(--text-primary, #e6edf3); margin-bottom: 0.2rem; }
+.pkg-type  { font-size: 0.7rem; color: var(--text-secondary, #8b949e); margin-bottom: 0.3rem; }
+.pkg-price { font-size: 0.9rem; font-weight: 700; color: #3fb950; }
+.pkg-desc  { font-size: 0.68rem; color: var(--text-secondary, #8b949e); margin-top: 0.25rem; }
+
+.selected-pkg-bar {
+  display: flex;
+  align-items: center;
+  background: rgba(63,185,80,0.08);
+  border: 1px solid rgba(63,185,80,0.25);
+  border-radius: 8px;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.82rem;
+  color: var(--text-primary, #e6edf3);
+  margin-top: 0.6rem;
+  gap: 0.5rem;
+
+  .clear-pkg-btn {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--text-secondary, #8b949e);
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0;
+    &:hover { color: var(--primary, #e63946); }
+  }
+}
+
 // ─── Student Info Box ─────────────────────────────────────────────────────
 .student-info-box {
   background: var(--dark-bg, #0d1117);
@@ -127,12 +291,7 @@
   max-width: 640px;
   margin: 0 auto;
 
-  .receipt-icon {
-    font-size: 3rem;
-    color: #3fb950;
-    margin-bottom: 0.75rem;
-  }
-
+  .receipt-icon { font-size: 3rem; color: #3fb950; margin-bottom: 0.75rem; }
   h3 { color: var(--text-primary, #e6edf3); font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; }
   p  { color: var(--text-secondary, #8b949e); font-size: 0.9rem; margin-bottom: 1.25rem; }
 }
@@ -168,11 +327,11 @@
   transition: all 0.2s;
 
   &:disabled { opacity: 0.5; cursor: not-allowed; }
-
-  &.email   { background: #1a73e8; color: #fff; &:hover:not(:disabled) { background: #1557b0; } }
-  &.whatsapp{ background: #25d366; color: #fff; &:hover:not(:disabled) { background: #1da851; } }
-  &.both    { background: var(--primary, #e63946); color: #fff; &:hover:not(:disabled) { background: #c1121f; } }
-  &.preview { background: var(--dark-border, #30363d); color: var(--text-primary, #e6edf3); &:hover { background: #484f58; } }
+  &.email    { background: #1a73e8; color: #fff; &:hover:not(:disabled) { background: #1557b0; } }
+  &.whatsapp { background: #25d366; color: #fff; &:hover:not(:disabled) { background: #1da851; } }
+  &.both     { background: var(--primary, #e63946); color: #fff; &:hover:not(:disabled) { background: #c1121f; } }
+  &.preview  { background: var(--dark-border, #30363d); color: var(--text-primary, #e6edf3); &:hover { background: #484f58; } }
+  &.pdf      { background: rgba(160,160,255,0.12); color: #a0a0ff; border: 1px solid rgba(160,160,255,0.25); &:hover { background: rgba(160,160,255,0.22); } }
 }
 
 .receipt-status {
@@ -184,10 +343,51 @@
 
   &.sending { color: var(--text-secondary, #8b949e); }
   &.success { background: rgba(35,134,54,0.15); color: #3fb950; border: 1px solid rgba(35,134,54,0.3); }
-  &.error   { background: rgba(230,57,70,0.15); color: #ff6b7a; border: 1px solid rgba(230,57,70,0.3); }
+  &.error   { background: rgba(230,57,70,0.15);  color: #ff6b7a; border: 1px solid rgba(230,57,70,0.3); }
 }
 
-// ─── Billing Form Layout ─────────────────────────────────────────────────
+// ─── Existing Active Bill Warning ─────────────────────────────────────────
+.existing-bill-checking {
+  font-size: 0.82rem;
+  color: var(--text-secondary, #8b949e);
+  padding: 0.6rem 0;
+  display: flex;
+  align-items: center;
+}
+
+.existing-bill-warning {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+  background: rgba(210,153,34,0.08);
+  border: 1.5px solid rgba(210,153,34,0.4);
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.ebw-icon {
+  font-size: 1.4rem;
+  color: #d29922;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.ebw-body { display: flex; flex-direction: column; gap: 0.3rem; flex: 1; }
+.ebw-title { font-size: 0.9rem; font-weight: 700; color: #d29922; }
+.ebw-detail { font-size: 0.82rem; color: var(--text-secondary, #8b949e); }
+.ebw-bill { font-family: monospace; font-weight: 700; color: var(--text-primary, #e6edf3); }
+.ebw-amount { color: #ff6b7a; font-weight: 700; }
+.ebw-hint {
+  font-size: 0.8rem;
+  color: var(--text-secondary, #8b949e);
+  margin: 0.15rem 0 0.4rem;
+  line-height: 1.5;
+  strong { color: var(--text-primary, #e6edf3); }
+}
+
+// ─── Form Layout ──────────────────────────────────────────────────────────
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -199,5 +399,78 @@
 
 .net-amount { color: #3fb950 !important; font-weight: 700; }
 .hint { color: var(--text-secondary, #8b949e); font-size: 0.75rem; }
-.text-green { color: #3fb950 !important; }
-.text-red   { color: #e63946 !important; }
+
+// ─── Package & Balance Box ─────────────────────────────────────────────────
+.package-balance-box {
+  margin-top: 0.85rem;
+  background: var(--dark-bg, #0d1117);
+  border: 1px solid var(--dark-border, #30363d);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.pbb-header {
+  background: rgba(63,185,80,0.08);
+  border-bottom: 1px solid rgba(63,185,80,0.2);
+  padding: 0.5rem 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #3fb950;
+  display: flex;
+  align-items: center;
+}
+
+.pbb-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary, #8b949e);
+  border-bottom: 1px solid #21262d;
+
+  &:last-child { border-bottom: none; }
+  strong { color: var(--text-primary, #e6edf3); font-weight: 600; }
+
+  &.pbb-balance {
+    font-weight: 700;
+    font-size: 0.9rem;
+    strong { font-size: 0.95rem; }
+  }
+}
+
+// ─── Balance loading / warnings ────────────────────────────────────────────
+.balance-loading {
+  font-size: 0.82rem;
+  color: var(--text-secondary, #8b949e);
+  padding: 0.65rem 0;
+  display: flex;
+  align-items: center;
+}
+
+.no-package-warn {
+  margin-top: 0.75rem;
+  padding: 0.7rem 0.9rem;
+  background: rgba(230,57,70,0.08);
+  border: 1px solid rgba(230,57,70,0.3);
+  border-radius: 8px;
+  font-size: 0.82rem;
+  color: #ff6b7a;
+}
+
+.fully-paid-notice {
+  margin-top: 0.75rem;
+  padding: 0.7rem 0.9rem;
+  background: rgba(63,185,80,0.08);
+  border: 1px solid rgba(63,185,80,0.25);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #3fb950;
+  font-weight: 600;
+}
+
+// ─── Instalment amount input highlight ─────────────────────────────────────
+.instalment-input {
+  font-size: 1.1rem !important;
+  font-weight: 700 !important;
+  color: #3fb950 !important;
+}

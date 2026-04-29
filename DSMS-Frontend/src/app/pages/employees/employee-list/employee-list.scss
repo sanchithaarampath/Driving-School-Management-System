@@ -1,13 +1,26 @@
 // Employee List — page-specific styles (shared layout lives in styles.scss)
-.linked-badge {
+
+.mono { font-family: 'Courier New', monospace; font-size: 0.79rem; }
+
+.emp-branch-pill {
+  display: inline-block;
+  background: rgba(121,192,255,0.1);
+  color: #79c0ff;
+  border: 1px solid rgba(121,192,255,0.2);
+  border-radius: 6px;
+  font-size: 0.71rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+}
+
+.emp-status-pill {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.2rem 0.55rem;
   border-radius: 20px;
-  font-size: 0.75rem;
+  font-size: 0.73rem;
   font-weight: 600;
+  padding: 0.18rem 0.55rem;
 
-  &.linked { background: rgba(35,134,54,0.15); color: #3fb950; }
-  &.no-account { background: rgba(210,153,34,0.15); color: #d29922; }
+  &.emp-linked { background: rgba(35,134,54,0.12); color: #3fb950; border: 1px solid rgba(35,134,54,0.25); }
+  &.emp-none   { background: rgba(139,148,158,0.1); color: var(--text-secondary, #8b949e); border: 1px solid rgba(139,148,158,0.2); }
 }

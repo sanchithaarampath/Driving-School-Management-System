@@ -129,6 +129,55 @@ namespace DSMS.API.Migrations
                     b.ToTable("Branch", (string)null);
                 });
 
+            modelBuilder.Entity("DSMS.API.Models.CoursePackage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("CourseType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CreatedDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastModifiedDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("MaxDiscount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("PackageName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("VehicleClassCodes")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CoursePackages");
+                });
+
             modelBuilder.Entity("DSMS.API.Models.Employee", b =>
                 {
                     b.Property<int>("Id")
@@ -572,6 +621,9 @@ namespace DSMS.API.Migrations
                     b.Property<int>("BranchId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("CoursePackageId")
+                        .HasColumnType("int");
+
                     b.Property<string>("CreatedBy")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
@@ -661,6 +713,8 @@ namespace DSMS.API.Migrations
 
                     b.HasIndex("BranchId");
 
+                    b.HasIndex("CoursePackageId");
+
                     b.ToTable("Student", (string)null);
                 });
 
@@ -724,12 +778,21 @@ namespace DSMS.API.Migrations
                     b.Property<bool?>("Active")
                         .HasColumnType("bit");
 
+                    b.Property<string>("ContentType")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("CreatedBy")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<DateTime?>("CreatedDateTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("DocumentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("FileName")
                         .IsRequired()
@@ -748,7 +811,7 @@ namespace DSMS.API.Migrations
                     b.Property<DateTime?>("LastModifiedDateTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("RequiredDocumentId")
+                    b.Property<int?>("RequiredDocumentId")
                         .HasColumnType("int");
 
                     b.Property<int>("StudentId")
@@ -1252,7 +1315,15 @@ namespace DSMS.API.Migrations
                         .IsRequired()
                         .HasConstraintName("FK_Student_Branch");
 
+                    b.HasOne("DSMS.API.Models.CoursePackage", "CoursePackage")
+                        .WithMany()
+                        .HasForeignKey("CoursePackageId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("FK_Student_CoursePackage");
+
                     b.Navigation("Branch");
+
+                    b.Navigation("CoursePackage");
                 });
 
             modelBuilder.Entity("DSMS.API.Models.StudentClassProgress", b =>
@@ -1278,7 +1349,6 @@ namespace DSMS.API.Migrations
                     b.HasOne("DSMS.API.Models.RequiredDocument", "RequiredDocument")
                         .WithMany("StudentDocuments")
                         .HasForeignKey("RequiredDocumentId")
-                        .IsRequired()
                         .HasConstraintName("FK_StudentDocs_RequiredDocs");
 
                     b.HasOne("DSMS.API.Models.Student", "Student")

@@ -48,6 +48,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/billing/billing-form/billing-form').then(m => m.BillingForm),
     canActivate: [authGuard]
   },
+  {
+    path: 'billing/pending',
+    loadComponent: () => import('./pages/billing/pending-payments/pending-payments').then(m => m.PendingPayments),
+    canActivate: [authGuard]
+  },
 
   // ===== EMPLOYEES =====
   {
@@ -70,6 +75,13 @@ export const routes: Routes = [
   {
     path: 'exam',
     loadComponent: () => import('./pages/exam/exam').then(m => m.ExamPage),
+    canActivate: [roleGuard(['Company Admin', 'Branch Admin'])]
+  },
+
+  // ===== COURSE PACKAGES (Company Admin + Branch Admin) =====
+  {
+    path: 'admin/course-packages',
+    loadComponent: () => import('./pages/admin/course-packages/course-packages').then(m => m.CoursePackagesPage),
     canActivate: [roleGuard(['Company Admin', 'Branch Admin'])]
   },
 

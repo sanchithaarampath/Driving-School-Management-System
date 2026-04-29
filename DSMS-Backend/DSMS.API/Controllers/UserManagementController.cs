@@ -26,7 +26,7 @@ namespace DSMS.API.Controllers
 
             var query = _context.UserSecurities
                 .Include(u => u.Role)
-                .Where(u => u.Active == true);
+                .AsQueryable();
 
             if (callerBranchId.HasValue)
                 query = query.Where(u => u.BranchId == callerBranchId);
@@ -122,7 +122,7 @@ namespace DSMS.API.Controllers
         // POST /api/users/{id}/reset-password
         [HttpPost("{id}/reset-password")]
         [Authorize(Roles = "Company Admin,Admin,Branch Admin")]
-        public async Task<IActionResult> ResetPassword(int id)
+        public async Task<IActionResult> ResetPassword(int id, [FromBody] SetPasswordDto dto)
         {
             var user = await _context.UserSecurities.FindAsync(id);
             if (user == null) return NotFound(new { message = "User not found" });
@@ -131,12 +131,41 @@ namespace DSMS.API.Controllers
             if (callerBranchId.HasValue && user.BranchId != callerBranchId)
                 return Forbid();
 
-            user.Password = BCrypt.Net.BCrypt.HashPassword("Welcome@1234");
+            if (string.IsNullOrWhiteSpace(dto?.NewPassword) || dto.NewPassword.Length < 6)
+                return BadRequest(new { message = "Password must be at least 6 characters." });
+
+            user.Password = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
             user.FirstTimeLogin = true;
             user.LastModifiedBy = User.Identity?.Name ?? "system";
             user.LastModifiedDateTime = DateTime.Now;
             await _context.SaveChangesAsync();
-            return Ok(new { message = "Password reset to Welcome@1234" });
+            return Ok(new { message = "Password updated successfully." });
+        }
+
+        // DELETE /api/users/{id} — permanent hard delete (Company Admin only)
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Company Admin,Admin")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var user = await _context.UserSecurities.FindAsync(id);
+            if (user == null) return NotFound(new { message = "User not found" });
+
+            // Prevent self-deletion
+            var callerId = int.TryParse(User.FindFirst("UserSecurityId")?.Value, out var cid) ? cid : 0;
+            if (user.Id == callerId)
+                return BadRequest(new { message = "You cannot delete your own account." });
+
+            // Unlink from Employee and Instructor records (no FK constraint, but keeps data clean)
+            var linkedEmployees = await _context.Employees.Where(e => e.UserId == id).ToListAsync();
+            foreach (var emp in linkedEmployees) emp.UserId = null;
+
+            var linkedInstructors = await _context.Instructors.Where(i => i.UserId == id).ToListAsync();
+            foreach (var inst in linkedInstructors) inst.UserId = null;
+
+            // Hard delete — remove permanently
+            _context.UserSecurities.Remove(user);
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "User permanently deleted." });
         }
 
         // GET /api/users/seed-roles — seed the 4 system roles

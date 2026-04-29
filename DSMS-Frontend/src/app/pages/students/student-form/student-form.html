@@ -15,7 +15,8 @@
       <div *ngIf="errorMessage" class="alert alert-danger"><i class="bi bi-exclamation-circle me-2"></i>{{ errorMessage }}</div>
 
       <div class="form-card">
-        <!-- PERSONAL INFO -->
+
+        <!-- ── PERSONAL INFO ── -->
         <div class="form-section">
           <h6 class="section-title"><i class="bi bi-person me-2"></i>Personal Information</h6>
           <div class="form-grid">
@@ -53,9 +54,15 @@
             </div>
             <div class="form-group">
               <label>Branch <span class="required">*</span></label>
-              <select class="form-control" [(ngModel)]="student.branchId">
-                <option *ngFor="let b of branches" [value]="b.id">{{ b.name }}</option>
+              <!-- Company Admin can select any branch -->
+              <select *ngIf="isCompanyAdmin" class="form-control" [(ngModel)]="student.branchId">
+                <option *ngFor="let b of branches" [ngValue]="b.id">{{ b.name }}</option>
               </select>
+              <!-- Staff / Branch Admin: locked to own branch -->
+              <div *ngIf="!isCompanyAdmin" class="locked-branch-display">
+                <i class="bi bi-building me-2"></i>{{ myBranchName }}
+                <span class="locked-tag"><i class="bi bi-lock-fill me-1"></i>Assigned</span>
+              </div>
             </div>
             <div class="form-group full-width">
               <label>Address <span class="required">*</span></label>
@@ -64,7 +71,7 @@
           </div>
         </div>
 
-        <!-- ADMINISTRATIVE -->
+        <!-- ── ADMINISTRATIVE ── -->
         <div class="form-section">
           <h6 class="section-title"><i class="bi bi-geo-alt me-2"></i>Administrative Details</h6>
           <div class="form-grid">
@@ -87,78 +94,140 @@
           </div>
         </div>
 
-        <!-- PACKAGE TYPE -->
+        <!-- ── COURSE PACKAGE PICKER ── -->
         <div class="form-section">
-          <h6 class="section-title"><i class="bi bi-box-seam me-2"></i>Package Type</h6>
-          <div class="d-flex gap-4">
-            <div class="form-check">
-              <input class="form-check-input" type="radio" [(ngModel)]="student.packageType" value="FullCoursework" id="fullCourse">
-              <label class="form-check-label" for="fullCourse"><strong>Full Coursework</strong></label>
+          <h6 class="section-title"><i class="bi bi-box-seam me-2"></i>Select Course Package
+            <span class="section-hint">Vehicle classes &amp; price will auto-fill from the package</span>
+          </h6>
+
+          <!-- Selected package banner -->
+          <div *ngIf="selectedPackage" class="selected-pkg-banner">
+            <div class="spb-left">
+              <i class="bi bi-check-circle-fill text-success me-2" style="font-size:1.3rem;flex-shrink:0"></i>
+              <div>
+                <div class="spb-name">{{ selectedPackage.packageName }}</div>
+                <div class="spb-meta">
+                  <span class="spb-type">{{ selectedPackage.courseType }}</span>
+                  <span class="spb-codes">
+                    <span *ngFor="let c of codesOf(selectedPackage)" class="spb-badge">{{ c }}</span>
+                    <span class="spb-badge g1-badge">G1</span>
+                  </span>
+                </div>
+                <div class="spb-vc-label">
+                  <i class="bi bi-car-front me-1"></i>
+                  Vehicle classes set: {{ student.vehicleClasses.join(', ') }}, G1 (auto-added)
+                </div>
+              </div>
             </div>
-            <div class="form-check">
-              <input class="form-check-input" type="radio" [(ngModel)]="student.packageType" value="SemiCoursework" id="semiCourse">
-              <label class="form-check-label" for="semiCourse"><strong>Semi Coursework</strong></label>
+            <div class="spb-right">
+              <div class="spb-price">Rs. {{ selectedPackage.price | number }}</div>
+              <button class="spb-clear" (click)="clearPackage()">
+                <i class="bi bi-arrow-left-circle me-1"></i>Change
+              </button>
             </div>
+          </div>
+
+          <!-- Package grid (shown when none selected) -->
+          <div *ngIf="!selectedPackage">
+            <div *ngIf="allPackages.length === 0" class="pkg-empty-hint">
+              <i class="bi bi-info-circle me-1"></i>
+              No packages configured yet.
+              <a routerLink="/admin/course-packages" class="pkg-link">Add packages here</a>
+            </div>
+
+            <ng-container *ngIf="allPackages.length > 0">
+              <!-- Search -->
+              <div class="pkg-search-wrap" *ngIf="allPackages.length > 4">
+                <i class="bi bi-search pkg-search-icon"></i>
+                <input type="text" class="form-control pkg-search-input"
+                  [(ngModel)]="pkgSearch" placeholder="Search packages...">
+              </div>
+
+              <div class="reg-pkg-grid">
+                <div *ngFor="let pkg of filteredPackages"
+                  class="reg-pkg-card"
+                  (click)="selectPackage(pkg)">
+                  <div class="reg-pkg-top">
+                    <div>
+                      <div class="reg-pkg-name">{{ pkg.packageName }}</div>
+                      <div class="reg-pkg-type">{{ pkg.courseType }}</div>
+                    </div>
+                    <div class="reg-pkg-price">Rs. {{ pkg.price | number }}</div>
+                  </div>
+                  <div class="reg-pkg-codes">
+                    <span *ngFor="let c of codesOf(pkg)" class="reg-pkg-badge">{{ c }}</span>
+                  </div>
+                  <div *ngIf="pkg.description" class="reg-pkg-desc">{{ pkg.description }}</div>
+                  <div *ngIf="pkg.maxDiscount > 0" class="reg-pkg-discount">
+                    <i class="bi bi-tag me-1"></i>Max discount: Rs. {{ pkg.maxDiscount | number }}
+                  </div>
+                </div>
+              </div>
+
+              <p *ngIf="filteredPackages.length === 0" class="text-muted small mt-2">
+                No packages match your search.
+              </p>
+            </ng-container>
           </div>
         </div>
 
-        <!-- VEHICLE CLASSES -->
+        <!-- ── DOCUMENT UPLOADS ── -->
         <div class="form-section">
-          <h6 class="section-title"><i class="bi bi-car-front me-2"></i>Vehicle Classes Applied For</h6>
-          <p class="text-muted small mb-3"><i class="bi bi-info-circle me-1"></i>G1 is automatically added for all applicants.</p>
-          <div class="vehicle-class-grid">
-            <div *ngFor="let vc of vehicleClassOptions" class="vehicle-class-item">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox"
-                  [id]="'vc_' + vc.code"
-                  [checked]="isClassSelected(vc.code)"
-                  (change)="toggleVehicleClass(vc.code)">
-                <label class="form-check-label" [for]="'vc_' + vc.code">
-                  <span class="vc-code">{{ vc.code.replace('_', ' ') }}</span>
-                  <span class="vc-label">{{ vc.label.split(' - ')[1] }}</span>
-                </label>
+          <h6 class="section-title"><i class="bi bi-file-earmark-arrow-up me-2"></i>Document Uploads</h6>
+          <p class="text-muted small mb-3">
+            <i class="bi bi-info-circle me-1"></i>
+            Upload photos or scans of each document as proof. Accepted: JPG, PNG, PDF (max 10 MB each).
+            {{ isEditMode ? 'Upload new files to replace existing ones.' : 'You can also upload later from the student profile.' }}
+          </p>
+          <div class="doc-upload-grid">
+            <div *ngFor="let slot of docSlots" class="doc-upload-card"
+              [class.doc-card-ok]="slot.uploaded" [class.doc-card-error]="slot.error">
+              <div class="doc-card-header">
+                <i class="bi {{ slot.icon }} doc-card-icon"></i>
+                <div class="doc-card-title">{{ slot.label }}</div>
+                <span *ngIf="slot.uploaded && !slot.file" class="doc-card-badge ok">
+                  <i class="bi bi-check-circle-fill me-1"></i>Uploaded
+                </span>
+                <span *ngIf="slot.file && !slot.uploaded" class="doc-card-badge ready">
+                  <i class="bi bi-paperclip me-1"></i>Ready
+                </span>
               </div>
-            </div>
-            <div class="vehicle-class-item disabled">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" checked disabled>
-                <label class="form-check-label">
-                  <span class="vc-code">G1</span>
-                  <span class="vc-label">Auto-added for all</span>
-                </label>
+              <div *ngIf="slot.preview" class="doc-preview-wrap">
+                <img [src]="slot.preview" class="doc-preview-img" alt="preview">
               </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- DOCUMENTS CHECKLIST -->
-        <div class="form-section">
-          <h6 class="section-title"><i class="bi bi-file-earmark-check me-2"></i>Documents Received</h6>
-          <p class="text-muted small mb-3">Mark which original documents the student has provided:</p>
-          <div class="d-flex flex-column gap-2">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" [(ngModel)]="student.hasBirthCertificate" id="birthCert">
-              <label class="form-check-label" for="birthCert">Original Birth Certificate</label>
-            </div>
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" [(ngModel)]="student.hasNtmiMedical" id="ntmiMedical">
-              <label class="form-check-label" for="ntmiMedical">NTMI Medical Certificate</label>
-            </div>
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" [(ngModel)]="student.hasNicCopy" id="nicCopy">
-              <label class="form-check-label" for="nicCopy">NIC Copy</label>
+              <div *ngIf="slot.file && !slot.preview" class="doc-pdf-indicator">
+                <i class="bi bi-file-earmark-pdf text-danger"></i>
+                <span>{{ slot.file.name }}</span>
+              </div>
+              <div class="doc-card-actions">
+                <label class="btn-doc-pick" [class.disabled]="slot.uploading">
+                  <i class="bi bi-upload me-1"></i>{{ slot.file ? 'Change' : 'Choose File' }}
+                  <input type="file" accept="image/jpeg,image/png,image/webp,application/pdf"
+                    (change)="onFileSelected($event, slot)" style="display:none">
+                </label>
+                <button *ngIf="slot.file" class="btn-doc-clear" (click)="clearFile(slot)">
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </div>
+              <div *ngIf="slot.error" class="doc-card-err">
+                <i class="bi bi-exclamation-triangle me-1"></i>{{ slot.error }}
+              </div>
+              <div *ngIf="slot.uploading" class="doc-uploading">
+                <span class="spinner-border spinner-border-sm me-2"></span>Uploading...
+              </div>
             </div>
           </div>
         </div>
 
         <div class="form-actions">
-          <button class="btn btn-cancel" (click)="goBack()">Cancel</button>
-          <button class="btn btn-primary" (click)="onSubmit()" [disabled]="isSaving">
-            <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
-            <i *ngIf="!isSaving" class="bi bi-check-lg me-2"></i>
-            {{ isSaving ? 'Saving...' : (isEditMode ? 'Update Student' : 'Register Student') }}
+          <button class="btn btn-cancel" (click)="goBack()" [disabled]="isSaving || anyUploading">Cancel</button>
+          <button class="btn btn-primary" (click)="onSubmit()" [disabled]="isSaving || anyUploading">
+            <span *ngIf="isSaving || anyUploading" class="spinner-border spinner-border-sm me-2"></span>
+            <i *ngIf="!isSaving && !anyUploading" class="bi bi-check-lg me-2"></i>
+            {{ isSaving ? 'Saving...' : anyUploading ? 'Uploading files...' : (isEditMode ? 'Update Student' : 'Register Student') }}
           </button>
         </div>
+
       </div>
     </div>
   </div>

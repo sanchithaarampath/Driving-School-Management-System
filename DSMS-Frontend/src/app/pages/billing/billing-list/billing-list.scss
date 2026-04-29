@@ -1,10 +1,103 @@
 // Billing List — page-specific styles (layout comes from global styles.scss)
 
+// ── Clickable stat card ────────────────────────────────────────────────────
+.clickable-stat {
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 18px rgba(230,57,70,0.18);
+  }
+}
+
+// ── Monthly Revenue Chart ──────────────────────────────────────────────────
+.monthly-chart-card {
+  margin-bottom: 1.25rem;
+}
+
+.section-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary, #e6edf3);
+  margin-bottom: 1.25rem;
+}
+
+.monthly-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  height: 140px;
+  padding: 0 0.5rem;
+}
+
+.month-bar-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  height: 100%;
+}
+
+.month-value {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-secondary, #8b949e);
+  text-align: center;
+  white-space: nowrap;
+  height: 16px;
+  line-height: 16px;
+}
+
+.month-bar-track {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.month-bar {
+  width: 70%;
+  min-height: 4px;
+  max-height: 100%;
+  background: var(--dark-border, #30363d);
+  border-radius: 6px 6px 0 0;
+  transition: height 0.4s ease;
+
+  &.bar-active {
+    background: var(--primary, #e63946);
+    opacity: 0.85;
+  }
+}
+
+.month-label {
+  font-size: 0.68rem;
+  color: var(--text-secondary, #8b949e);
+  text-align: center;
+  white-space: nowrap;
+}
+
+// ── Receipt modal ──────────────────────────────────────────────────────────
 .modal-bill-info {
   background: var(--dark-bg, #0d1117);
   border: 1px solid var(--dark-border, #30363d);
   border-radius: 8px;
   padding: 0.75rem 1rem;
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.3rem 0;
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--dark-border, #21262d);
+
+    &:last-child { border-bottom: none; }
+
+    span { color: var(--text-secondary, #8b949e); }
+    strong { color: var(--text-primary, #e6edf3); }
+  }
 }
 
 .modal-receipt-actions {
@@ -43,4 +136,11 @@
   &.sending { color: var(--text-secondary, #8b949e); }
   &.success { background: rgba(35,134,54,0.15); color: #3fb950; border: 1px solid rgba(35,134,54,0.3); }
   &.error   { background: rgba(230,57,70,0.15);  color: #ff6b7a; border: 1px solid rgba(230,57,70,0.3); }
+}
+
+// ── Collect Payment button ─────────────────────────────────────────────────
+.btn-action.collect {
+  background: rgba(35,134,54,0.12);
+  color: #3fb950;
+  &:hover { background: rgba(35,134,54,0.25); }
 }

@@ -1,0 +1,185 @@
+<div class="dsms-layout">
+  <app-sidebar></app-sidebar>
+  <div class="main-content">
+    <app-topbar></app-topbar>
+    <div class="page-content">
+
+      <div class="page-header">
+        <div>
+          <h2><i class="bi bi-clock-history me-2 text-warning"></i>Pending Payments</h2>
+          <p>All bills with outstanding balance</p>
+        </div>
+        <button class="btn btn-cancel" (click)="goToBilling()">
+          <i class="bi bi-arrow-left me-2"></i>Back to Billing
+        </button>
+      </div>
+
+      <!-- Summary Banner -->
+      <div class="pending-banner" *ngIf="!isLoading">
+        <div class="banner-item">
+          <span class="banner-value">{{ bills.length }}</span>
+          <span class="banner-label">Outstanding Bills</span>
+        </div>
+        <div class="banner-divider"></div>
+        <div class="banner-item">
+          <span class="banner-value">Rs. {{ totalOutstanding | number }}</span>
+          <span class="banner-label">Total Outstanding</span>
+        </div>
+      </div>
+
+      <!-- Search -->
+      <div class="search-bar">
+        <div class="search-input">
+          <i class="bi bi-search"></i>
+          <input type="text" placeholder="Search by student, NIC, phone or bill number..."
+            [(ngModel)]="searchTerm" (input)="search()">
+        </div>
+        <span class="result-count">{{ filteredBills.length }} bills</span>
+      </div>
+
+      <!-- Table -->
+      <div class="table-card">
+        <div *ngIf="isLoading" class="loading-state">
+          <div class="spinner-border text-danger"></div><p>Loading pending payments...</p>
+        </div>
+        <div *ngIf="!isLoading && filteredBills.length === 0" class="empty-state">
+          <i class="bi bi-check-circle text-success" style="font-size:2.5rem;"></i>
+          <p>All bills are fully paid!</p>
+        </div>
+        <table *ngIf="!isLoading && filteredBills.length > 0" class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Bill No.</th>
+              <th>Student</th>
+              <th>NIC</th>
+              <th>Phone</th>
+              <th>Date</th>
+              <th>Net</th>
+              <th>Paid</th>
+              <th>Balance</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let b of filteredBills; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td><span class="bill-number">{{ b.billNumber }}</span></td>
+              <td>{{ b.studentName }}</td>
+              <td>{{ b.studentNic }}</td>
+              <td>{{ b.studentPhone }}</td>
+              <td>{{ b.billDate | date:'dd/MM/yyyy' }}</td>
+              <td>Rs. {{ b.netAmount | number }}</td>
+              <td class="text-success">Rs. {{ b.paidAmount | number }}</td>
+              <td class="text-warning fw-bold">Rs. {{ b.balanceAmount | number }}</td>
+              <td><span class="badge" [ngClass]="getStatusClass(b.status)">{{ b.status }}</span></td>
+              <td>
+                <div style="display:flex;gap:0.4rem;">
+                  <button class="btn-action collect" title="Collect Payment" (click)="openPaymentModal(b)">
+                    <i class="bi bi-cash-coin"></i>
+                  </button>
+                  <button class="btn-action approve" title="Send Reminder" (click)="openReceiptModal(b)">
+                    <i class="bi bi-bell"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===== Add Payment Modal ===== -->
+<div *ngIf="showPaymentModal" class="modal-overlay" (click)="closePaymentModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <h5><i class="bi bi-cash-coin me-2"></i>Collect Payment — {{ paymentBill?.billNumber }}</h5>
+
+    <div class="modal-bill-info">
+      <div class="info-row"><span>Student</span><strong>{{ paymentBill?.studentName }}</strong></div>
+      <div class="info-row"><span>Net Amount</span><strong>Rs. {{ paymentBill?.netAmount | number }}</strong></div>
+      <div class="info-row"><span>Already Paid</span><strong class="text-success">Rs. {{ paymentBill?.paidAmount | number }}</strong></div>
+      <div class="info-row"><span>Balance Due</span><strong class="text-warning">Rs. {{ paymentBill?.balanceAmount | number }}</strong></div>
+    </div>
+
+    <div class="form-grid" style="margin-top:1rem;">
+      <div class="form-group">
+        <label>Payment Amount (Rs.) <span class="required">*</span></label>
+        <input type="number" class="form-control" [(ngModel)]="paymentForm.amount"
+               [max]="paymentBill?.balanceAmount" min="1" placeholder="0.00">
+      </div>
+      <div class="form-group">
+        <label>Payment Method <span class="required">*</span></label>
+        <select class="form-control" [(ngModel)]="paymentForm.paymentMethod">
+          <option *ngFor="let m of paymentMethods" [value]="m">{{ m }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Reference / Cheque No.</label>
+        <input type="text" class="form-control" [(ngModel)]="paymentForm.referenceNo" placeholder="Optional">
+      </div>
+      <div class="form-group">
+        <label>Remarks</label>
+        <input type="text" class="form-control" [(ngModel)]="paymentForm.remarks" placeholder="Optional">
+      </div>
+    </div>
+
+    <div *ngIf="paymentSuccess" class="receipt-status success"><i class="bi bi-check-circle me-2"></i>{{ paymentSuccess }}</div>
+    <div *ngIf="paymentError"   class="receipt-status error"><i class="bi bi-exclamation-triangle me-2"></i>{{ paymentError }}</div>
+
+    <div class="form-actions">
+      <button class="btn btn-cancel" (click)="closePaymentModal()" [disabled]="isSavingPayment">Cancel</button>
+      <button class="btn btn-primary" (click)="savePayment()" [disabled]="isSavingPayment">
+        <span *ngIf="isSavingPayment" class="spinner-border spinner-border-sm me-2"></span>
+        <i *ngIf="!isSavingPayment" class="bi bi-check-lg me-2"></i>
+        {{ isSavingPayment ? 'Saving...' : 'Record Payment' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Reminder Modal ===== -->
+<div *ngIf="showReceiptModal" class="modal-overlay" (click)="closeReceiptModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <h5><i class="bi bi-bell me-2"></i>Send Reminder — {{ selectedBill?.billNumber }}</h5>
+
+    <div class="modal-bill-info">
+      <div class="info-row"><span>Student</span><strong>{{ selectedBill?.studentName }}</strong></div>
+      <div class="info-row"><span>Balance Due</span><strong class="text-warning">Rs. {{ selectedBill?.balanceAmount | number }}</strong></div>
+    </div>
+
+    <div class="form-grid" style="margin-top:1rem;">
+      <div class="form-group">
+        <label><i class="bi bi-envelope me-1"></i>Email Address</label>
+        <input type="email" class="form-control" [(ngModel)]="overrideEmail" placeholder="student@email.com">
+      </div>
+      <div class="form-group">
+        <label><i class="bi bi-whatsapp me-1"></i>WhatsApp / Phone</label>
+        <input type="text" class="form-control" [(ngModel)]="overridePhone" placeholder="+94 77 123 4567">
+      </div>
+    </div>
+
+    <div class="modal-receipt-actions">
+      <button class="receipt-btn email" (click)="sendReceipt('email')" [disabled]="receiptSending">
+        <i class="bi bi-envelope-fill"></i> Email
+      </button>
+      <button class="receipt-btn whatsapp" (click)="sendReceipt('whatsapp')" [disabled]="receiptSending">
+        <i class="bi bi-whatsapp"></i> WhatsApp
+      </button>
+      <button class="receipt-btn both" (click)="sendReceipt('both')" [disabled]="receiptSending">
+        <i class="bi bi-send-fill"></i> Send Both
+      </button>
+    </div>
+
+    <div *ngIf="receiptSending" class="receipt-status sending"><span class="spinner-border spinner-border-sm me-2"></span>Sending...</div>
+    <div *ngIf="receiptSuccess" class="receipt-status success"><i class="bi bi-check-circle me-2"></i>{{ receiptSuccess }}</div>
+    <div *ngIf="receiptError"   class="receipt-status error"><i class="bi bi-exclamation-triangle me-2"></i>{{ receiptError }}</div>
+
+    <div class="form-actions">
+      <button class="btn btn-cancel" (click)="closeReceiptModal()">Close</button>
+    </div>
+  </div>
+</div>

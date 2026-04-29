@@ -14,31 +14,52 @@
         </button>
       </div>
 
+      <!-- Search + Branch Filter -->
       <div class="search-bar">
         <div class="search-input">
           <i class="bi bi-search"></i>
-          <input type="text" placeholder="Search by name, NIC, phone or bill number (e.g. BILL-00001)..."
+          <input type="text"
+            placeholder="Search by name, NIC, phone or bill number..."
             [(ngModel)]="searchTerm" (input)="search()">
           <button *ngIf="searchTerm" class="search-clear" (click)="clearSearch()" title="Clear">
             <i class="bi bi-x"></i>
           </button>
         </div>
+
+        <!-- Branch filter — Company Admin only -->
+        <div *ngIf="isCompanyAdmin" class="branch-filter-wrap">
+          <i class="bi bi-building branch-filter-icon"></i>
+          <select class="branch-filter-select" [(ngModel)]="selectedBranch" (change)="onBranchChange()">
+            <option [ngValue]="0">All Branches</option>
+            <option *ngFor="let b of branches" [ngValue]="b.id">{{ b.name }}</option>
+          </select>
+          <button *ngIf="selectedBranch" class="search-clear" (click)="clearBranch()" title="Clear filter">
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+
         <span class="result-count">
           <span *ngIf="isSearching" class="spinner-border spinner-border-sm me-1"></span>
           {{ filteredStudents.length }} students
+          <span *ngIf="selectedBranch" class="branch-filter-active">
+            · {{ selectedBranchName }}
+          </span>
         </span>
       </div>
 
+      <!-- Table -->
       <div class="table-card">
         <div *ngIf="isLoading" class="loading-state">
           <div class="spinner-border text-danger"></div>
           <p>Loading students...</p>
         </div>
+
         <div *ngIf="!isLoading && filteredStudents.length === 0" class="empty-state">
           <i class="bi bi-people"></i>
           <p>No students found</p>
           <button *ngIf="canEdit" class="btn btn-primary" (click)="addStudent()">Add First Student</button>
         </div>
+
         <table *ngIf="!isLoading && filteredStudents.length > 0" class="data-table">
           <thead>
             <tr>
@@ -53,33 +74,55 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let s of filteredStudents; let i = index">
-              <td>{{ i + 1 }}</td>
-              <td>
-                <div class="student-name">
-                  <div class="avatar">{{ s.studentName?.charAt(0) }}</div>
-                  {{ s.studentName }}
-                </div>
-              </td>
-              <td>{{ s.nic }}</td>
-              <td>{{ s.phoneNumber }}</td>
-              <td>
-                <span class="badge bg-info text-dark" *ngIf="s.packageType">{{ s.packageType }}</span>
-                <span *ngIf="!s.packageType">-</span>
-              </td>
-              <td>{{ s.branchName }}</td>
-              <td>{{ s.registrationDate | date:'dd/MM/yyyy' }}</td>
-              <td>
-                <div style="display:flex;gap:0.4rem;">
-                  <button class="btn-action approve" title="View Profile" (click)="viewProfile(s.id)">
-                    <i class="bi bi-person-lines-fill"></i>
-                  </button>
-                  <button *ngIf="canEdit" class="btn-action edit" title="Edit Student" (click)="editStudent(s.id)">
-                    <i class="bi bi-pencil"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
+            <ng-container *ngFor="let s of filteredStudents; let i = index">
+
+              <!-- Main row -->
+              <tr [class.row-deleting]="deleteConfirmId === s.id">
+                <td>{{ i + 1 }}</td>
+                <td>
+                  <div class="student-name">
+                    <div class="avatar">{{ s.studentName?.charAt(0) | uppercase }}</div>
+                    {{ s.studentName }}
+                  </div>
+                </td>
+                <td class="mono">{{ s.nic }}</td>
+                <td>{{ s.phoneNumber }}</td>
+                <td>
+                  <span *ngIf="s.coursePackageName || s.packageType"
+                        class="pkg-pill-sm">
+                    {{ s.coursePackageName || s.packageType }}
+                  </span>
+                  <span *ngIf="!s.coursePackageName && !s.packageType" class="text-muted small">—</span>
+                </td>
+                <td>{{ s.branchName }}</td>
+                <td class="mono" style="font-size:0.78rem;">{{ s.registrationDate | date:'dd/MM/yyyy' }}</td>
+                <td>
+                  <div class="action-cell" *ngIf="deleteConfirmId !== s.id">
+                    <button class="btn-action approve" title="View Profile" (click)="viewProfile(s.id)">
+                      <i class="bi bi-person-lines-fill"></i>
+                    </button>
+                    <button *ngIf="canEdit" class="btn-action edit" title="Edit" (click)="editStudent(s.id)">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button *ngIf="canDelete" class="btn-action delete" title="Deactivate" (click)="requestDelete(s.id)">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+
+                  <!-- Inline delete confirm -->
+                  <div class="inline-del-confirm" *ngIf="deleteConfirmId === s.id">
+                    <span class="del-warn">Deactivate?</span>
+                    <button class="btn-action approve" title="Yes, deactivate" (click)="confirmDelete()">
+                      <i class="bi bi-check-lg"></i>
+                    </button>
+                    <button class="btn-action edit" title="Cancel" (click)="cancelDelete()">
+                      <i class="bi bi-x-lg"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+            </ng-container>
           </tbody>
         </table>
       </div>

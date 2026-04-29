@@ -37,7 +37,8 @@ export class AttendancePage implements OnInit {
 
   isSaving = false;
   successMessage = '';
-  errorMessage = '';
+  errorMessage   = '';
+  deleteConfirmId: number | null = null;
 
   private apiUrl = 'http://localhost:5062/api';
 
@@ -120,12 +121,17 @@ export class AttendancePage implements OnInit {
     });
   }
 
-  deleteRecord(id: number) {
-    if (!confirm('Delete this attendance record?')) return;
+  requestDeleteRecord(id: number)  { this.deleteConfirmId = id; }
+  cancelDeleteRecord()             { this.deleteConfirmId = null; }
+
+  deleteRecord() {
+    if (!this.deleteConfirmId) return;
+    const id = this.deleteConfirmId;
+    this.deleteConfirmId = null;
     this.http.delete(`${this.apiUrl}/attendance/${id}`, { headers: this.getHeaders() }).subscribe({
       next: () => {
         this.attendanceRecords = this.attendanceRecords.filter(r => r.id !== id);
-        this.form.dayNumber = this.attendanceRecords.length + 1;
+        this.form.dayNumber    = this.attendanceRecords.length + 1;
         this.loadStudentsProgress();
       }
     });

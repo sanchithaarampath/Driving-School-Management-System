@@ -142,9 +142,20 @@
                       <span *ngIf="!r.isReadyForPracticalTest" style="color:var(--text-secondary);">—</span>
                     </td>
                     <td>
-                      <button class="btn-action delete" title="Delete" (click)="deleteRecord(r.id)">
-                        <i class="bi bi-trash"></i>
-                      </button>
+                      <div *ngIf="deleteConfirmId !== r.id">
+                        <button class="btn-action delete" title="Delete record" (click)="requestDeleteRecord(r.id)">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                      <div *ngIf="deleteConfirmId === r.id" class="inline-del-confirm">
+                        <span class="del-warn-sm">Delete?</span>
+                        <button class="btn-action approve" title="Yes" (click)="deleteRecord()">
+                          <i class="bi bi-check-lg"></i>
+                        </button>
+                        <button class="btn-action edit" title="No" (click)="cancelDeleteRecord()">
+                          <i class="bi bi-x-lg"></i>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 </tbody>
