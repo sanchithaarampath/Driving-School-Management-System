@@ -85,12 +85,16 @@ export class Dashboard implements OnInit {
   }
 
   // Called when company admin changes the branch dropdown
-  onBranchFilterChange() { this.loadDashboard(); }
+  // val comes from (ngModelChange) — coerce to number to be safe
+  onBranchFilterChange(val: any) {
+    this.selectedBranchId = +val || 0;
+    this.loadDashboard();
+  }
 
   // Label shown in the header subtitle
   get selectedBranchName(): string {
     if (!this.selectedBranchId) return 'All Branches';
-    return this.branches.find(b => b.id === this.selectedBranchId)?.name || 'All Branches';
+    return this.branches.find(b => +b.id === +this.selectedBranchId)?.name || 'All Branches';
   }
 
   loadBranches() {

@@ -30,9 +30,9 @@
             <i class="bi bi-building branch-filter-icon"></i>
             <select class="branch-filter-select"
                     [(ngModel)]="selectedBranchId"
-                    (change)="onBranchFilterChange()">
-              <option [value]="0">All Branches</option>
-              <option *ngFor="let b of branches" [value]="b.id">{{ b.name }}</option>
+                    (ngModelChange)="onBranchFilterChange($event)">
+              <option [ngValue]="0">All Branches</option>
+              <option *ngFor="let b of branches" [ngValue]="b.id">{{ b.name }}</option>
             </select>
             <span *ngIf="isLoadingDashboard" class="branch-filter-spinner">
               <span class="spinner-border spinner-border-sm"></span>
