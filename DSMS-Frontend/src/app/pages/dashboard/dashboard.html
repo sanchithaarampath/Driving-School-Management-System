@@ -12,7 +12,10 @@
             <span class="db-wave">👋</span>
           </div>
           <div class="db-subtitle">
-            <span *ngIf="isCompanyAdmin">Company Overview &nbsp;·&nbsp; All Branches</span>
+            <span *ngIf="isCompanyAdmin">
+              Company Overview &nbsp;·&nbsp;
+              <span class="db-highlight">{{ selectedBranchName }}</span>
+            </span>
             <span *ngIf="isBranchAdmin">Branch Dashboard</span>
             <span *ngIf="isStaff">Staff Dashboard &nbsp;·&nbsp; Daily tasks</span>
             &nbsp;·&nbsp;
@@ -21,6 +24,21 @@
           </div>
         </div>
         <div class="db-header-actions">
+
+          <!-- Branch filter — Company Admin only -->
+          <div *ngIf="isCompanyAdmin" class="branch-filter-wrap">
+            <i class="bi bi-building branch-filter-icon"></i>
+            <select class="branch-filter-select"
+                    [(ngModel)]="selectedBranchId"
+                    (change)="onBranchFilterChange()">
+              <option [value]="0">All Branches</option>
+              <option *ngFor="let b of branches" [value]="b.id">{{ b.name }}</option>
+            </select>
+            <span *ngIf="isLoadingDashboard" class="branch-filter-spinner">
+              <span class="spinner-border spinner-border-sm"></span>
+            </span>
+          </div>
+
           <button class="btn btn-primary btn-sm" (click)="addStudent()">
             <i class="bi bi-person-plus me-2"></i>Register Student
           </button>
@@ -38,7 +56,9 @@
           <div class="kpi-icon-wrap"><i class="bi bi-people-fill"></i></div>
           <div class="kpi-body">
             <div class="kpi-value">{{ stats.totalStudents || 0 }}</div>
-            <div class="kpi-label">{{ isCompanyAdmin ? 'Total Students' : 'Branch Students' }}</div>
+            <div class="kpi-label">
+              {{ isCompanyAdmin ? (selectedBranchId > 0 ? 'Branch Students' : 'Total Students') : 'Branch Students' }}
+            </div>
           </div>
           <div class="kpi-badge kpi-badge-up">
             <i class="bi bi-arrow-up-right me-1"></i>+{{ stats.newThisMonth || 0 }} this month

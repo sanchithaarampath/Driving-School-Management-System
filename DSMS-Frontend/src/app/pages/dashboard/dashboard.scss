@@ -27,6 +27,51 @@
 .db-highlight { color: #3fb950; font-weight: 700; }
 .db-header-actions { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 
+// ── Branch Filter Dropdown (Company Admin only) ────────────────────
+.branch-filter-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--dark-card, #161b22);
+  border: 1.5px solid var(--dark-border, #30363d);
+  border-radius: 10px;
+  padding: 0.3rem 0.75rem 0.3rem 0.55rem;
+  transition: border-color 0.2s;
+
+  &:focus-within {
+    border-color: rgba(230, 57, 70, 0.5);
+    box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.1);
+  }
+}
+
+.branch-filter-icon {
+  color: var(--primary, #e63946);
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.branch-filter-select {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary, #e6edf3);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-width: 140px;
+  max-width: 200px;
+
+  option {
+    background: #161b22;
+    color: #e6edf3;
+  }
+}
+
+.branch-filter-spinner {
+  color: var(--text-secondary, #8b949e);
+  font-size: 0.75rem;
+}
+
 // ── KPI Cards ─────────────────────────────────────────────────────
 .kpi-row {
   display: grid;

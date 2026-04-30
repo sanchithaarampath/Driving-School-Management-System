@@ -17,19 +17,22 @@ namespace DSMS.API.Controllers
 
         // ── Stats ─────────────────────────────────────────────────────────────
         [HttpGet("stats")]
-        public async Task<IActionResult> GetStats()
+        public async Task<IActionResult> GetStats([FromQuery] int? branchId = null)
         {
-            var branchId = ClaimsHelper.GetBranchId(User);
+            // Company admins (no branch claim) may pass an optional branchId filter.
+            // Branch admins / staff are always scoped to their own branch.
+            var callerBranchId = ClaimsHelper.GetBranchId(User);
+            var effectiveBranchId = callerBranchId ?? (branchId > 0 ? branchId : null);
 
             var studentQ = _context.Students.Where(s => s.Active == true);
             var billQ    = _context.Bills.Where(b => b.Active == true);
             var payQ     = _context.Payments.Where(p => p.Student != null);
 
-            if (branchId.HasValue)
+            if (effectiveBranchId.HasValue)
             {
-                studentQ = studentQ.Where(s => s.BranchId == branchId);
-                billQ    = billQ.Where(b => b.Student.BranchId == branchId);
-                payQ     = payQ.Where(p => p.Student.BranchId == branchId);
+                studentQ = studentQ.Where(s => s.BranchId == effectiveBranchId);
+                billQ    = billQ.Where(b => b.Student.BranchId == effectiveBranchId);
+                payQ     = payQ.Where(p => p.Student.BranchId == effectiveBranchId);
             }
 
             var totalStudents = await studentQ.CountAsync();
@@ -52,11 +55,12 @@ namespace DSMS.API.Controllers
 
         // ── Monthly Revenue (last 6 months) ───────────────────────────────────
         [HttpGet("monthly-revenue")]
-        public async Task<IActionResult> GetMonthlyRevenue()
+        public async Task<IActionResult> GetMonthlyRevenue([FromQuery] int? branchId = null)
         {
-            var branchId = ClaimsHelper.GetBranchId(User);
-            var now      = DateTime.Now;
-            var result   = new List<object>();
+            var callerBranchId    = ClaimsHelper.GetBranchId(User);
+            var effectiveBranchId = callerBranchId ?? (branchId > 0 ? branchId : null);
+            var now               = DateTime.Now;
+            var result            = new List<object>();
 
             for (int i = 5; i >= 0; i--)
             {
@@ -68,10 +72,10 @@ namespace DSMS.API.Controllers
                 var studQ = _context.Students.Where(s =>
                     s.Active == true && s.RegistrationDate >= month && s.RegistrationDate < nextMonth);
 
-                if (branchId.HasValue)
+                if (effectiveBranchId.HasValue)
                 {
-                    payQ  = payQ.Where(p => p.Student.BranchId == branchId);
-                    studQ = studQ.Where(s => s.BranchId == branchId);
+                    payQ  = payQ.Where(p => p.Student.BranchId == effectiveBranchId);
+                    studQ = studQ.Where(s => s.BranchId == effectiveBranchId);
                 }
 
                 var revenue  = await payQ.SumAsync(p => (decimal?)p.Amount) ?? 0;
@@ -85,15 +89,16 @@ namespace DSMS.API.Controllers
 
         // ── Package Breakdown ─────────────────────────────────────────────────
         [HttpGet("package-breakdown")]
-        public async Task<IActionResult> GetPackageBreakdown()
+        public async Task<IActionResult> GetPackageBreakdown([FromQuery] int? branchId = null)
         {
-            var branchId = ClaimsHelper.GetBranchId(User);
+            var callerBranchId    = ClaimsHelper.GetBranchId(User);
+            var effectiveBranchId = callerBranchId ?? (branchId > 0 ? branchId : null);
 
             var query = _context.Students
                 .Where(s => s.Active == true && s.CoursePackageId != null);
 
-            if (branchId.HasValue)
-                query = query.Where(s => s.BranchId == branchId);
+            if (effectiveBranchId.HasValue)
+                query = query.Where(s => s.BranchId == effectiveBranchId);
 
             // Fetch into memory then group (avoids EF GroupBy translation issues)
             var rows = await query
@@ -123,11 +128,12 @@ namespace DSMS.API.Controllers
 
         // ── Recent Students ───────────────────────────────────────────────────
         [HttpGet("recent-students")]
-        public async Task<IActionResult> GetRecentStudents()
+        public async Task<IActionResult> GetRecentStudents([FromQuery] int? branchId = null)
         {
-            var branchId = ClaimsHelper.GetBranchId(User);
-            var query    = _context.Students.Include(s => s.Branch).Where(s => s.Active == true);
-            if (branchId.HasValue) query = query.Where(s => s.BranchId == branchId);
+            var callerBranchId    = ClaimsHelper.GetBranchId(User);
+            var effectiveBranchId = callerBranchId ?? (branchId > 0 ? branchId : null);
+            var query             = _context.Students.Include(s => s.Branch).Where(s => s.Active == true);
+            if (effectiveBranchId.HasValue) query = query.Where(s => s.BranchId == effectiveBranchId);
 
             var students = await query
                 .OrderByDescending(s => s.RegistrationDate)
@@ -143,16 +149,17 @@ namespace DSMS.API.Controllers
 
         // ── Recent Payments ───────────────────────────────────────────────────
         [HttpGet("recent-payments")]
-        public async Task<IActionResult> GetRecentPayments()
+        public async Task<IActionResult> GetRecentPayments([FromQuery] int? branchId = null)
         {
-            var branchId = ClaimsHelper.GetBranchId(User);
+            var callerBranchId    = ClaimsHelper.GetBranchId(User);
+            var effectiveBranchId = callerBranchId ?? (branchId > 0 ? branchId : null);
             var query = _context.Payments
                 .Include(p => p.Student)
                 .Include(p => p.Bill)
                 .Where(p => p.Student != null);
 
-            if (branchId.HasValue)
-                query = query.Where(p => p.Student.BranchId == branchId);
+            if (effectiveBranchId.HasValue)
+                query = query.Where(p => p.Student.BranchId == effectiveBranchId);
 
             var payments = await query
                 .OrderByDescending(p => p.PaymentDate)

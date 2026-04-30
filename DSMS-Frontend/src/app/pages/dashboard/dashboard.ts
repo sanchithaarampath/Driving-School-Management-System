@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { AuthService } from '../../services/auth';
 import { SidebarComponent } from '../../shared/layout/sidebar';
 import { TopbarComponent } from '../../shared/layout/topbar';
@@ -9,7 +10,7 @@ import { TopbarComponent } from '../../shared/layout/topbar';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, SidebarComponent, TopbarComponent],
+  imports: [CommonModule, FormsModule, RouterModule, SidebarComponent, TopbarComponent],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'
 })
@@ -22,6 +23,10 @@ export class Dashboard implements OnInit {
   pendingPractical: any[] = [];
   monthlyRevenue: any[] = [];
   packageBreakdown: any[] = [];
+
+  // Branch filter — only used by company admin
+  selectedBranchId = 0;   // 0 = All Branches
+  isLoadingDashboard = false;
 
   private apiUrl = 'http://localhost:5062/api';
 
@@ -65,12 +70,27 @@ export class Dashboard implements OnInit {
   }
 
   loadDashboard() {
-    const h = { headers: this.getHeaders() };
-    this.http.get(`${this.apiUrl}/dashboard/stats`,             h).subscribe({ next: (d: any) => { this.stats = d; } });
+    // Build optional branchId param (only meaningful for company admin)
+    let params = new HttpParams();
+    if (this.isCompanyAdmin && this.selectedBranchId > 0)
+      params = params.set('branchId', this.selectedBranchId.toString());
+
+    const h = { headers: this.getHeaders(), params };
+    this.isLoadingDashboard = true;
+    this.http.get(`${this.apiUrl}/dashboard/stats`,             h).subscribe({ next: (d: any) => { this.stats = d; this.isLoadingDashboard = false; } });
     this.http.get(`${this.apiUrl}/dashboard/recent-students`,   h).subscribe({ next: (d: any) => { this.recentStudents = d; } });
     this.http.get(`${this.apiUrl}/dashboard/recent-payments`,   h).subscribe({ next: (d: any) => { this.recentPayments = d; } });
     this.http.get(`${this.apiUrl}/dashboard/monthly-revenue`,   h).subscribe({ next: (d: any) => { this.monthlyRevenue = d; } });
     this.http.get(`${this.apiUrl}/dashboard/package-breakdown`, h).subscribe({ next: (d: any) => { this.packageBreakdown = d; } });
+  }
+
+  // Called when company admin changes the branch dropdown
+  onBranchFilterChange() { this.loadDashboard(); }
+
+  // Label shown in the header subtitle
+  get selectedBranchName(): string {
+    if (!this.selectedBranchId) return 'All Branches';
+    return this.branches.find(b => b.id === this.selectedBranchId)?.name || 'All Branches';
   }
 
   loadBranches() {
