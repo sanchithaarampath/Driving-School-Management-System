@@ -366,14 +366,15 @@ namespace DSMS.API.Controllers
                 query = query.Where(b => b.Student.BranchId == callerBranchId);
 
             var bills = await query
-                .Select(b => new { b.NetAmount, b.PaidAmount, b.BalanceAmount })
+                .Select(b => new { b.PaidAmount, b.BalanceAmount })
                 .ToListAsync();
 
             return Ok(new {
-                totalAmount   = bills.Sum(b => b.NetAmount),
-                paidAmount    = bills.Sum(b => b.PaidAmount),
-                pendingAmount = bills.Sum(b => b.BalanceAmount),
-                totalBills    = bills.Count
+                totalAmount        = bills.Sum(b => b.PaidAmount),   // total collected (correct for all bill types)
+                paidAmount         = bills.Sum(b => b.PaidAmount),
+                pendingAmount      = bills.Sum(b => b.BalanceAmount),
+                totalBills         = bills.Count,
+                pendingBillsCount  = bills.Count(b => b.BalanceAmount > 0)
             });
         }
 

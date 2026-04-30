@@ -219,7 +219,7 @@ export class StudentProfile implements OnInit {
 
   // Package price is the fixed total — never multiply across bills
   get totalBilled()  { return this.student?.coursePackage?.price || 0; }
-  get totalPaid()    { return this.bills.reduce((s, b) => s + (b.paidAmount || 0), 0); }
+  get totalPaid()    { return Math.min(this.bills.reduce((s, b) => s + (b.paidAmount || 0), 0), this.totalBilled); }
   get totalPending() { return Math.max(0, this.totalBilled - this.totalPaid); }
 
   // ── Delete Bill ───────────────────────────────────────────────────────────

@@ -19,7 +19,7 @@ export class BillingList implements OnInit {
   filteredBills: any[] = [];
   searchTerm = '';
   isLoading = true;
-  summary = { totalAmount: 0, paidAmount: 0, pendingAmount: 0, totalBills: 0 };
+  summary = { totalAmount: 0, paidAmount: 0, pendingAmount: 0, totalBills: 0, pendingBillsCount: 0 };
   monthlyData: any[] = [];
   user: any;
   private apiUrl = 'http://localhost:5062/api';

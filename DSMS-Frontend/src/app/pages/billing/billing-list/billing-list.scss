@@ -1,5 +1,11 @@
 // Billing List — page-specific styles (layout comes from global styles.scss)
 
+// ── Warn stat icon (unpaid bills card) ────────────────────────────────────
+.stat-icon.warn {
+  background: rgba(240,136,62,0.12);
+  color: #f0883e;
+}
+
 // ── Clickable stat card ────────────────────────────────────────────────────
 .clickable-stat {
   cursor: pointer;

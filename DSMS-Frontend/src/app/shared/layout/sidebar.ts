@@ -41,7 +41,7 @@ import { Router } from '@angular/router';
             <i class="bi bi-person-badge"></i><span>Employees</span>
           </a>
           <a class="nav-item" routerLink="/users" routerLinkActive="active">
-            <i class="bi bi-shield-person"></i><span>Users</span>
+            <i class="bi bi-person-fill-gear"></i><span>Users</span>
           </a>
           <a class="nav-item" routerLink="/admin/course-packages" routerLinkActive="active">
             <i class="bi bi-box-seam"></i><span>Course Packages</span>

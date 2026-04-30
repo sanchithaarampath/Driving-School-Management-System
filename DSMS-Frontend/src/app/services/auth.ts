@@ -40,7 +40,7 @@ export class AuthService {
   getBranchId(): number | null { return this.getUser()?.branchId ?? null; }
   isCompanyAdmin(): boolean { return this.getRole() === 'Company Admin' || this.getRole() === 'Admin'; }
   isBranchAdmin(): boolean { return this.getRole() === 'Branch Admin'; }
-  isStaff(): boolean { return this.getRole() === 'Staff'; }
+  isStaff(): boolean { return this.getRole() === 'Staff' || this.getRole() === 'OfficeStaff'; }
   isInstructor(): boolean { return this.getRole() === 'Instructor'; }
   isAdmin(): boolean { return this.isCompanyAdmin(); }
 

@@ -30,17 +30,10 @@
         </div>
         <ng-container *ngIf="!isStaff">
           <div class="stat-card">
-            <div class="stat-icon income"><i class="bi bi-cash-coin"></i></div>
-            <div class="stat-info">
-              <span class="stat-value">Rs. {{ summary.totalAmount | number }}</span>
-              <span class="stat-label">Total Amount</span>
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon paid"><i class="bi bi-check-circle"></i></div>
+            <div class="stat-icon income"><i class="bi bi-cash-stack"></i></div>
             <div class="stat-info">
               <span class="stat-value">Rs. {{ summary.paidAmount | number }}</span>
-              <span class="stat-label">Collected</span>
+              <span class="stat-label">Total Collected</span>
             </div>
           </div>
           <div class="stat-card clickable-stat" (click)="goToPending()">
@@ -48,6 +41,13 @@
             <div class="stat-info">
               <span class="stat-value">Rs. {{ summary.pendingAmount | number }}</span>
               <span class="stat-label">Outstanding <i class="bi bi-arrow-right-short"></i></span>
+            </div>
+          </div>
+          <div class="stat-card clickable-stat" (click)="goToPending()">
+            <div class="stat-icon warn"><i class="bi bi-exclamation-circle"></i></div>
+            <div class="stat-info">
+              <span class="stat-value">{{ summary.pendingBillsCount }}</span>
+              <span class="stat-label">Unpaid Bills <i class="bi bi-arrow-right-short"></i></span>
             </div>
           </div>
         </ng-container>
@@ -95,9 +95,8 @@
               <th>Student</th>
               <th>NIC</th>
               <th>Date</th>
-              <th>Net</th>
-              <th>Paid</th>
-              <th>Balance</th>
+              <th>Instalment</th>
+              <th>Outstanding</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -109,9 +108,9 @@
               <td>{{ b.studentName }}</td>
               <td>{{ b.studentNic }}</td>
               <td>{{ b.billDate | date:'dd/MM/yyyy' }}</td>
-              <td>Rs. {{ b.netAmount | number }}</td>
               <td class="text-success">Rs. {{ b.paidAmount | number }}</td>
-              <td [class.text-warning]="b.balanceAmount > 0">Rs. {{ b.balanceAmount | number }}</td>
+              <td [class.text-warning]="b.balanceAmount > 0"
+                  [class.text-success]="b.balanceAmount <= 0">Rs. {{ b.balanceAmount | number }}</td>
               <td><span class="badge" [ngClass]="getStatusClass(b.status)">{{ b.status }}</span></td>
               <td>
                 <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">

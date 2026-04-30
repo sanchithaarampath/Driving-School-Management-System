@@ -264,23 +264,13 @@
 }
 
 .bill-card-footer {
-  padding: 0.55rem 1rem;
+  padding: 0.6rem 1rem;
   border-top: 1px solid #21262d;
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   flex-wrap: wrap;
-  gap: 0.4rem;
-
-  // Push preview/download/delete to the right
-  .btn-action.edit,
-  .btn-action.approve,
-  .btn-action.delete-bill {
-    margin-left: auto;
-  }
-  // But only the first of the right-side group should push
-  .btn-action.edit { margin-left: auto; }
-  .btn-action.approve,
-  .btn-action.delete-bill { margin-left: 0; }
+  gap: 0.5rem;
 }
 
 // ── Payment instalments breakdown ─────────────────────────────────────────────
@@ -594,7 +584,6 @@
   background: rgba(230,57,70,0.08);
   border-color: rgba(230,57,70,0.25);
   color: #e63946;
-  margin-left: auto;   // push to the right
   &:hover { background: rgba(230,57,70,0.18); }
 }
 
