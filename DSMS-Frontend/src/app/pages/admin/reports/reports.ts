@@ -16,7 +16,7 @@ import { TopbarComponent } from '../../../shared/layout/topbar';
 })
 export class ReportsPage implements OnInit {
 
-  activeTab: 'income' | 'students' | 'exam' = 'income';
+  activeTab: 'income' | 'students' | 'exam' | 'training' = 'income';
 
   // Date range
   fromDate = this.firstDayOfMonth();
@@ -33,6 +33,9 @@ export class ReportsPage implements OnInit {
   // Exam summary
   examData: any = null;
 
+  // Training completion
+  trainingData: any = null;
+
   private apiUrl = 'http://localhost:5062/api';
 
   constructor(private auth: AuthService, private http: HttpClient) {}
@@ -46,11 +49,12 @@ export class ReportsPage implements OnInit {
     return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0];
   }
 
-  switchTab(tab: 'income' | 'students' | 'exam') {
+  switchTab(tab: 'income' | 'students' | 'exam' | 'training') {
     this.activeTab = tab;
-    if (tab === 'income'   && !this.incomeData)  this.loadIncome();
-    if (tab === 'students' && !this.studentsData) this.loadStudents();
-    if (tab === 'exam'     && !this.examData)     this.loadExam();
+    if (tab === 'income'   && !this.incomeData)   this.loadIncome();
+    if (tab === 'students' && !this.studentsData)  this.loadStudents();
+    if (tab === 'exam'     && !this.examData)      this.loadExam();
+    if (tab === 'training' && !this.trainingData)  this.loadTraining();
   }
 
   loadIncome() {
@@ -80,11 +84,22 @@ export class ReportsPage implements OnInit {
     });
   }
 
+  loadTraining() {
+    this.isLoading = true;
+    const params = `from=${this.fromDate}&to=${this.toDate}`;
+    this.http.get<any>(`${this.apiUrl}/reports/training-completion?${params}`, { headers: this.getHeaders() }).subscribe({
+      next: (data) => { this.trainingData = data; this.isLoading = false; },
+      error: ()     => { this.isLoading = false; }
+    });
+  }
+
   applyDateRange() {
     this.incomeData   = null;
     this.studentsData = null;
+    this.trainingData = null;
     if (this.activeTab === 'income')   this.loadIncome();
     if (this.activeTab === 'students') this.loadStudents();
+    if (this.activeTab === 'training') this.loadTraining();
   }
 
   setRange(preset: string) {

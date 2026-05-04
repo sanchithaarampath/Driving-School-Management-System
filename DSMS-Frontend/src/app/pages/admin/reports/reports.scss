@@ -164,6 +164,36 @@
   text-align: center;
 }
 
+// Stat card icon variants
+.stat-icon {
+  width: 44px; height: 44px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem;
+  &.total   { background: rgba(99,102,241,0.15); color: #6366f1; }
+  &.income  { background: rgba(63,185,80,0.15);  color: #3fb950; }
+  &.pending { background: rgba(230,57,70,0.15);  color: #e63946; }
+  &.paid    { background: rgba(56,139,253,0.15); color: #388bfd; }
+  &.partial { background: rgba(227,98,9,0.15);   color: #e36209; }
+}
+
+// Badges used in training tab
+.badge {
+  display: inline-block;
+  padding: 0.22rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  &.badge-paid    { background: rgba(63,185,80,0.15);   color: #3fb950; }
+  &.badge-partial { background: rgba(227,98,9,0.15);    color: #e36209; }
+  &.badge-pending { background: rgba(230,57,70,0.15);   color: #e63946; }
+}
+
+// Empty state
+.empty-state {
+  text-align: center; color: var(--text-secondary, #8b949e);
+  i { font-size: 2.5rem; display: block; margin-bottom: 0.5rem; }
+}
+
 // Print
 @media print {
   .no-print { display: none !important; }

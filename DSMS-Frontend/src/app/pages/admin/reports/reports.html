@@ -41,6 +41,9 @@
         <button class="tab-btn" [class.active]="activeTab==='exam'"     (click)="switchTab('exam')">
           <i class="bi bi-clipboard-check me-1"></i>Exam Results
         </button>
+        <button class="tab-btn" [class.active]="activeTab==='training'" (click)="switchTab('training')">
+          <i class="bi bi-mortarboard me-1"></i>Training Progress
+        </button>
       </div>
 
       <!-- Loading -->
@@ -264,6 +267,163 @@
             Average attempts per student: <strong style="color:var(--text-primary)">{{ examData.avgAttempts }}</strong>
           </div>
         </div>
+      </div>
+
+      <!-- ══ TRAINING PROGRESS TAB ═════════════════════════════════════════ -->
+      <div *ngIf="activeTab==='training' && trainingData && !isLoading">
+
+        <!-- KPI Cards -->
+        <div class="stats-grid" style="margin-bottom:1.5rem;">
+          <div class="stat-card">
+            <div class="stat-icon total"><i class="bi bi-people"></i></div>
+            <div class="stat-info">
+              <span class="stat-value">{{ trainingData.total }}</span>
+              <span class="stat-label">Students in Training</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon income"><i class="bi bi-patch-check"></i></div>
+            <div class="stat-info">
+              <span class="stat-value">{{ trainingData.completedCount }}</span>
+              <span class="stat-label">Completed</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon partial"><i class="bi bi-hourglass-split"></i></div>
+            <div class="stat-info">
+              <span class="stat-value">{{ trainingData.inProgCount }}</span>
+              <span class="stat-label">In Progress</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon pending"><i class="bi bi-dash-circle"></i></div>
+            <div class="stat-info">
+              <span class="stat-value">{{ trainingData.notStartCount }}</span>
+              <span class="stat-label">Not Started</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Completion Rate + Branch Breakdown -->
+        <div class="report-row" style="margin-bottom:1rem;">
+
+          <!-- Overall completion rate -->
+          <div class="report-card">
+            <div class="rc-title"><i class="bi bi-graph-up me-2"></i>Completion Overview</div>
+            <div style="text-align:center;padding:1.2rem 0 0.5rem;">
+              <div style="font-size:2.8rem;font-weight:800;color:#3fb950;">{{ trainingData.completionRate }}%</div>
+              <div style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:1.2rem;">Overall Completion Rate</div>
+            </div>
+            <div class="status-bars">
+              <div class="status-bar-item">
+                <div class="sb-label">
+                  <span class="badge badge-paid">Completed</span>
+                  <span>{{ trainingData.completedCount }} students</span>
+                </div>
+                <div class="sb-track">
+                  <div class="sb-fill paid" [style.width.%]="barWidth(trainingData.completedCount, trainingData.total)"></div>
+                </div>
+              </div>
+              <div class="status-bar-item">
+                <div class="sb-label">
+                  <span class="badge badge-partial">In Progress</span>
+                  <span>{{ trainingData.inProgCount }} students</span>
+                </div>
+                <div class="sb-track">
+                  <div class="sb-fill partial" [style.width.%]="barWidth(trainingData.inProgCount, trainingData.total)"></div>
+                </div>
+              </div>
+              <div class="status-bar-item">
+                <div class="sb-label">
+                  <span class="badge badge-pending">Not Started</span>
+                  <span>{{ trainingData.notStartCount }} students</span>
+                </div>
+                <div class="sb-track">
+                  <div class="sb-fill pending-f" [style.width.%]="barWidth(trainingData.notStartCount, trainingData.total)"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- By Branch -->
+          <div class="report-card" *ngIf="trainingData.byBranch?.length">
+            <div class="rc-title"><i class="bi bi-diagram-3 me-2"></i>By Branch</div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Branch</th>
+                  <th style="text-align:center">Total</th>
+                  <th style="text-align:center;color:#3fb950">Done</th>
+                  <th style="text-align:center;color:#e36209">Active</th>
+                  <th style="text-align:center;color:#e63946">Not Started</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let b of trainingData.byBranch">
+                  <td><strong>{{ b.branch }}</strong></td>
+                  <td style="text-align:center;">{{ b.total }}</td>
+                  <td style="text-align:center;color:#3fb950;font-weight:700;">{{ b.completed }}</td>
+                  <td style="text-align:center;color:#e36209;font-weight:700;">{{ b.inProgress }}</td>
+                  <td style="text-align:center;color:#e63946;font-weight:700;">{{ b.notStarted }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Per-Student Progress Table -->
+        <div class="report-card" *ngIf="trainingData.students?.length">
+          <div class="rc-title"><i class="bi bi-list-check me-2"></i>Student-by-Student Progress</div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Branch</th>
+                <th>Package</th>
+                <th style="text-align:center">Sessions Done</th>
+                <th style="text-align:center">Required</th>
+                <th style="min-width:120px">Progress</th>
+                <th style="text-align:center">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of trainingData.students">
+                <td><strong>{{ s.studentName }}</strong></td>
+                <td>{{ s.branch }}</td>
+                <td style="font-size:0.8rem;color:var(--text-secondary)">{{ s.packageName }}</td>
+                <td style="text-align:center;font-weight:700;">{{ s.completedDays }}</td>
+                <td style="text-align:center;color:var(--text-secondary)">{{ s.requiredDays }}</td>
+                <td>
+                  <div style="display:flex;align-items:center;gap:0.5rem;">
+                    <div class="sb-track" style="flex:1;height:6px;">
+                      <div class="sb-fill"
+                           [class.paid]="s.status==='Completed'"
+                           [class.partial]="s.status==='In Progress'"
+                           [class.pending-f]="s.status==='Not Started'"
+                           [style.width.%]="s.progressPct">
+                      </div>
+                    </div>
+                    <span style="font-size:0.75rem;color:var(--text-secondary);min-width:32px;">{{ s.progressPct }}%</span>
+                  </div>
+                </td>
+                <td style="text-align:center;">
+                  <span class="badge"
+                        [class.badge-paid]="s.status==='Completed'"
+                        [class.badge-partial]="s.status==='In Progress'"
+                        [class.badge-pending]="s.status==='Not Started'">
+                    {{ s.status }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div *ngIf="trainingData.total === 0" class="empty-state" style="padding:3rem;">
+          <i class="bi bi-mortarboard"></i>
+          <p>No student training records found for the selected date range</p>
+        </div>
+
       </div>
 
     </div>

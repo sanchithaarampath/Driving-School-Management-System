@@ -150,6 +150,105 @@ namespace DSMS.API.Controllers
             return Ok(new { total = students.Count, byBranch, byGender, daily });
         }
 
+        // GET /api/reports/training-completion?from=&to=
+        [HttpGet("training-completion")]
+        public async Task<IActionResult> GetTrainingCompletion(
+            [FromQuery] string? from,
+            [FromQuery] string? to)
+        {
+            var callerBranchId = ClaimsHelper.GetBranchId(User);
+
+            var studentsQuery = _context.Students
+                .Include(s => s.Branch)
+                .Include(s => s.CoursePackage)
+                .Where(s => s.Active == true);
+
+            if (callerBranchId.HasValue)
+                studentsQuery = studentsQuery.Where(s => s.BranchId == callerBranchId);
+
+            // Optional date range filters on registration date
+            if (!string.IsNullOrEmpty(from) && DateTime.TryParse(from, out var fromDate))
+                studentsQuery = studentsQuery.Where(s => s.RegistrationDate >= fromDate);
+
+            if (!string.IsNullOrEmpty(to) && DateTime.TryParse(to, out var toDate))
+            {
+                toDate = toDate.Date.AddDays(1).AddSeconds(-1);
+                studentsQuery = studentsQuery.Where(s => s.RegistrationDate <= toDate);
+            }
+
+            var students   = await studentsQuery.ToListAsync();
+            var studentIds = students.Select(s => s.Id).ToList();
+
+            // Count completed training sessions per student
+            var sessionCounts = await _context.TrainingSessions
+                .Where(ts => studentIds.Contains(ts.StudentId) && ts.Status == "Completed")
+                .GroupBy(ts => ts.StudentId)
+                .Select(g => new { StudentId = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            var sessionMap = sessionCounts.ToDictionary(x => x.StudentId, x => x.Count);
+
+            // Build per-student summary rows
+            var rows = students.Select(s =>
+            {
+                var required  = s.CoursePackage?.TrainingDays ?? 15;
+                var completed = sessionMap.GetValueOrDefault(s.Id, 0);
+                var pct       = required > 0
+                    ? Math.Min(100, Math.Round((double)completed / required * 100, 1))
+                    : 0;
+                var status    = completed >= required ? "Completed"
+                              : completed  > 0        ? "In Progress"
+                              :                         "Not Started";
+
+                return new
+                {
+                    studentId        = s.Id,
+                    studentName      = s.StudentName,
+                    branch           = s.Branch?.Name ?? "—",
+                    packageName      = s.CoursePackage?.PackageName ?? "—",
+                    requiredDays     = required,
+                    completedDays    = completed,
+                    progressPct      = pct,
+                    status,
+                    registrationDate = s.RegistrationDate?.ToString("yyyy-MM-dd") ?? "—"
+                };
+            })
+            .OrderByDescending(r => r.completedDays)
+            .ToList();
+
+            var total          = rows.Count;
+            var completedCount = rows.Count(r => r.status == "Completed");
+            var inProgCount    = rows.Count(r => r.status == "In Progress");
+            var notStartCount  = rows.Count(r => r.status == "Not Started");
+            var completionRate = total > 0
+                ? Math.Round((double)completedCount / total * 100, 1)
+                : 0.0;
+
+            var byBranch = rows
+                .GroupBy(r => r.branch)
+                .Select(g => new
+                {
+                    branch      = g.Key,
+                    total       = g.Count(),
+                    completed   = g.Count(r => r.status == "Completed"),
+                    inProgress  = g.Count(r => r.status == "In Progress"),
+                    notStarted  = g.Count(r => r.status == "Not Started")
+                })
+                .OrderByDescending(b => b.completed)
+                .ToList();
+
+            return Ok(new
+            {
+                total,
+                completedCount,
+                inProgCount,
+                notStartCount,
+                completionRate,
+                byBranch,
+                students = rows
+            });
+        }
+
         // GET /api/reports/exam-summary
         [HttpGet("exam-summary")]
         public async Task<IActionResult> GetExamSummary()
