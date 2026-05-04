@@ -1,0 +1,92 @@
+<!-- Floating toggle button -->
+<button class="chat-fab" (click)="toggleChat()" [class.open]="isOpen" title="DSMS Assistant">
+  <i class="bi" [class.bi-chat-dots-fill]="!isOpen" [class.bi-x-lg]="isOpen"></i>
+  <span class="fab-label" *ngIf="!isOpen">AI Assistant</span>
+</button>
+
+<!-- Chat window -->
+<div class="chat-window" [class.visible]="isOpen">
+
+  <!-- Header -->
+  <div class="chat-header">
+    <div class="chat-header-info">
+      <div class="chat-avatar">
+        <i class="bi bi-robot"></i>
+      </div>
+      <div>
+        <div class="chat-title">DSMS Assistant</div>
+        <div class="chat-subtitle">
+          <span class="dot"></span> Online
+        </div>
+      </div>
+    </div>
+    <div class="chat-header-actions">
+      <button class="hdr-btn" (click)="clearChat()" title="Clear chat">
+        <i class="bi bi-trash3"></i>
+      </button>
+      <button class="hdr-btn" (click)="toggleChat()" title="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div class="chat-messages">
+    <div
+      *ngFor="let msg of messages"
+      class="msg-row"
+      [class.msg-user]="msg.from === 'user'"
+      [class.msg-bot]="msg.from === 'bot'">
+
+      <div class="msg-avatar" *ngIf="msg.from === 'bot'">
+        <i class="bi bi-robot"></i>
+      </div>
+
+      <div class="msg-bubble-wrap">
+        <div class="msg-bubble" [innerHTML]="formatText(msg.text)"></div>
+        <div class="msg-time">{{ msg.time }}</div>
+      </div>
+
+    </div>
+
+    <!-- Typing indicator -->
+    <div class="msg-row msg-bot" *ngIf="isTyping">
+      <div class="msg-avatar"><i class="bi bi-robot"></i></div>
+      <div class="msg-bubble-wrap">
+        <div class="msg-bubble typing-indicator">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+
+    <div #messagesEnd></div>
+  </div>
+
+  <!-- Quick suggestions -->
+  <div class="chat-suggestions">
+    <button class="sugg-btn" (click)="userInput='balance of '; $any($event.target).blur()">💳 Balance</button>
+    <button class="sugg-btn" (click)="userInput='today\'s sessions'; sendMessage()">📅 Today</button>
+    <button class="sugg-btn" (click)="userInput='pending payments'; sendMessage()">⚠️ Pending</button>
+    <button class="sugg-btn" (click)="userInput='help'; sendMessage()">❓ Help</button>
+  </div>
+
+  <!-- Input -->
+  <div class="chat-input-bar">
+    <textarea
+      class="chat-input"
+      [(ngModel)]="userInput"
+      (keydown)="onKey($event)"
+      placeholder="Ask me anything..."
+      rows="1"
+      [disabled]="isTyping">
+    </textarea>
+    <button
+      class="send-btn"
+      (click)="sendMessage()"
+      [disabled]="!userInput.trim() || isTyping"
+      title="Send">
+      <i class="bi bi-send-fill"></i>
+    </button>
+  </div>
+
+</div>

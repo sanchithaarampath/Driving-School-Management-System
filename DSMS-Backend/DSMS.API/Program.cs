@@ -70,6 +70,7 @@ builder.Services.AddSingleton<ISystemSettingsService, SystemSettingsService>();
 builder.Services.AddScoped<IReceiptService, ReceiptService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IWhatsAppService, WhatsAppService>();
+builder.Services.AddScoped<IChatbotService, ChatbotService>();
 
 builder.Services.AddCors(options =>
 {
